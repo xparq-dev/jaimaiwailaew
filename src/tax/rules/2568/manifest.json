@@ -1,0 +1,29 @@
+[
+  {
+    "manifestId": "manifest-2568-tax-brackets",
+    "taxYearBE": 2568,
+    "ruleSetId": "th-pit-2568-placeholder-v0",
+    "family": "tax_brackets",
+    "version": "0.0.0-unverified",
+    "status": "unverified",
+    "effectiveFrom": null,
+    "effectiveTo": null,
+    "sources": [
+      {
+        "sourceId": "rd-official-reference-required-2568",
+        "sourceType": "official_webpage",
+        "authority": "กรมสรรพากร",
+        "title": "ต้องระบุเอกสารอ้างอิงทางการสำหรับปีภาษี 2568 ก่อนใช้งาน",
+        "url": null,
+        "evidenceLevel": "unverified",
+        "reviewerStatus": "not_reviewed",
+        "lastCheckedAt": null,
+        "notes": ["ห้ามเติมรายละเอียดกฎหมายจากการคาดเดา"]
+      }
+    ],
+    "applicabilityConditions": ["personal-income-tax-estimate"],
+    "reviewerStatus": "not_reviewed",
+    "notForCalculation": true,
+    "notes": ["Unverified tax bracket family manifest for 2568"]
+  }
+]

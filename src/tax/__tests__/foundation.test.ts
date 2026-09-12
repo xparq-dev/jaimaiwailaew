@@ -1,24 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import metadata2568 from "../rules/2568/meta.json";
-import bundle2568 from "../rules/2568/placeholder-bundle.json";
 import metadata2569 from "../rules/2569/meta.json";
-import bundle2569 from "../rules/2569/placeholder-bundle.json";
-import {
-  placeholderTaxRuleMetadataSchema,
-  placeholderTaxRuleSetSchema,
-  taxRuleMetadataSchema,
-} from "../schemas";
-import type {
-  PlaceholderTaxRuleMetadata,
-  PlaceholderTaxRuleSet,
-} from "../types";
-import type { ExecutableTaxRuleMetadata } from "../engine/contracts";
+import sampleFixture from "../fixtures/structural-sample-family.json";
+import { ruleFamilyManifestSchema, taxRuleSetMetadataSchema } from "../schemas";
+import type { TaxRuleSetMetadata } from "../types";
 
-const placeholderRuleSets = [
-  { metadata: metadata2568, bundle: bundle2568 },
-  { metadata: metadata2569, bundle: bundle2569 },
-] as const;
+const placeholderMetadataList = [metadata2568, metadata2569] as const;
 
 function collectObjectKeys(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -36,30 +24,30 @@ function collectObjectKeys(value: unknown): string[] {
 }
 
 describe("Tax Foundation placeholder rule sets", () => {
-  it.each(placeholderRuleSets)(
-    "validates the draft, disabled placeholder for tax year $metadata.taxYearBE",
+  it.each(placeholderMetadataList)(
+    "validates the unverified placeholder metadata for tax year $taxYearBE",
     (candidate) => {
-      const parsed: PlaceholderTaxRuleSet =
-        placeholderTaxRuleSetSchema.parse(candidate);
+      const parsed: TaxRuleSetMetadata =
+        taxRuleSetMetadataSchema.parse(candidate);
 
-      expect(parsed.metadata.status).toBe("draft");
-      expect(parsed.metadata.verificationStatus).toBe(
-        "requires_professional_verification",
-      );
-      expect(parsed.metadata.publicationBlocked).toBe(true);
-      expect(parsed.bundle.calculationEnabled).toBe(false);
-      expect(parsed.bundle.requiresVerification).toBe(true);
+      expect(parsed.status).toBe("unverified");
+      expect(parsed.validationStatus).toBe("unverified");
+      expect(parsed.notForCalculation).toBe(true);
       expect(
-        Object.values(parsed.bundle.sections).every(
-          (items) => items.length === 0,
-        ),
+        parsed.sources.every((s) => s.reviewerStatus === "not_reviewed"),
       ).toBe(true);
     },
   );
 
-  it.each(placeholderRuleSets)(
-    "contains no legal numeric rule fields for tax year $metadata.taxYearBE",
-    ({ bundle }) => {
+  it("validates the structural sample family fixture with exampleOnly: true", () => {
+    const parsed = ruleFamilyManifestSchema.parse(sampleFixture);
+    expect(parsed.exampleOnly).toBe(true);
+    expect(parsed.notForCalculation).toBe(true);
+  });
+
+  it.each(placeholderMetadataList)(
+    "contains no legal numeric rule fields for tax year $taxYearBE",
+    (meta) => {
       const prohibitedKeys = new Set([
         "amount",
         "amounts",
@@ -69,7 +57,7 @@ describe("Tax Foundation placeholder rule sets", () => {
         "thresholds",
       ]);
 
-      const presentProhibitedKeys = collectObjectKeys(bundle).filter((key) =>
+      const presentProhibitedKeys = collectObjectKeys(meta).filter((key) =>
         prohibitedKeys.has(key),
       );
 
@@ -77,36 +65,12 @@ describe("Tax Foundation placeholder rule sets", () => {
     },
   );
 
-  it("rejects an unverified rule set that is enabled or published", () => {
+  it("rejects an unverified rule set that sets notForCalculation to false without being published", () => {
     expect(() =>
-      taxRuleMetadataSchema.parse({
+      taxRuleSetMetadataSchema.parse({
         ...metadata2568,
-        status: "published",
-        calculationEnabled: true,
-        publicationBlocked: false,
+        notForCalculation: false,
       }),
     ).toThrow();
-  });
-
-  it("keeps placeholder metadata restricted to the safe draft state", () => {
-    expect(() =>
-      placeholderTaxRuleMetadataSchema.parse({
-        ...metadata2569,
-        verificationStatus: "verified",
-      }),
-    ).toThrow();
-  });
-});
-
-describe("Tax calculation contract safety", () => {
-  it("does not allow placeholder metadata to satisfy the executable contract", () => {
-    type PlaceholderCanExecute =
-      PlaceholderTaxRuleMetadata extends ExecutableTaxRuleMetadata
-        ? true
-        : false;
-
-    const placeholderCanExecute: PlaceholderCanExecute = false;
-
-    expect(placeholderCanExecute).toBe(false);
   });
 });

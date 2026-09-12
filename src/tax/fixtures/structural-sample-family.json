@@ -1,0 +1,30 @@
+{
+  "manifestId": "manifest-sample-structural-family",
+  "taxYearBE": 2568,
+  "ruleSetId": "th-pit-2568-placeholder-v0",
+  "family": "tax_brackets",
+  "version": "0.0.0-unverified",
+  "status": "unverified",
+  "effectiveFrom": null,
+  "effectiveTo": null,
+  "sources": [
+    {
+      "sourceId": "rd-official-reference-required-2568",
+      "sourceType": "official_webpage",
+      "authority": "กรมสรรพากร",
+      "title": "ต้องระบุเอกสารอ้างอิงทางการสำหรับปีภาษี 2568 ก่อนใช้งาน",
+      "url": null,
+      "evidenceLevel": "unverified",
+      "reviewerStatus": "not_reviewed",
+      "lastCheckedAt": null,
+      "notes": ["Structural sample only"]
+    }
+  ],
+  "applicabilityConditions": ["sample-only"],
+  "reviewerStatus": "not_reviewed",
+  "notForCalculation": true,
+  "exampleOnly": true,
+  "notes": [
+    "Structural sample fixture for schema validation testing. Contains no legal tax rates."
+  ]
+}

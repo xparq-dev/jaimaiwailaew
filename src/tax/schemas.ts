@@ -1,162 +1,242 @@
 import { z } from "zod";
 
 import {
-  RULE_SET_STATUSES,
-  RULE_SOURCE_STATUSES,
-  RULE_VERIFICATION_STATUSES,
+  CALCULATION_AVAILABILITIES,
+  EVIDENCE_LEVELS,
+  REVIEWER_STATUSES,
+  RULE_FAMILIES,
+  SUPPORTED_TAX_YEARS_BE,
   TAX_CALCULATION_SCOPES,
+  TAX_RULE_SET_STATUSES,
+  TAX_RULE_SET_VALIDATION_STATUSES,
+  TAX_RULE_SOURCE_TYPES,
 } from "./types";
 
-const nonEmptyTextSchema = z.string().trim().min(1);
-const nullableIsoDateSchema = z.union([z.iso.date(), z.null()]);
+export const machineIdentifierSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-z0-9-]+$/, {
+    message:
+      "Identifier must consist of lower-case alphanumeric characters and hyphens.",
+  });
 
-export const taxYearBESchema = z.union([z.literal(2568), z.literal(2569)]);
+export const ruleSetIdSchema = z
+  .string()
+  .trim()
+  .regex(/^th-pit-25(?:68|69)-[a-z0-9-]+$/, {
+    message: "ruleSetId must match th-pit-2568-* or th-pit-2569-* format.",
+  });
 
-export const ruleSetStatusSchema = z.enum(RULE_SET_STATUSES);
-export const ruleVerificationStatusSchema = z.enum(RULE_VERIFICATION_STATUSES);
+export const semverVersionSchema = z
+  .string()
+  .trim()
+  .regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/, {
+    message: "Version must be a valid semantic version string.",
+  });
+
+export const isoDateOrTimestampSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?$/,
+    { message: "Must be a valid ISO date or date-time string (YYYY-MM-DD)." },
+  );
+
+export const nullableIsoDateSchema = z.union([
+  isoDateOrTimestampSchema,
+  z.null(),
+]);
+
+export const httpUrlSchema = z
+  .string()
+  .trim()
+  .url({ message: "Source URL must be a valid absolute HTTP/HTTPS URL." })
+  .refine((val) => val.startsWith("http://") || val.startsWith("https://"), {
+    message: "Source URL must use http:// or https:// protocol.",
+  });
+
+export const nullableSourceUrlSchema = z.union([httpUrlSchema, z.null()]);
+
+export const taxYearBESchema = z.union([
+  z.literal(SUPPORTED_TAX_YEARS_BE[0]),
+  z.literal(SUPPORTED_TAX_YEARS_BE[1]),
+]);
+
+export const taxRuleSetStatusSchema = z.enum(TAX_RULE_SET_STATUSES);
+export const taxRuleSetValidationStatusSchema = z.enum(
+  TAX_RULE_SET_VALIDATION_STATUSES,
+);
+export const calculationAvailabilitySchema = z.enum(CALCULATION_AVAILABILITIES);
+export const taxRuleSourceTypeSchema = z.enum(TAX_RULE_SOURCE_TYPES);
+export const evidenceLevelSchema = z.enum(EVIDENCE_LEVELS);
+export const reviewerStatusSchema = z.enum(REVIEWER_STATUSES);
+export const ruleFamilySchema = z.enum(RULE_FAMILIES);
 export const taxCalculationScopeSchema = z.enum(TAX_CALCULATION_SCOPES);
-export const ruleSourceStatusSchema = z.enum(RULE_SOURCE_STATUSES);
 
-export const moneySatangSchema = z.number().int().nonnegative().finite();
+export const ruleReferenceSchema = z.strictObject({
+  sourceId: machineIdentifierSchema,
+  section: z.string().trim().min(1).optional(),
+  clause: z.string().trim().min(1).optional(),
+});
 
-export const taxRuleSourceMetadataSchema = z
+export const taxRuleSourceSchema = z
   .strictObject({
-    sourceId: nonEmptyTextSchema,
-    authority: nonEmptyTextSchema,
-    title: nonEmptyTextSchema,
-    url: z.union([z.url(), z.null()]),
-    status: ruleSourceStatusSchema,
+    sourceId: machineIdentifierSchema,
+    sourceType: taxRuleSourceTypeSchema,
+    authority: z.string().trim().min(1),
+    title: z.string().trim().min(1),
+    url: nullableSourceUrlSchema,
+    evidenceLevel: evidenceLevelSchema,
+    reviewerStatus: reviewerStatusSchema,
     lastCheckedAt: nullableIsoDateSchema,
-    notes: z.array(nonEmptyTextSchema),
+    notes: z.array(z.string().trim().min(1)),
   })
   .superRefine((source, context) => {
-    if (source.status === "verified" && source.url === null) {
+    if (
+      source.evidenceLevel === "primary_official" &&
+      source.reviewerStatus === "reviewed" &&
+      source.url === null
+    ) {
       context.addIssue({
         code: "custom",
         path: ["url"],
-        message: "A verified source must include its official URL.",
-      });
-    }
-
-    if (source.status === "verified" && source.lastCheckedAt === null) {
-      context.addIssue({
-        code: "custom",
-        path: ["lastCheckedAt"],
-        message: "A verified source must include the date it was checked.",
+        message:
+          "A reviewed primary official source must include its official URL.",
       });
     }
   });
 
-const taxRuleMetadataShape = {
-  schemaVersion: z.literal("1.0.0"),
-  taxYearBE: taxYearBESchema,
-  taxYearCE: z.number().int(),
-  ruleSetId: z.string().regex(/^th-pit-25(?:68|69)-[a-z0-9-]+$/),
-  version: z.string().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/),
-  status: ruleSetStatusSchema,
-  verificationStatus: ruleVerificationStatusSchema,
-  calculationEnabled: z.boolean(),
-  publicationBlocked: z.boolean(),
-  effectiveFrom: nullableIsoDateSchema,
-  effectiveTo: nullableIsoDateSchema,
-  lastReviewedAt: nullableIsoDateSchema,
-  reviewedBy: z.union([nonEmptyTextSchema, z.null()]),
-  scope: z.array(taxCalculationScopeSchema).min(1),
-  disclaimer: nonEmptyTextSchema,
-  sources: z.array(taxRuleSourceMetadataSchema).min(1),
-  notes: z.array(nonEmptyTextSchema).min(1),
-} as const;
-
-export const taxRuleMetadataSchema = z
-  .strictObject(taxRuleMetadataShape)
-  .superRefine((metadata, context) => {
-    const isVerified = metadata.verificationStatus === "verified";
-
-    if (metadata.calculationEnabled && !isVerified) {
-      context.addIssue({
-        code: "custom",
-        path: ["calculationEnabled"],
-        message: "Unverified tax rules cannot be enabled for calculation.",
-      });
-    }
-
-    if (metadata.status === "published" && !isVerified) {
-      context.addIssue({
-        code: "custom",
-        path: ["status"],
-        message: "Unverified tax rules cannot be published.",
-      });
-    }
-
-    if (metadata.status === "published" && metadata.publicationBlocked) {
-      context.addIssue({
-        code: "custom",
-        path: ["publicationBlocked"],
-        message: "A published tax rule set cannot remain publication-blocked.",
-      });
-    }
-  });
-
-export const placeholderTaxRuleMetadataSchema = z.strictObject({
-  ...taxRuleMetadataShape,
-  status: z.literal("draft"),
-  verificationStatus: z.literal("requires_professional_verification"),
-  calculationEnabled: z.literal(false),
-  publicationBlocked: z.literal(true),
-  effectiveFrom: z.null(),
-  effectiveTo: z.null(),
-  lastReviewedAt: z.null(),
-  reviewedBy: z.null(),
+export const taxRuleChangelogEntrySchema = z.strictObject({
+  version: semverVersionSchema,
+  changedAt: isoDateOrTimestampSchema,
+  author: z.string().trim().min(1),
+  description: z.string().trim().min(1),
+  references: z.array(ruleReferenceSchema),
 });
 
-const emptyPlaceholderSectionSchema = z.array(z.never()).length(0);
-
-export const placeholderTaxRuleBundleSchema = z.strictObject({
-  schemaVersion: z.literal("1.0.0"),
-  taxYearBE: taxYearBESchema,
-  ruleSetId: z.string().regex(/^th-pit-25(?:68|69)-[a-z0-9-]+$/),
-  version: z.string().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/),
-  status: z.literal("draft"),
-  verificationStatus: z.literal("requires_professional_verification"),
-  calculationEnabled: z.literal(false),
-  requiresVerification: z.literal(true),
-  sections: z.strictObject({
-    taxBrackets: emptyPlaceholderSectionSchema,
-    incomeTypes: emptyPlaceholderSectionSchema,
-    expenseDeductions: emptyPlaceholderSectionSchema,
-    allowances: emptyPlaceholderSectionSchema,
-    pnd91: emptyPlaceholderSectionSchema,
-    pnd94: emptyPlaceholderSectionSchema,
-  }),
-  notes: z.array(nonEmptyTextSchema).min(1),
-});
-
-export const placeholderTaxRuleSetSchema = z
+export const taxRuleSetMetadataSchema = z
   .strictObject({
-    metadata: placeholderTaxRuleMetadataSchema,
-    bundle: placeholderTaxRuleBundleSchema,
+    schemaVersion: z.literal("1.0.0"),
+    taxYearBE: taxYearBESchema,
+    taxYearCE: z.number().int(),
+    ruleSetId: ruleSetIdSchema,
+    version: semverVersionSchema,
+    status: taxRuleSetStatusSchema,
+    validationStatus: taxRuleSetValidationStatusSchema,
+    notForCalculation: z.boolean(),
+    effectiveFrom: nullableIsoDateSchema,
+    effectiveTo: nullableIsoDateSchema,
+    lastReviewedAt: nullableIsoDateSchema,
+    lastReviewedBy: z.union([z.string().trim().min(1), z.null()]),
+    scope: z.array(taxCalculationScopeSchema).min(1),
+    disclaimer: z.string().trim().min(1),
+    sources: z.array(taxRuleSourceSchema),
+    changelog: z.array(taxRuleChangelogEntrySchema),
+    canonicalChecksum: z.string().trim().min(1).optional(),
+    notes: z.array(z.string().trim().min(1)),
+  })
+  .superRefine((metadata, context) => {
+    if (!metadata.notForCalculation && metadata.status !== "published") {
+      context.addIssue({
+        code: "custom",
+        path: ["notForCalculation"],
+        message: "Only published rule sets can set notForCalculation to false.",
+      });
+    }
+
+    if (
+      metadata.status === "published" &&
+      metadata.validationStatus !== "valid"
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["validationStatus"],
+        message: "A published rule set must have validationStatus = 'valid'.",
+      });
+    }
+  });
+
+export const ruleFamilyManifestSchema = z
+  .strictObject({
+    manifestId: machineIdentifierSchema,
+    taxYearBE: taxYearBESchema,
+    ruleSetId: ruleSetIdSchema,
+    family: ruleFamilySchema,
+    version: semverVersionSchema,
+    status: taxRuleSetStatusSchema,
+    effectiveFrom: nullableIsoDateSchema,
+    effectiveTo: nullableIsoDateSchema,
+    sources: z.array(taxRuleSourceSchema),
+    applicabilityConditions: z.array(z.string().trim().min(1)),
+    reviewerStatus: reviewerStatusSchema,
+    notForCalculation: z.boolean(),
+    exampleOnly: z.boolean().optional(),
+    notes: z.array(z.string().trim().min(1)),
+  })
+  .superRefine((manifest, context) => {
+    if (manifest.exampleOnly && !manifest.notForCalculation) {
+      context.addIssue({
+        code: "custom",
+        path: ["notForCalculation"],
+        message:
+          "Structural sample fixtures must set notForCalculation to true.",
+      });
+    }
+  });
+
+export const taxRuleValidationIssueSchema = z.strictObject({
+  issueCode: machineIdentifierSchema,
+  path: z.array(z.string()),
+  message: z.string().trim().min(1),
+  severity: z.enum(["error", "warning"]),
+});
+
+export const ruleValidationResultSchema = z.strictObject({
+  isValid: z.boolean(),
+  validationStatus: taxRuleSetValidationStatusSchema,
+  issues: z.array(taxRuleValidationIssueSchema),
+});
+
+export const calculationFeatureGateSchema = z.strictObject({
+  summaryTotals: z.enum(["available", "unavailable_until_verified"]),
+  taxEstimate: z.enum(["available", "unavailable_until_verified"]),
+  pnd94Estimate: z.enum(["available", "unavailable_until_verified"]),
+  pnd91Estimate: z.enum(["available", "unavailable_until_verified"]),
+  taxRulePublication: z.enum(["available", "unavailable_until_reviewed"]),
+});
+
+export const taxRuleResolutionSchema = z.strictObject({
+  availability: calculationAvailabilitySchema,
+  metadata: z.union([taxRuleSetMetadataSchema, z.null()]),
+  manifests: z.array(ruleFamilyManifestSchema),
+  validation: ruleValidationResultSchema,
+  featureGates: calculationFeatureGateSchema,
+});
+
+export const taxRuleSetSchema = z
+  .strictObject({
+    metadata: taxRuleSetMetadataSchema,
+    manifests: z.array(ruleFamilyManifestSchema),
   })
   .superRefine((ruleSet, context) => {
-    const identityFields = ["taxYearBE", "ruleSetId", "version"] as const;
-
-    for (const field of identityFields) {
-      if (ruleSet.metadata[field] !== ruleSet.bundle[field]) {
+    for (const manifest of ruleSet.manifests) {
+      if (manifest.taxYearBE !== ruleSet.metadata.taxYearBE) {
         context.addIssue({
           code: "custom",
-          path: ["bundle", field],
-          message: `Bundle ${field} must match its metadata.`,
+          path: ["manifests"],
+          message: `Manifest taxYearBE (${manifest.taxYearBE}) does not match metadata taxYearBE (${ruleSet.metadata.taxYearBE}).`,
+        });
+      }
+      if (manifest.ruleSetId !== ruleSet.metadata.ruleSetId) {
+        context.addIssue({
+          code: "custom",
+          path: ["manifests"],
+          message: `Manifest ruleSetId (${manifest.ruleSetId}) does not match metadata ruleSetId (${ruleSet.metadata.ruleSetId}).`,
         });
       }
     }
   });
 
-export type ParsedTaxRuleMetadata = z.infer<typeof taxRuleMetadataSchema>;
-export type ParsedPlaceholderTaxRuleMetadata = z.infer<
-  typeof placeholderTaxRuleMetadataSchema
->;
-export type ParsedPlaceholderTaxRuleBundle = z.infer<
-  typeof placeholderTaxRuleBundleSchema
->;
-export type ParsedPlaceholderTaxRuleSet = z.infer<
-  typeof placeholderTaxRuleSetSchema
->;
+export type ParsedTaxRuleSetMetadata = z.infer<typeof taxRuleSetMetadataSchema>;
+export type ParsedRuleFamilyManifest = z.infer<typeof ruleFamilyManifestSchema>;
+export type ParsedTaxRuleSet = z.infer<typeof taxRuleSetSchema>;

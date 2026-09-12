@@ -93,15 +93,20 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
     "default-src 'self'; script-src 'self'",
   );
 
-  const registration = await page.evaluate(async () => {
+  await expect
+    .poll(async () => {
+      return page.evaluate(async () => {
+        const readyRegistration = await navigator.serviceWorker.ready;
+        return readyRegistration.active?.state ?? null;
+      });
+    })
+    .toBe("activated");
+
+  const registrationScope = await page.evaluate(async () => {
     const readyRegistration = await navigator.serviceWorker.ready;
-    return {
-      activeState: readyRegistration.active?.state ?? null,
-      scope: readyRegistration.scope,
-    };
+    return readyRegistration.scope;
   });
-  expect(registration.activeState).toBe("activated");
-  expect(registration.scope).toBe("http://127.0.0.1:3000/");
+  expect(registrationScope).toBe("http://127.0.0.1:3000/");
 
   await page.reload();
   await expect

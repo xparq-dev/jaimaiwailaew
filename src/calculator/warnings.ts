@@ -7,6 +7,7 @@ import type {
   CalculatorWorkspace,
 } from "./types";
 import { hasEntriesOutsidePeriod } from "./arithmetic";
+import { isEntryWithinPeriod } from "./utils";
 
 export function buildCalculatorAssumptions(): CalculatorAssumption[] {
   return [
@@ -34,10 +35,8 @@ export function buildCalculatorWarnings(
   workspace: CalculatorWorkspace,
 ): CalculatorWarning[] {
   const warnings: CalculatorWarning[] = [];
-  const incomeInPeriod = workspace.incomeEntries.filter(
-    (entry) =>
-      entry.occurredOn >= workspace.periodStart &&
-      entry.occurredOn <= workspace.periodEnd,
+  const incomeInPeriod = workspace.incomeEntries.filter((entry) =>
+    isEntryWithinPeriod(entry, workspace.periodStart, workspace.periodEnd),
   );
   const expenseNeedsReview = workspace.expenseEntries.filter(
     (entry) =>
@@ -141,10 +140,8 @@ export function computeCompleteness(
   let score = 0;
   const maxScore = 5;
 
-  const incomeInPeriod = workspace.incomeEntries.filter(
-    (entry) =>
-      entry.occurredOn >= workspace.periodStart &&
-      entry.occurredOn <= workspace.periodEnd,
+  const incomeInPeriod = workspace.incomeEntries.filter((entry) =>
+    isEntryWithinPeriod(entry, workspace.periodStart, workspace.periodEnd),
   );
 
   if (incomeInPeriod.length > 0) {

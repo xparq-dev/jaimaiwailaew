@@ -7,6 +7,8 @@ import { decimalStringToSatang } from "@/tax/money";
 
 import {
   allowanceDraftEntryFormSchema,
+  CALCULATOR_STORAGE_KEY_V1,
+  CALCULATOR_STORAGE_KEY_V2,
   CALCULATOR_STORAGE_KEY,
   expenseEntryFormSchema,
   incomeEntryFormSchema,
@@ -32,6 +34,7 @@ import {
   type CreateWorkspaceInput,
 } from "./workspace";
 import { createLocalId, nowIsoTimestamp, sanitizeNote } from "./utils";
+import { migrateLocalStorageV1ToV2 } from "./migration";
 
 interface CalculatorStoreState {
   workspace: CalculatorWorkspace | null;
@@ -79,9 +82,25 @@ function parseMoneyAmount(amount: string) {
 
 function buildIncomeEntry(values: IncomeEntryFormValues): IncomeEntry {
   const timestamp = nowIsoTimestamp();
+  if (values.entryFrequency === "monthly") {
+    return {
+      id: createLocalId(),
+      entryFrequency: "monthly",
+      occurredOn: null,
+      occurredMonth: values.occurredMonth!,
+      categoryCode: values.categoryCode,
+      sourceName: values.sourceName?.trim() || undefined,
+      amountSatang: parseMoneyAmount(values.amount),
+      note: sanitizeNote(values.note),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+  }
   return {
     id: createLocalId(),
-    occurredOn: values.occurredOn,
+    entryFrequency: "one_time",
+    occurredOn: values.occurredOn!,
+    occurredMonth: null,
     categoryCode: values.categoryCode,
     sourceName: values.sourceName?.trim() || undefined,
     amountSatang: parseMoneyAmount(values.amount),
@@ -93,9 +112,25 @@ function buildIncomeEntry(values: IncomeEntryFormValues): IncomeEntry {
 
 function buildExpenseEntry(values: ExpenseEntryFormValues): ExpenseEntry {
   const timestamp = nowIsoTimestamp();
+  if (values.entryFrequency === "monthly") {
+    return {
+      id: createLocalId(),
+      entryFrequency: "monthly",
+      occurredOn: null,
+      occurredMonth: values.occurredMonth!,
+      categoryCode: values.categoryCode,
+      amountSatang: parseMoneyAmount(values.amount),
+      taxRelevanceStatus: values.taxRelevanceStatus,
+      note: sanitizeNote(values.note),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+  }
   return {
     id: createLocalId(),
-    occurredOn: values.occurredOn,
+    entryFrequency: "one_time",
+    occurredOn: values.occurredOn!,
+    occurredMonth: null,
     categoryCode: values.categoryCode,
     amountSatang: parseMoneyAmount(values.amount),
     taxRelevanceStatus: values.taxRelevanceStatus,
@@ -109,9 +144,25 @@ function buildWithholdingEntry(
   values: WithholdingEntryFormValues,
 ): WithholdingEntry {
   const timestamp = nowIsoTimestamp();
+  if (values.entryFrequency === "monthly") {
+    return {
+      id: createLocalId(),
+      entryFrequency: "monthly",
+      occurredOn: null,
+      occurredMonth: values.occurredMonth!,
+      payerName: values.payerName?.trim() || undefined,
+      certificateReference: values.certificateReference?.trim() || undefined,
+      amountSatang: parseMoneyAmount(values.amount),
+      note: sanitizeNote(values.note),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+  }
   return {
     id: createLocalId(),
-    occurredOn: values.occurredOn,
+    entryFrequency: "one_time",
+    occurredOn: values.occurredOn!,
+    occurredMonth: null,
     payerName: values.payerName?.trim() || undefined,
     certificateReference: values.certificateReference?.trim() || undefined,
     amountSatang: parseMoneyAmount(values.amount),
@@ -180,6 +231,14 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
           lastSavedAt: null,
           persistError: null,
         });
+        try {
+          if (typeof localStorage !== "undefined") {
+            localStorage.removeItem(CALCULATOR_STORAGE_KEY_V1);
+            localStorage.removeItem(CALCULATOR_STORAGE_KEY_V2);
+          }
+        } catch {
+          // ignore
+        }
       },
 
       dismissPersistError: () => {
@@ -218,18 +277,31 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
 
         set({
           workspace: touchWorkspace(workspace, {
-            incomeEntries: workspace.incomeEntries.map((entry) =>
-              entry.id === id
-                ? updateEntryTimestamp({
-                    ...entry,
-                    occurredOn: parsed.data.occurredOn,
-                    categoryCode: parsed.data.categoryCode,
-                    sourceName: parsed.data.sourceName?.trim() || undefined,
-                    amountSatang: parseMoneyAmount(parsed.data.amount),
-                    note: sanitizeNote(parsed.data.note),
-                  })
-                : entry,
-            ),
+            incomeEntries: workspace.incomeEntries.map((entry) => {
+              if (entry.id !== id) return entry;
+              if (parsed.data.entryFrequency === "monthly") {
+                return updateEntryTimestamp({
+                  ...entry,
+                  entryFrequency: "monthly" as const,
+                  occurredOn: null,
+                  occurredMonth: parsed.data.occurredMonth!,
+                  categoryCode: parsed.data.categoryCode,
+                  sourceName: parsed.data.sourceName?.trim() || undefined,
+                  amountSatang: parseMoneyAmount(parsed.data.amount),
+                  note: sanitizeNote(parsed.data.note),
+                });
+              }
+              return updateEntryTimestamp({
+                ...entry,
+                entryFrequency: "one_time" as const,
+                occurredOn: parsed.data.occurredOn!,
+                occurredMonth: null,
+                categoryCode: parsed.data.categoryCode,
+                sourceName: parsed.data.sourceName?.trim() || undefined,
+                amountSatang: parseMoneyAmount(parsed.data.amount),
+                note: sanitizeNote(parsed.data.note),
+              });
+            }),
           }),
           lastSavedAt: nowIsoTimestamp(),
         });
@@ -284,18 +356,31 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
 
         set({
           workspace: touchWorkspace(workspace, {
-            expenseEntries: workspace.expenseEntries.map((entry) =>
-              entry.id === id
-                ? updateEntryTimestamp({
-                    ...entry,
-                    occurredOn: parsed.data.occurredOn,
-                    categoryCode: parsed.data.categoryCode,
-                    amountSatang: parseMoneyAmount(parsed.data.amount),
-                    taxRelevanceStatus: parsed.data.taxRelevanceStatus,
-                    note: sanitizeNote(parsed.data.note),
-                  })
-                : entry,
-            ),
+            expenseEntries: workspace.expenseEntries.map((entry) => {
+              if (entry.id !== id) return entry;
+              if (parsed.data.entryFrequency === "monthly") {
+                return updateEntryTimestamp({
+                  ...entry,
+                  entryFrequency: "monthly" as const,
+                  occurredOn: null,
+                  occurredMonth: parsed.data.occurredMonth!,
+                  categoryCode: parsed.data.categoryCode,
+                  amountSatang: parseMoneyAmount(parsed.data.amount),
+                  taxRelevanceStatus: parsed.data.taxRelevanceStatus,
+                  note: sanitizeNote(parsed.data.note),
+                });
+              }
+              return updateEntryTimestamp({
+                ...entry,
+                entryFrequency: "one_time" as const,
+                occurredOn: parsed.data.occurredOn!,
+                occurredMonth: null,
+                categoryCode: parsed.data.categoryCode,
+                amountSatang: parseMoneyAmount(parsed.data.amount),
+                taxRelevanceStatus: parsed.data.taxRelevanceStatus,
+                note: sanitizeNote(parsed.data.note),
+              });
+            }),
           }),
           lastSavedAt: nowIsoTimestamp(),
         });
@@ -353,19 +438,33 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
 
         set({
           workspace: touchWorkspace(workspace, {
-            withholdingEntries: workspace.withholdingEntries.map((entry) =>
-              entry.id === id
-                ? updateEntryTimestamp({
-                    ...entry,
-                    occurredOn: parsed.data.occurredOn,
-                    payerName: parsed.data.payerName?.trim() || undefined,
-                    certificateReference:
-                      parsed.data.certificateReference?.trim() || undefined,
-                    amountSatang: parseMoneyAmount(parsed.data.amount),
-                    note: sanitizeNote(parsed.data.note),
-                  })
-                : entry,
-            ),
+            withholdingEntries: workspace.withholdingEntries.map((entry) => {
+              if (entry.id !== id) return entry;
+              if (parsed.data.entryFrequency === "monthly") {
+                return updateEntryTimestamp({
+                  ...entry,
+                  entryFrequency: "monthly" as const,
+                  occurredOn: null,
+                  occurredMonth: parsed.data.occurredMonth!,
+                  payerName: parsed.data.payerName?.trim() || undefined,
+                  certificateReference:
+                    parsed.data.certificateReference?.trim() || undefined,
+                  amountSatang: parseMoneyAmount(parsed.data.amount),
+                  note: sanitizeNote(parsed.data.note),
+                });
+              }
+              return updateEntryTimestamp({
+                ...entry,
+                entryFrequency: "one_time" as const,
+                occurredOn: parsed.data.occurredOn!,
+                occurredMonth: null,
+                payerName: parsed.data.payerName?.trim() || undefined,
+                certificateReference:
+                  parsed.data.certificateReference?.trim() || undefined,
+                amountSatang: parseMoneyAmount(parsed.data.amount),
+                note: sanitizeNote(parsed.data.note),
+              });
+            }),
           }),
           lastSavedAt: nowIsoTimestamp(),
         });
@@ -470,6 +569,39 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         if (error) {
           state?.clearLocalData();
           return;
+        }
+
+        // Check if migration from v1 is needed (when v2 is empty but v1 exists)
+        if (typeof localStorage !== "undefined") {
+          const v2Raw = localStorage.getItem(CALCULATOR_STORAGE_KEY_V2);
+          const v1Raw = localStorage.getItem(CALCULATOR_STORAGE_KEY_V1);
+
+          if (!v2Raw && v1Raw) {
+            const migrationResult = migrateLocalStorageV1ToV2(localStorage);
+            if (migrationResult.success && migrationResult.workspace) {
+              if (state) {
+                state.workspace = {
+                  ...migrationResult.workspace,
+                  taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(
+                    migrationResult.workspace.taxYearBE,
+                  ),
+                };
+                state.lastSavedAt = migrationResult.lastSavedAt;
+                state.persistError = null;
+              }
+              return;
+            }
+
+            if (!migrationResult.success) {
+              // Migration failed: do NOT delete v1, do NOT crash, show safe Thai error
+              if (state) {
+                state.workspace = null;
+                state.lastSavedAt = null;
+                state.persistError = migrationResult.errorMessage;
+              }
+              return;
+            }
+          }
         }
 
         if (!state?.workspace) {

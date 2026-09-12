@@ -12,17 +12,19 @@ import type {
 } from "./types";
 import {
   formatMonthLabel,
-  isDateWithinPeriod,
-  monthKeyFromDate,
+  getEntryMonthKey,
+  isEntryWithinPeriod,
 } from "./utils";
 
-function filterByPeriod<T extends { occurredOn: string }>(
-  entries: readonly T[],
-  periodStart: string,
-  periodEnd: string,
-): T[] {
+function filterByPeriod<
+  T extends {
+    readonly entryFrequency: "one_time" | "monthly";
+    readonly occurredOn: string | null;
+    readonly occurredMonth: string | null;
+  },
+>(entries: readonly T[], periodStart: string, periodEnd: string): T[] {
   return entries.filter((entry) =>
-    isDateWithinPeriod(entry.occurredOn, periodStart, periodEnd),
+    isEntryWithinPeriod(entry, periodStart, periodEnd),
   );
 }
 
@@ -90,7 +92,10 @@ export function computeMonthlyBreakdown(
 
   const monthKeys = new Set<string>();
   for (const entry of [...incomeInPeriod, ...expenseInPeriod]) {
-    monthKeys.add(monthKeyFromDate(entry.occurredOn));
+    const key = getEntryMonthKey(entry);
+    if (key) {
+      monthKeys.add(key);
+    }
   }
 
   const sortedMonthKeys = [...monthKeys].sort();
@@ -98,12 +103,12 @@ export function computeMonthlyBreakdown(
   return sortedMonthKeys.map((monthKey) => {
     const incomeSatang = sumMoneySatang(
       incomeInPeriod
-        .filter((entry) => monthKeyFromDate(entry.occurredOn) === monthKey)
+        .filter((entry) => getEntryMonthKey(entry) === monthKey)
         .map((entry) => entry.amountSatang),
     );
     const expenseSatang = sumMoneySatang(
       expenseInPeriod
-        .filter((entry) => monthKeyFromDate(entry.occurredOn) === monthKey)
+        .filter((entry) => getEntryMonthKey(entry) === monthKey)
         .map((entry) => entry.amountSatang),
     );
 
@@ -119,7 +124,9 @@ export function computeMonthlyBreakdown(
   });
 }
 
-export function hasEntriesOutsidePeriod(workspace: CalculatorWorkspace) {
+export function hasEntriesOutsidePeriod(
+  workspace: CalculatorWorkspace,
+): boolean {
   const datedEntries = [
     ...workspace.incomeEntries,
     ...workspace.expenseEntries,
@@ -128,11 +135,7 @@ export function hasEntriesOutsidePeriod(workspace: CalculatorWorkspace) {
 
   return datedEntries.some(
     (entry) =>
-      !isDateWithinPeriod(
-        entry.occurredOn,
-        workspace.periodStart,
-        workspace.periodEnd,
-      ),
+      !isEntryWithinPeriod(entry, workspace.periodStart, workspace.periodEnd),
   );
 }
 

@@ -38,6 +38,66 @@ describe("Calculator Warnings, Assumptions, and Completeness", () => {
     expect(warnings.some((w) => w.code === "no-income-in-period")).toBe(true);
   });
 
+  it("does not falsely trigger missing day warning for monthly entries", () => {
+    const input = getDefaultWorkspaceInput(
+      "salaried_employee",
+      2569,
+      "full_year",
+    );
+    const workspace = createCalculatorWorkspace(input);
+
+    const withMonthly = {
+      ...workspace,
+      incomeEntries: [
+        {
+          id: "inc-m1",
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-03",
+          categoryCode: "salary" as const,
+          amountSatang: toMoneySatang(4000000),
+          createdAt: "2026-03-01T00:00:00.000Z",
+          updatedAt: "2026-03-01T00:00:00.000Z",
+        },
+      ],
+    };
+
+    const warnings = buildCalculatorWarnings(withMonthly);
+    // Should NOT have "no-income-in-period"
+    expect(warnings.some((w) => w.code === "no-income-in-period")).toBe(false);
+    // Should NOT have any day missing warning
+    expect(warnings.some((w) => w.message.includes("ขาดวัน"))).toBe(false);
+  });
+
+  it("does not falsely trigger missing month warning for one-time entries", () => {
+    const input = getDefaultWorkspaceInput(
+      "online_seller_business",
+      2569,
+      "first_half",
+    );
+    const workspace = createCalculatorWorkspace(input);
+
+    const withOneTime = {
+      ...workspace,
+      incomeEntries: [
+        {
+          id: "inc-ot1",
+          entryFrequency: "one_time" as const,
+          occurredOn: "2026-03-15",
+          occurredMonth: null,
+          categoryCode: "online_sales" as const,
+          amountSatang: toMoneySatang(500000),
+          createdAt: "2026-03-15T00:00:00.000Z",
+          updatedAt: "2026-03-15T00:00:00.000Z",
+        },
+      ],
+    };
+
+    const warnings = buildCalculatorWarnings(withOneTime);
+    expect(warnings.some((w) => w.code === "no-income-in-period")).toBe(false);
+    expect(warnings.some((w) => w.message.includes("ขาดเดือน"))).toBe(false);
+  });
+
   it("generates warning when expenses have needs_review or uncategorized status", () => {
     const input = getDefaultWorkspaceInput(
       "online_seller_business",
@@ -51,7 +111,9 @@ describe("Calculator Warnings, Assumptions, and Completeness", () => {
       incomeEntries: [
         {
           id: "inc-1",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-02-10",
+          occurredMonth: null,
           categoryCode: "online_sales" as const,
           amountSatang: toMoneySatang(100000),
           createdAt: "2026-02-10T00:00:00.000Z",
@@ -61,7 +123,9 @@ describe("Calculator Warnings, Assumptions, and Completeness", () => {
       expenseEntries: [
         {
           id: "exp-1",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-02-15",
+          occurredMonth: null,
           categoryCode: "other" as const,
           taxRelevanceStatus: "needs_review" as const,
           amountSatang: toMoneySatang(20000),
@@ -84,7 +148,9 @@ describe("Calculator Warnings, Assumptions, and Completeness", () => {
       withholdingEntries: [
         {
           id: "wht-1",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-03-01",
+          occurredMonth: null,
           amountSatang: toMoneySatang(5000),
           createdAt: "2026-03-01T00:00:00.000Z",
           updatedAt: "2026-03-01T00:00:00.000Z",

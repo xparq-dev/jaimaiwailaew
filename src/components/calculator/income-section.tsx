@@ -14,7 +14,7 @@ import {
   type IncomeEntryFormValues,
 } from "@/calculator/schemas";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
-import { formatThaiDate, isDateWithinPeriod } from "@/calculator/utils";
+import { formatEntryPeriod, isEntryWithinPeriod } from "@/calculator/utils";
 import { Button } from "@/components/ui/button";
 
 import { CalculatorLayout } from "./calculator-layout";
@@ -27,7 +27,9 @@ import {
 } from "./entry-form-dialog";
 
 const emptyForm: IncomeEntryFormValues = {
+  entryFrequency: "one_time",
   occurredOn: "",
+  occurredMonth: "",
   categoryCode: "online_sales",
   sourceName: "",
   amount: "",
@@ -55,11 +57,17 @@ export function IncomeSectionPage() {
     return sortEntriesByDateDesc(workspace.incomeEntries);
   }, [workspace]);
 
-  const defaultValues = useMemo(() => {
-    if (!editingId || !workspace) {
+  const defaultValues = useMemo((): IncomeEntryFormValues => {
+    if (!workspace) {
+      return emptyForm;
+    }
+
+    if (!editingId) {
       return {
         ...emptyForm,
-        occurredOn: workspace?.periodStart ?? "",
+        entryFrequency: "one_time",
+        occurredOn: workspace.periodStart,
+        occurredMonth: workspace.periodStart.slice(0, 7),
       };
     }
 
@@ -69,7 +77,9 @@ export function IncomeSectionPage() {
     }
 
     return {
-      occurredOn: entry.occurredOn,
+      entryFrequency: entry.entryFrequency,
+      occurredOn: entry.occurredOn ?? "",
+      occurredMonth: entry.occurredMonth ?? "",
       categoryCode: entry.categoryCode,
       sourceName: entry.sourceName ?? "",
       amount: (entry.amountSatang / 100).toFixed(2),
@@ -136,7 +146,10 @@ export function IncomeSectionPage() {
             <table className="border-border w-full min-w-[640px] border-separate border-spacing-0 overflow-hidden rounded-2xl border text-sm">
               <thead className="bg-muted/60">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">วันที่</th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    วันที่ / เดือน
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">รูปแบบ</th>
                   <th className="px-4 py-3 text-left font-semibold">
                     หมวดหมู่
                   </th>
@@ -153,15 +166,20 @@ export function IncomeSectionPage() {
               </thead>
               <tbody>
                 {entries.map((entry) => {
-                  const inPeriod = isDateWithinPeriod(
-                    entry.occurredOn,
+                  const inPeriod = isEntryWithinPeriod(
+                    entry,
                     workspace.periodStart,
                     workspace.periodEnd,
                   );
                   return (
                     <tr className="border-border border-t" key={entry.id}>
+                      <td className="px-4 py-3">{formatEntryPeriod(entry)}</td>
                       <td className="px-4 py-3">
-                        {formatThaiDate(entry.occurredOn)}
+                        <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium">
+                          {entry.entryFrequency === "monthly"
+                            ? "รายเดือน"
+                            : "ระบุวัน"}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         {getIncomeCategoryLabel(entry.categoryCode)}
@@ -173,7 +191,7 @@ export function IncomeSectionPage() {
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           {!inPeriod ? (
-                            <span className="text-warning-strong text-xs">
+                            <span className="text-warning-strong text-xs font-medium">
                               นอกช่วง
                             </span>
                           ) : null}
@@ -208,52 +226,71 @@ export function IncomeSectionPage() {
           </div>
 
           <ul className="space-y-3 lg:hidden">
-            {entries.map((entry) => (
-              <li
-                className="border-border bg-card rounded-2xl border p-4 shadow-sm"
-                key={entry.id}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">
-                      {getIncomeCategoryLabel(entry.categoryCode)}
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      {formatThaiDate(entry.occurredOn)}
-                    </p>
-                    {entry.sourceName ? (
+            {entries.map((entry) => {
+              const inPeriod = isEntryWithinPeriod(
+                entry,
+                workspace.periodStart,
+                workspace.periodEnd,
+              );
+              return (
+                <li
+                  className="border-border bg-card rounded-2xl border p-4 shadow-sm"
+                  key={entry.id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">
+                          {getIncomeCategoryLabel(entry.categoryCode)}
+                        </p>
+                        <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium">
+                          {entry.entryFrequency === "monthly"
+                            ? "รายเดือน"
+                            : "ระบุวัน"}
+                        </span>
+                      </div>
                       <p className="text-muted-foreground mt-1 text-sm">
-                        {entry.sourceName}
+                        {formatEntryPeriod(entry)}
                       </p>
-                    ) : null}
+                      {entry.sourceName ? (
+                        <p className="text-muted-foreground mt-1 text-sm">
+                          {entry.sourceName}
+                        </p>
+                      ) : null}
+                      {!inPeriod ? (
+                        <p className="text-warning-strong mt-1 text-xs font-medium">
+                          อยู่นอกช่วงที่เลือก
+                        </p>
+                      ) : null}
+                    </div>
+                    <p className="font-semibold">
+                      {formatThaiBaht(entry.amountSatang)}
+                    </p>
                   </div>
-                  <p className="font-semibold">
-                    {formatThaiBaht(entry.amountSatang)}
-                  </p>
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    className="flex-1"
-                    onClick={() => {
-                      setEditingId(entry.id);
-                      setDialogOpen(true);
-                    }}
-                    type="button"
-                    variant="secondary"
-                  >
-                    แก้ไข
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => setDeleteTargetId(entry.id)}
-                    type="button"
-                    variant="danger"
-                  >
-                    ลบ
-                  </Button>
-                </div>
-              </li>
-            ))}
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      className="flex-1"
+                      onClick={() => {
+                        setEditingId(entry.id);
+                        setDialogOpen(true);
+                      }}
+                      type="button"
+                      variant="secondary"
+                    >
+                      แก้ไข
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      onClick={() => setDeleteTargetId(entry.id)}
+                      type="button"
+                      variant="danger"
+                    >
+                      ลบ
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -277,55 +314,125 @@ export function IncomeSectionPage() {
         submitLabel={editingId ? "บันทึกการแก้ไข" : "เพิ่มรายการ"}
         title={editingId ? "แก้ไขรายรับ" : "เพิ่มรายรับ"}
       >
-        {(form) => (
-          <>
-            <FormField
-              error={form.formState.errors.occurredOn?.message}
-              id="income-date"
-              label="วันที่"
-            >
-              <TextInput
-                id="income-date"
-                type="date"
-                {...form.register("occurredOn")}
-              />
-            </FormField>
-            <FormField
-              error={form.formState.errors.categoryCode?.message}
-              hint="หมวดนี้ใช้เพื่อจัดระเบียบข้อมูลส่วนตัวเท่านั้น ไม่ใช่การจัดประเภทเงินได้หรือคำวินิจฉัยภาษีตามกฎหมาย หากต้องใช้ยื่นภาษี โปรดตรวจสอบกับแหล่งทางการหรือผู้เชี่ยวชาญ"
-              id="income-category"
-              label="หมวดหมู่รายรับ"
-            >
-              <SelectInput
+        {(form) => {
+          const frequency = form.watch("entryFrequency");
+          return (
+            <>
+              <div className="space-y-2">
+                <label className="text-foreground block text-sm font-medium">
+                  รูปแบบรายการ *
+                </label>
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <input
+                      type="radio"
+                      value="one_time"
+                      {...form.register("entryFrequency", {
+                        onChange: () => {
+                          form.setValue("occurredMonth", "");
+                          if (!form.getValues("occurredOn")) {
+                            form.setValue("occurredOn", workspace.periodStart);
+                          }
+                        },
+                      })}
+                    />
+                    <span>ระบุวัน / รายการครั้งเดียว</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <input
+                      type="radio"
+                      value="monthly"
+                      {...form.register("entryFrequency", {
+                        onChange: () => {
+                          form.setValue("occurredOn", "");
+                          if (!form.getValues("occurredMonth")) {
+                            form.setValue(
+                              "occurredMonth",
+                              workspace.periodStart.slice(0, 7),
+                            );
+                          }
+                        },
+                      })}
+                    />
+                    <span>ระบุเดือน / รายการรายเดือน</span>
+                  </label>
+                </div>
+              </div>
+
+              {frequency === "one_time" ? (
+                <FormField
+                  error={form.formState.errors.occurredOn?.message}
+                  hint="เหมาะกับยอดขาย ค่าขนส่ง หรืองานที่เกิดขึ้นเป็นครั้ง ๆ"
+                  id="income-date"
+                  label="วันที่เกิดรายการ *"
+                >
+                  <TextInput
+                    id="income-date"
+                    type="date"
+                    {...form.register("occurredOn")}
+                  />
+                </FormField>
+              ) : (
+                <FormField
+                  error={form.formState.errors.occurredMonth?.message}
+                  hint="เหมาะกับเงินเดือน ค่าเช่า ค่าสมาชิก หรือค่าใช้จ่ายที่สรุปเป็นรายเดือน"
+                  id="income-month"
+                  label="เดือนที่เกิดรายการ *"
+                >
+                  <TextInput
+                    id="income-month"
+                    type="month"
+                    {...form.register("occurredMonth")}
+                  />
+                </FormField>
+              )}
+
+              <FormField
+                error={form.formState.errors.categoryCode?.message}
+                hint="หมวดนี้ใช้เพื่อจัดระเบียบข้อมูลส่วนตัวเท่านั้น ไม่ใช่การจัดประเภทเงินได้หรือคำวินิจฉัยภาษีตามกฎหมาย หากต้องใช้ยื่นภาษี โปรดตรวจสอบกับแหล่งทางการหรือผู้เชี่ยวชาญ"
                 id="income-category"
-                {...form.register("categoryCode")}
+                label="หมวดหมู่รายรับ"
               >
-                {INCOME_CATEGORY_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.label}
-                  </option>
-                ))}
-              </SelectInput>
-            </FormField>
-            <FormField id="income-source" label="แหล่งรายได้ (ไม่บังคับ)">
-              <TextInput id="income-source" {...form.register("sourceName")} />
-            </FormField>
-            <FormField
-              error={form.formState.errors.amount?.message}
-              id="income-amount"
-              label="จำนวนเงิน (บาท)"
-            >
-              <TextInput
+                <SelectInput
+                  id="income-category"
+                  {...form.register("categoryCode")}
+                >
+                  {INCOME_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SelectInput>
+              </FormField>
+              <FormField id="income-source" label="แหล่งรายได้ (ไม่บังคับ)">
+                <TextInput
+                  id="income-source"
+                  placeholder="เช่น Shopee, ลูกค้า A, เงินเดือน"
+                  {...form.register("sourceName")}
+                />
+              </FormField>
+              <FormField
+                error={form.formState.errors.amount?.message}
                 id="income-amount"
-                inputMode="decimal"
-                {...form.register("amount")}
-              />
-            </FormField>
-            <FormField id="income-note" label="หมายเหตุ (ไม่บังคับ)">
-              <TextAreaInput id="income-note" {...form.register("note")} />
-            </FormField>
-          </>
-        )}
+                label="จำนวนเงิน (บาท) *"
+              >
+                <TextInput
+                  id="income-amount"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  {...form.register("amount")}
+                />
+              </FormField>
+              <FormField id="income-note" label="หมายเหตุ (ไม่บังคับ)">
+                <TextAreaInput
+                  id="income-note"
+                  placeholder="รายละเอียดเพิ่มเติม"
+                  {...form.register("note")}
+                />
+              </FormField>
+            </>
+          );
+        }}
       </EntryFormDialog>
 
       {deleteTargetId ? (

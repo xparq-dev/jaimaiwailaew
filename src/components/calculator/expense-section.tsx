@@ -15,10 +15,11 @@ import {
   type ExpenseEntryFormValues,
 } from "@/calculator/schemas";
 import { useCalculatorStore } from "@/calculator/store";
-import { formatThaiDate, isDateWithinPeriod } from "@/calculator/utils";
+import { formatEntryPeriod, isEntryWithinPeriod } from "@/calculator/utils";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
 import { Button } from "@/components/ui/button";
-import { formatThaiBaht, type MoneySatang } from "@/tax/money";
+import { formatThaiBaht } from "@/tax/money";
+import type { ExpenseEntry } from "@/calculator/types";
 
 import { CalculatorLayout } from "./calculator-layout";
 import {
@@ -30,7 +31,9 @@ import {
 } from "./entry-form-dialog";
 
 const emptyForm: ExpenseEntryFormValues = {
+  entryFrequency: "one_time",
   occurredOn: "",
+  occurredMonth: "",
   categoryCode: "shipping",
   amount: "",
   taxRelevanceStatus: "needs_review",
@@ -56,17 +59,24 @@ export function ExpenseSectionPage() {
     [workspace],
   );
 
-  const defaultValues = useMemo(() => {
+  const defaultValues = useMemo((): ExpenseEntryFormValues => {
     if (!workspace) return emptyForm;
     if (!editingId) {
-      return { ...emptyForm, occurredOn: workspace.periodStart };
+      return {
+        ...emptyForm,
+        entryFrequency: "one_time",
+        occurredOn: workspace.periodStart,
+        occurredMonth: workspace.periodStart.slice(0, 7),
+      };
     }
     const entry = workspace.expenseEntries.find(
       (item) => item.id === editingId,
     );
     if (!entry) return emptyForm;
     return {
-      occurredOn: entry.occurredOn,
+      entryFrequency: entry.entryFrequency,
+      occurredOn: entry.occurredOn ?? "",
+      occurredMonth: entry.occurredMonth ?? "",
       categoryCode: entry.categoryCode,
       amount: (entry.amountSatang / 100).toFixed(2),
       taxRelevanceStatus: entry.taxRelevanceStatus,
@@ -112,9 +122,14 @@ export function ExpenseSectionPage() {
           periodStart={workspace.periodStart}
           renderMeta={(entry) => (
             <>
-              <p className="font-semibold">
-                {getExpenseCategoryLabel(entry.categoryCode)}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold">
+                  {getExpenseCategoryLabel(entry.categoryCode)}
+                </p>
+                <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium">
+                  {entry.entryFrequency === "monthly" ? "รายเดือน" : "ระบุวัน"}
+                </span>
+              </div>
               <p className="text-muted-foreground mt-1 text-sm">
                 {getExpenseStatusLabel(entry.taxRelevanceStatus)}
               </p>
@@ -141,68 +156,134 @@ export function ExpenseSectionPage() {
         submitLabel={editingId ? "บันทึกการแก้ไข" : "เพิ่มรายการ"}
         title={editingId ? "แก้ไขรายจ่าย" : "เพิ่มรายจ่าย"}
       >
-        {(form) => (
-          <>
-            <FormField
-              error={form.formState.errors.occurredOn?.message}
-              id="expense-date"
-              label="วันที่"
-            >
-              <TextInput
-                id="expense-date"
-                type="date"
-                {...form.register("occurredOn")}
-              />
-            </FormField>
-            <FormField
-              error={form.formState.errors.categoryCode?.message}
-              id="expense-category"
-              label="ประเภทรายจ่าย"
-            >
-              <SelectInput
+        {(form) => {
+          const frequency = form.watch("entryFrequency");
+          return (
+            <>
+              <div className="space-y-2">
+                <label className="text-foreground block text-sm font-medium">
+                  รูปแบบรายการ *
+                </label>
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <input
+                      type="radio"
+                      value="one_time"
+                      {...form.register("entryFrequency", {
+                        onChange: () => {
+                          form.setValue("occurredMonth", "");
+                          if (!form.getValues("occurredOn")) {
+                            form.setValue("occurredOn", workspace.periodStart);
+                          }
+                        },
+                      })}
+                    />
+                    <span>ระบุวัน / รายการครั้งเดียว</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <input
+                      type="radio"
+                      value="monthly"
+                      {...form.register("entryFrequency", {
+                        onChange: () => {
+                          form.setValue("occurredOn", "");
+                          if (!form.getValues("occurredMonth")) {
+                            form.setValue(
+                              "occurredMonth",
+                              workspace.periodStart.slice(0, 7),
+                            );
+                          }
+                        },
+                      })}
+                    />
+                    <span>ระบุเดือน / รายการรายเดือน</span>
+                  </label>
+                </div>
+              </div>
+
+              {frequency === "one_time" ? (
+                <FormField
+                  error={form.formState.errors.occurredOn?.message}
+                  hint="เหมาะกับยอดขาย ค่าขนส่ง หรืองานที่เกิดขึ้นเป็นครั้ง ๆ"
+                  id="expense-date"
+                  label="วันที่เกิดรายการ *"
+                >
+                  <TextInput
+                    id="expense-date"
+                    type="date"
+                    {...form.register("occurredOn")}
+                  />
+                </FormField>
+              ) : (
+                <FormField
+                  error={form.formState.errors.occurredMonth?.message}
+                  hint="เหมาะกับเงินเดือน ค่าเช่า ค่าสมาชิก หรือค่าใช้จ่ายที่สรุปเป็นรายเดือน"
+                  id="expense-month"
+                  label="เดือนที่เกิดรายการ *"
+                >
+                  <TextInput
+                    id="expense-month"
+                    type="month"
+                    {...form.register("occurredMonth")}
+                  />
+                </FormField>
+              )}
+
+              <FormField
+                error={form.formState.errors.categoryCode?.message}
                 id="expense-category"
-                {...form.register("categoryCode")}
+                label="ประเภทรายจ่าย"
               >
-                {EXPENSE_CATEGORY_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.label}
-                  </option>
-                ))}
-              </SelectInput>
-            </FormField>
-            <FormField
-              error={form.formState.errors.taxRelevanceStatus?.message}
-              hint="สถานะนี้ใช้ช่วยตรวจสอบเท่านั้น ไม่ใช่คำวินิจฉัยทางภาษี"
-              id="expense-status"
-              label="สถานะการตรวจสอบ"
-            >
-              <SelectInput
+                <SelectInput
+                  id="expense-category"
+                  {...form.register("categoryCode")}
+                >
+                  {EXPENSE_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SelectInput>
+              </FormField>
+              <FormField
+                error={form.formState.errors.taxRelevanceStatus?.message}
+                hint="สถานะนี้ใช้ช่วยตรวจสอบเท่านั้น ไม่ใช่คำวินิจฉัยทางภาษี"
                 id="expense-status"
-                {...form.register("taxRelevanceStatus")}
+                label="สถานะการตรวจสอบ"
               >
-                {EXPENSE_STATUS_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.label}
-                  </option>
-                ))}
-              </SelectInput>
-            </FormField>
-            <FormField
-              error={form.formState.errors.amount?.message}
-              id="expense-amount"
-              label="จำนวนเงิน (บาท)"
-            >
-              <TextInput
+                <SelectInput
+                  id="expense-status"
+                  {...form.register("taxRelevanceStatus")}
+                >
+                  {EXPENSE_STATUS_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SelectInput>
+              </FormField>
+              <FormField
+                error={form.formState.errors.amount?.message}
                 id="expense-amount"
-                inputMode="decimal"
-                {...form.register("amount")}
-              />
-            </FormField>
-            <FormField id="expense-note" label="หมายเหตุ (ไม่บังคับ)">
-              <TextAreaInput id="expense-note" {...form.register("note")} />
-            </FormField>
-          </>
-        )}
+                label="จำนวนเงิน (บาท) *"
+              >
+                <TextInput
+                  id="expense-amount"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  {...form.register("amount")}
+                />
+              </FormField>
+              <FormField id="expense-note" label="หมายเหตุ (ไม่บังคับ)">
+                <TextAreaInput
+                  id="expense-note"
+                  placeholder="รายละเอียดเพิ่มเติม"
+                  {...form.register("note")}
+                />
+              </FormField>
+            </>
+          );
+        }}
       </EntryFormDialog>
       <DeleteDialog
         onCancel={() => setDeleteTargetId(null)}
@@ -285,9 +366,7 @@ function FloatingAddButton({
   );
 }
 
-function EntryCards<
-  T extends { id: string; occurredOn: string; amountSatang: MoneySatang },
->({
+function EntryCards({
   entries,
   periodStart,
   periodEnd,
@@ -295,10 +374,10 @@ function EntryCards<
   onEdit,
   onDelete,
 }: {
-  entries: T[];
+  entries: ExpenseEntry[];
   periodStart: string;
   periodEnd: string;
-  renderMeta: (entry: T) => React.ReactNode;
+  renderMeta: (entry: ExpenseEntry) => React.ReactNode;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
@@ -313,10 +392,10 @@ function EntryCards<
             <div>
               {renderMeta(entry)}
               <p className="text-muted-foreground mt-1 text-sm">
-                {formatThaiDate(entry.occurredOn)}
+                {formatEntryPeriod(entry)}
               </p>
-              {!isDateWithinPeriod(entry.occurredOn, periodStart, periodEnd) ? (
-                <p className="text-warning-strong mt-1 text-xs">
+              {!isEntryWithinPeriod(entry, periodStart, periodEnd) ? (
+                <p className="text-warning-strong mt-1 text-xs font-medium">
                   อยู่นอกช่วงที่เลือก
                 </p>
               ) : null}

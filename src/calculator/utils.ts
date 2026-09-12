@@ -1,3 +1,5 @@
+import type { EntryFrequency } from "./types";
+
 export function createLocalId(): string {
   if (
     typeof globalThis.crypto !== "undefined" &&
@@ -30,6 +32,67 @@ export function isDateWithinPeriod(
   return date >= periodStart && date <= periodEnd;
 }
 
+export function isMonthWithinPeriod(
+  month: string,
+  periodStart: string,
+  periodEnd: string,
+): boolean {
+  const startMonth = periodStart.slice(0, 7);
+  const endMonth = periodEnd.slice(0, 7);
+  return month >= startMonth && month <= endMonth;
+}
+
+export function isEntryWithinPeriod(
+  entry: {
+    readonly entryFrequency: EntryFrequency;
+    readonly occurredOn: string | null;
+    readonly occurredMonth: string | null;
+  },
+  periodStart: string,
+  periodEnd: string,
+): boolean {
+  if (entry.entryFrequency === "one_time" && entry.occurredOn) {
+    return isDateWithinPeriod(entry.occurredOn, periodStart, periodEnd);
+  }
+  if (entry.entryFrequency === "monthly" && entry.occurredMonth) {
+    return isMonthWithinPeriod(entry.occurredMonth, periodStart, periodEnd);
+  }
+  return false;
+}
+
+export function getEntryMonthKey(entry: {
+  readonly entryFrequency: EntryFrequency;
+  readonly occurredOn: string | null;
+  readonly occurredMonth: string | null;
+}): string {
+  if (entry.entryFrequency === "monthly" && entry.occurredMonth) {
+    return entry.occurredMonth;
+  }
+  if (entry.entryFrequency === "one_time" && entry.occurredOn) {
+    return entry.occurredOn.slice(0, 7);
+  }
+  return "";
+}
+
+/**
+ * Generates a pure sort key for chronological descending ordering.
+ * For one_time: uses occurredOn directly (e.g. "2026-03-15").
+ * For monthly: uses occurredMonth + "-01" so that it groups with that month (e.g. "2026-03-01").
+ */
+export function getEntryChronologicalSortKey(entry: {
+  readonly entryFrequency: EntryFrequency;
+  readonly occurredOn: string | null;
+  readonly occurredMonth: string | null;
+}): string {
+  if (entry.entryFrequency === "one_time" && entry.occurredOn) {
+    return entry.occurredOn;
+  }
+  if (entry.entryFrequency === "monthly" && entry.occurredMonth) {
+    return `${entry.occurredMonth}-01`;
+  }
+  return "";
+}
+
 export function compareDatesDescending(a: string, b: string): number {
   if (a === b) {
     return 0;
@@ -59,6 +122,32 @@ export function formatThaiDate(isoDate: string): string {
     month: "short",
     year: "numeric",
   }).format(new Date(year, month - 1, day));
+}
+
+export function formatThaiMonthYear(isoMonth: string): string {
+  const [year, month] = isoMonth.split("-").map(Number);
+  if (!year || !month) {
+    return isoMonth;
+  }
+
+  return new Intl.DateTimeFormat("th-TH", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, month - 1, 1));
+}
+
+export function formatEntryPeriod(entry: {
+  readonly entryFrequency: EntryFrequency;
+  readonly occurredOn: string | null;
+  readonly occurredMonth: string | null;
+}): string {
+  if (entry.entryFrequency === "monthly" && entry.occurredMonth) {
+    return formatThaiMonthYear(entry.occurredMonth);
+  }
+  if (entry.entryFrequency === "one_time" && entry.occurredOn) {
+    return formatThaiDate(entry.occurredOn);
+  }
+  return "—";
 }
 
 export function formatThaiDateTime(isoTimestamp: string): string {

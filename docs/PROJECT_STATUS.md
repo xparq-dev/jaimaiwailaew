@@ -8,11 +8,14 @@
 
 ## สถานะปัจจุบัน
 
-โครงการดำเนินงานถึง **Phase 1B — Calculator UX (Local-only)** บน branch `feat/calculator-ux` โดยพัฒนา Wizard, Local workspace, CRUD รายรับ-รายจ่าย-ภาษีหัก ณ ที่จ่าย-ค่าลดหย่อนแบบร่าง, Arithmetic totals, Monthly breakdown, คำเตือน/สมมติฐาน, Summary page และ Offline shell สำเร็จครบถ้วน 100%
+โครงการดำเนินงานถึง **Phase 1B UX Hotfix** บน branch `fix/calculator-local-data-and-monthly-entry` โดยปรับปรุงจุดบกพร่องสำคัญ 2 จุด:
+1. **Compact Privacy Indicator:** ย้ายตำแหน่งและลดความเด่นของข้อความเป็น inline status control กะทัดรัดใต้ heading พร้อมเปิด dialog รายละเอียดความเป็นส่วนตัวและปุ่มล้างข้อมูลได้อย่างปลอดภัย
+2. **Entry Frequency:** เพิ่มตัวเลือกระบุความถี่ของรายการทั้งแบบ `one_time` (ระบุวัน / รายการครั้งเดียว) และ `monthly` (ระบุเดือน / รายการรายเดือน) พร้อมระบบ Atomic-like Local Storage Migration (v1 → v2) แบบ fail-safe
 
 - Phase 0 foundation: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
 - Phase 1A Tax Rule Engine: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
-- Phase 1B Calculator UX: **พัฒนาและทดสอบผ่านครบ 100% (PASS)** (รออนุมัติจาก Owner)
+- Phase 1B Calculator UX: เสร็จสมบูรณ์ (merge เข้า main แล้วผ่าน PR #5)
+- Phase 1B UX Hotfix: **พัฒนาและทดสอบผ่านครบ 100% (PASS)** (รอบันทึกผลและอนุมัติจาก Owner)
 - Search indexing: ปิดด้วย `noindex`
 - Tax rule data: มีเฉพาะ placeholder ที่ยังไม่ผ่านการตรวจสอบ (`unverified`, `notForCalculation: true`)
 - Tax calculation execution: บล็อกตาม fail-closed policy (แสดงเฉพาะผลรวมเลขคณิต)
@@ -24,9 +27,9 @@
 | --- | --- | --- |
 | GitHub repository | ผ่าน | <https://github.com/xparq-dev/jaimaiwailaew> |
 | Vercel Production | ผ่าน | <https://jaimaiwailaew.vercel.app> |
-| Git branch | ผ่าน | Branch `feat/calculator-ux` พัฒนา Phase 1B เสร็จสิ้น |
+| Git branch | ผ่าน | Branch `fix/calculator-local-data-and-monthly-entry` พัฒนา UX Hotfix เสร็จสิ้น |
 | Runtime | ผ่าน | Node.js 22.x (`^22.12.0`) |
-| Phase 1B Calculator UX | ผ่าน | Local-only CRUD, Wizard, Arithmetic totals, Offline SW, 51 Unit tests & E2E tests ผ่าน 100% |
+| UX Hotfix (Privacy & Frequency) | ผ่าน | Compact indicator, monthly/one-time entry, v1→v2 migration, 70 unit tests & E2E tests ผ่าน 100% |
 | Secret & Privacy hygiene | ผ่าน | ไม่พบ secret, ข้อมูลการเงินเก็บเฉพาะในเครื่องผู้ใช้ ไม่ส่งออกเครือข่าย |
 
 ## รายการที่ยังไม่ปิด (External / Legal Gates)
@@ -37,5 +40,5 @@
 
 ## Gate ก่อนเริ่มงานถัดไป
 
-1. Owner ตรวจรายงาน Phase 1B และอนุมัติ commit/push/PR
+1. Owner ตรวจรายงาน UX Hotfix และอนุมัติ commit/push/PR
 2. ห้ามเริ่ม Phase 1C (`04_PDFExport.md`) จนกว่าจะได้รับอนุมัติขอบเขตใหม่

@@ -1,0 +1,42 @@
+"use client";
+
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
+
+import { Button } from "@/components/ui/button";
+import { useLocale } from "@/components/providers/locale-provider";
+
+const subscribeToHydration = () => () => undefined;
+const getClientHydrationSnapshot = () => true;
+const getServerHydrationSnapshot = () => false;
+
+export function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const { dictionary, locale } = useLocale();
+  const mounted = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot,
+  );
+
+  const isDark = mounted && resolvedTheme === "dark";
+
+  return (
+    <Button
+      aria-label={dictionary.common.theme}
+      disabled={!mounted}
+      lang={locale}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      size="icon"
+      type="button"
+      variant="ghost"
+    >
+      {isDark ? (
+        <Sun aria-hidden="true" className="size-5" />
+      ) : (
+        <Moon aria-hidden="true" className="size-5" />
+      )}
+    </Button>
+  );
+}

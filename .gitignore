@@ -1,0 +1,30 @@
+# dependencies
+/node_modules
+
+# Next.js
+/.next/
+/out/
+
+# testing
+/coverage/
+/playwright-report/
+/test-results/
+
+# production
+/build/
+
+# local environment files (the template is intentionally tracked)
+.env*
+!.env.example
+
+# local tooling
+.DS_Store
+*.pem
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Vercel
+.vercel

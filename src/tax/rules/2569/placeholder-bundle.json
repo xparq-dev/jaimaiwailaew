@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "taxYearBE": 2569,
+  "ruleSetId": "th-pit-2569-placeholder-v0",
+  "version": "0.0.0-unverified",
+  "status": "draft",
+  "verificationStatus": "requires_professional_verification",
+  "calculationEnabled": false,
+  "requiresVerification": true,
+  "sections": {
+    "taxBrackets": [],
+    "incomeTypes": [],
+    "expenseDeductions": [],
+    "allowances": [],
+    "pnd91": [],
+    "pnd94": []
+  },
+  "notes": [
+    "Placeholder only. No tax values are present and calculation is disabled."
+  ]
+}

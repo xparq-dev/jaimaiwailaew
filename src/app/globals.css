@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-border: var(--border);
+  --color-focus: var(--focus);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-active-foreground: var(--sidebar-active-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-success-strong: var(--success-strong);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-strong: var(--warning-strong);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-noto-sans-thai), "Leelawadee UI", Tahoma, sans-serif;
+  --font-mono: "Inter", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+}
+
+:root {
+  color-scheme: light;
+  --background: #f5f7fa;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --muted: #edf1f6;
+  --muted-foreground: #475569;
+  --primary: #0b1f3a;
+  --primary-foreground: #ffffff;
+  --secondary: #0e8f68;
+  --secondary-foreground: #ffffff;
+  --border: #d8e0ea;
+  --focus: #2563eb;
+  --sidebar: #ffffff;
+  --sidebar-active: #e8eef8;
+  --sidebar-active-foreground: #0b1f3a;
+  --success-soft: #e5f7f0;
+  --success-strong: #087052;
+  --warning: #b45309;
+  --warning-soft: #fff7df;
+  --warning-strong: #85400a;
+  --danger: #b91c1c;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0b1220;
+  --foreground: #f8fafc;
+  --card: #121c2d;
+  --card-foreground: #f8fafc;
+  --muted: #1a273b;
+  --muted-foreground: #a9b7ca;
+  --primary: #dce8f8;
+  --primary-foreground: #0b1f3a;
+  --secondary: #3dd6a1;
+  --secondary-foreground: #06271d;
+  --border: #293548;
+  --focus: #60a5fa;
+  --sidebar: #0d1727;
+  --sidebar-active: #1d304b;
+  --sidebar-active-foreground: #f8fafc;
+  --success-soft: #0c352b;
+  --success-strong: #7ce5bf;
+  --warning: #fbbf24;
+  --warning-soft: #3b2c0c;
+  --warning-strong: #fcd876;
+  --danger: #f87171;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  min-width: 20rem;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-sans-thai), "Leelawadee UI", Tahoma, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--focus) 24%, transparent);
+}
+
+.financial-figures {
+  font-family: var(--font-noto-sans-thai), "Leelawadee UI", Tahoma, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

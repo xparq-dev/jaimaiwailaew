@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taxYearBE": 2568,
+  "taxYearCE": 2025,
+  "ruleSetId": "th-pit-2568-placeholder-v0",
+  "version": "0.0.0-unverified",
+  "status": "draft",
+  "verificationStatus": "requires_professional_verification",
+  "calculationEnabled": false,
+  "publicationBlocked": true,
+  "effectiveFrom": null,
+  "effectiveTo": null,
+  "lastReviewedAt": null,
+  "reviewedBy": null,
+  "scope": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
+  "disclaimer": "ข้อมูลกฎภาษีชุดนี้ยังไม่ผ่านการตรวจสอบ และห้ามใช้คำนวณหรือเผยแพร่ผลลัพธ์",
+  "sources": [
+    {
+      "sourceId": "rd-official-reference-required-2568",
+      "authority": "กรมสรรพากร",
+      "title": "ต้องระบุเอกสารอ้างอิงทางการสำหรับปีภาษี 2568 ก่อนใช้งาน",
+      "url": null,
+      "status": "source_required",
+      "lastCheckedAt": null,
+      "notes": ["ห้ามเติมรายละเอียดกฎหมายจากการคาดเดา"]
+    }
+  ],
+  "notes": [
+    "Requires professional and legal verification before production publication."
+  ]
+}

@@ -4,25 +4,35 @@
   "taxYearCE": 2025,
   "ruleSetId": "th-pit-2568-placeholder-v0",
   "version": "0.0.0-unverified",
-  "status": "draft",
-  "verificationStatus": "requires_professional_verification",
-  "calculationEnabled": false,
-  "publicationBlocked": true,
+  "status": "unverified",
+  "validationStatus": "unverified",
+  "notForCalculation": true,
   "effectiveFrom": null,
   "effectiveTo": null,
   "lastReviewedAt": null,
-  "reviewedBy": null,
+  "lastReviewedBy": null,
   "scope": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
   "disclaimer": "ข้อมูลกฎภาษีชุดนี้ยังไม่ผ่านการตรวจสอบ และห้ามใช้คำนวณหรือเผยแพร่ผลลัพธ์",
   "sources": [
     {
       "sourceId": "rd-official-reference-required-2568",
+      "sourceType": "official_webpage",
       "authority": "กรมสรรพากร",
       "title": "ต้องระบุเอกสารอ้างอิงทางการสำหรับปีภาษี 2568 ก่อนใช้งาน",
       "url": null,
-      "status": "source_required",
+      "evidenceLevel": "unverified",
+      "reviewerStatus": "not_reviewed",
       "lastCheckedAt": null,
       "notes": ["ห้ามเติมรายละเอียดกฎหมายจากการคาดเดา"]
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.0.0-unverified",
+      "changedAt": "2026-09-12",
+      "author": "Antigravity Tax Engine Baseline",
+      "description": "Initial unverified placeholder rule set for BE 2568",
+      "references": []
     }
   ],
   "notes": [

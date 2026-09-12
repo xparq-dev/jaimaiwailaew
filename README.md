@@ -9,17 +9,13 @@
 
 ## สถานะโครงการ
 
-> สถานะ: มีเฉพาะ Foundation และกฎภาษีเป็น placeholder ที่ยังไม่ผ่านการตรวจสอบ
-> ห้ามใช้แอปเพื่อคำนวณหรือยื่นภาษีจริงในสถานะปัจจุบัน
+> สถานะ: Phase 1A Tax Rule Engine เสร็จสมบูรณ์แล้วบน branch feat/tax-rule-engine โดยมี Zod schemas, Money satang precision utilities, resolver และ calculation contracts โดยกฎภาษียังคงเป็น unverified placeholder ที่บล็อกการคำนวณจริงตาม policy
 
-โครงการอยู่ในขอบเขต **Phase 0 — Project Foundation** โค้ด Foundation และการเชื่อมต่อ
-GitHub/Vercel เสร็จแล้ว แต่ยังมี acceptance gates ภายนอกที่ต้องปิดหรือได้รับอนุมัติให้ defer
-ก่อนเริ่มเฟสถัดไป ระบบยังไม่มีอัตราภาษีหรือค่าทางกฎหมายที่ยืนยันแล้ว และยังไม่ควรใช้คำนวณ
-ภาษีเพื่อการใช้งานจริง
+โครงการพัฒนาผ่าน **Phase 0 — Project Foundation** และอยู่ในขอบเขต **Phase 1A — Tax Rule Engine** โค้ด Tax Architecture และ Validation Rules เสร็จสิ้นแล้วแต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
-[`01_ProjectFoundation.md`](./docs/01_ProjectFoundation.md) ส่วนสถานะล่าสุดและรายการคงค้างอยู่ที่
+[`02_TaxRuleEngine.md`](./docs/02_TaxRuleEngine.md) รายละเอียด workflow กฎภาษีอยู่ที่ [`docs/TaxRuleSourceReviewWorkflow.md`](./docs/TaxRuleSourceReviewWorkflow.md) ส่วนสถานะล่าสุดและรายการคงค้างอยู่ที่
 [`PROJECT_STATUS.md`](./docs/PROJECT_STATUS.md)
 
 ## หลักการสำคัญของ MVP 1
@@ -31,12 +27,12 @@ GitHub/Vercel เสร็จแล้ว แต่ยังมี acceptance ga
 - กฎภาษีต้องแยกจาก UI, มี version และผ่าน schema validation
 - ค่ากฎหมายที่ยังไม่ได้ตรวจสอบต้องระบุ `unverified` และห้ามนำไปใช้เป็นค่าจริง
 
-## Technology stack ใน Phase 0
+## Technology stack ใน Phase 1A
 
 - Next.js App Router และ TypeScript strict mode
 - Tailwind CSS และ shadcn/ui
-- React Hook Form และ Zod
-- Zustand หรือ typed local-state equivalent
+- React Hook Form และ Zod (Tax Domain Schema Validation)
+- MoneySatang (Integer satang safe financial operations)
 - Vitest สำหรับ unit tests และ Playwright สำหรับ essential end-to-end flows
 - ESLint, Prettier และ GitHub Actions
 
@@ -113,9 +109,10 @@ PDF หลุดเข้า Cache Storage
 ```text
 .
 ├─ .github/                 # CI และ dependency updates
-├─ docs/                    # PRD, ขอบเขตเฟส และ deploy checklist
+├─ docs/                    # PRD, ขอบเขตเฟส, Tax review workflow และ deploy checklist
 ├─ public/                  # PWA assets, offline fallback และ service worker
 ├─ src/                     # Next.js app, shared code และ tax architecture
+│  └─ tax/                  # Tax schemas, domain types, money satang utils & resolver
 ├─ .env.example             # ตัวอย่างตัวแปรโดยไม่มี secret
 └─ README.md
 ```

@@ -1,3 +1,5 @@
+> สถานะ: ยังไม่เริ่ม — ห้ามดำเนินการก่อน Calculator UX ผ่านเกณฑ์และรายงาน Owner
+
 เพิ่มระบบ Export PDF ฝั่ง client สำหรับ Jai Mai Wai Laew MVP 1
 
 ข้อกำหนด:

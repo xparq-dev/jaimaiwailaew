@@ -1,4 +1,9 @@
 Product Requirements Document
+
+> หมายเหตุสถานะการดำเนินงาน: ข้อกำหนดในเอกสารนี้เป็น source of truth ของผลิตภัณฑ์
+> ส่วนผลการทำ Phase 0, deployment และ acceptance gates ที่ยังค้าง อัปเดตไว้ใน
+> [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) เพื่อไม่แก้ข้อกำหนดให้ปะปนกับสถานะงาน
+
 ชื่อและตัวตนผลิตภัณฑ์
 รายการ	ข้อกำหนด
 ชื่อไทย	จ่ายไม่ไหวแล้ว

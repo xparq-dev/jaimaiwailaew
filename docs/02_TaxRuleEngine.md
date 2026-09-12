@@ -1,3 +1,6 @@
+> สถานะ: งาน implementation ลำดับถัดไป — ยังไม่เริ่ม และต้องได้รับการยืนยันจาก Owner
+> หลังทบทวน Phase 0 gates ใน [`PROJECT_STATUS.md`](./PROJECT_STATUS.md)
+
 เพิ่ม Tax Rules Architecture และ Calculation Engine ของ Jai Mai Wai Laew โดยยังไม่ใส่ค่ากฎหมายจริงที่ไม่ได้รับการยืนยัน
 
 ต้องสร้าง:

@@ -1,3 +1,6 @@
+> สถานะ: ยังไม่เริ่ม — Foundation มีเพียง safe service-worker skeleton; ห้ามเปิด offline
+> calculator ก่อน Tax Rule Engine, Calculator UX และ PDF flow ผ่านเกณฑ์ตามลำดับ
+
 ทำ PWA และ Offline Experience สำหรับ Jai Mai Wai Laew MVP 1
 
 ต้องมี:

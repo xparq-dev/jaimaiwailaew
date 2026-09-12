@@ -1,3 +1,7 @@
+> สถานะตรวจล่าสุด 2026-09-12: โค้ด Foundation, GitHub, CI, Vercel Preview และ Production
+> ผ่านบน deployment baseline commit `7232114` แต่ Phase 0 ยังมี acceptance gates ภายนอกตาม
+> [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) จึงยังไม่ควรประกาศว่าปิด Phase ครบ 100%
+
 สร้าง Foundation ของโปรเจกต์ Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว) ตามข้อกำหนดต่อไปนี้
 
 ใช้ Next.js App Router + TypeScript strict + Tailwind CSS + shadcn/ui + React Hook Form + Zod + Zustand + Vitest + Playwright

@@ -9,12 +9,18 @@
 
 ## สถานะโครงการ
 
-โครงการอยู่ในขอบเขต **Phase 0 — Project Foundation** เท่านั้น โครงสร้างพื้นฐานในระยะนี้ยังไม่มี
-อัตราภาษีหรือค่าทางกฎหมายที่ยืนยันแล้ว และยังไม่ควรใช้คำนวณภาษีเพื่อการใช้งานจริง
+> สถานะ: มีเฉพาะ Foundation และกฎภาษีเป็น placeholder ที่ยังไม่ผ่านการตรวจสอบ
+> ห้ามใช้แอปเพื่อคำนวณหรือยื่นภาษีจริงในสถานะปัจจุบัน
+
+โครงการอยู่ในขอบเขต **Phase 0 — Project Foundation** โค้ด Foundation และการเชื่อมต่อ
+GitHub/Vercel เสร็จแล้ว แต่ยังมี acceptance gates ภายนอกที่ต้องปิดหรือได้รับอนุมัติให้ defer
+ก่อนเริ่มเฟสถัดไป ระบบยังไม่มีอัตราภาษีหรือค่าทางกฎหมายที่ยืนยันแล้ว และยังไม่ควรใช้คำนวณ
+ภาษีเพื่อการใช้งานจริง
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
-[`01_ProjectFoundation.md`](./docs/01_ProjectFoundation.md)
+[`01_ProjectFoundation.md`](./docs/01_ProjectFoundation.md) ส่วนสถานะล่าสุดและรายการคงค้างอยู่ที่
+[`PROJECT_STATUS.md`](./docs/PROJECT_STATUS.md)
 
 ## หลักการสำคัญของ MVP 1
 
@@ -77,11 +83,11 @@ production CSP, การลงทะเบียน service worker และ of
 
 ## Environment variables
 
-| Variable                         | ประเภท                | วัตถุประสงค์                                                         |
-| -------------------------------- | --------------------- | -------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`           | Public                | canonical URL ของเว็บไซต์; local default คือ `http://localhost:3000` |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Public, optional      | placeholder สำหรับ Turnstile ในอนาคต                                 |
-| `TURNSTILE_SECRET_KEY`           | Server-only, optional | ต้องตั้งในระบบ deploy เท่านั้นเมื่อมี integration จริง               |
+| Variable                         | ประเภท                | วัตถุประสงค์                                                                             |
+| -------------------------------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`           | Public                | canonical URL; `.env.example` ใช้ `http://localhost:3000` และ production ใช้โดเมน Vercel |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Public, optional      | placeholder สำหรับ Turnstile ในอนาคต                                                     |
+| `TURNSTILE_SECRET_KEY`           | Server-only, optional | ต้องตั้งในระบบ deploy เท่านั้นเมื่อมี integration จริง                                   |
 
 ตัวแปรที่ขึ้นต้นด้วย `NEXT_PUBLIC_` จะอยู่ใน client bundle จึงห้ามใส่ secret ลงในตัวแปรเหล่านี้
 
@@ -120,8 +126,17 @@ PDF หลุดเข้า Cache Storage
 [`docs/Checklist ก่อน Deploy.md`](./docs/Checklist%20ก่อน%20Deploy.md) และตรวจว่าไม่มี secret
 หรือข้อมูลการเงินของผู้ใช้ใน source, build log หรือ public cache
 
-เป้าหมายเริ่มต้นคือ Vercel ผ่าน HTTPS ทั้งนี้ Vercel Hobby เหมาะกับการใช้งานแบบ non-commercial
-ตามเงื่อนไขปัจจุบันของผู้ให้บริการ หากเปิดบริการเชิงพาณิชย์ต้องตรวจเงื่อนไขและเลือกแผนที่เหมาะสมอีกครั้ง
+สถานะ deployment ที่ตรวจล่าสุดเมื่อ 2026-09-12:
+
+- GitHub: <https://github.com/xparq-dev/jaimaiwailaew>
+- Production: <https://jaimaiwailaew.vercel.app>
+- Runtime: Node.js 22.x ตาม `engines.node` ที่กำหนดเป็น `^22.12.0`
+- Vercel เชื่อมกับ GitHub แล้ว การ push เข้า `main` จะสร้าง Production deployment
+- Preview deployment ทำงานแล้ว URL จะเปลี่ยนในแต่ละ deployment และอาจต้องเข้าสู่ระบบ
+  Vercel ตาม Deployment Protection
+
+Vercel Hobby เหมาะกับการใช้งานแบบ non-commercial ตามเงื่อนไขปัจจุบันของผู้ให้บริการ
+หากเปิดบริการเชิงพาณิชย์ต้องตรวจเงื่อนไขและเลือกแผนที่เหมาะสมอีกครั้ง
 
 ## สิ่งที่ยังไม่อยู่ในขอบเขต
 
@@ -137,7 +152,9 @@ PDF หลุดเข้า Cache Storage
 
 - กฎภาษีปี 2568/2569 ยังไม่มีค่าจริงและต้องผ่านผู้เชี่ยวชาญก่อนเปิดการคำนวณ
 - Privacy, Terms และ Disclaimer เป็นร่าง ต้องเติมผู้ควบคุมข้อมูล ช่องทางติดต่อ และตรวจด้านกฎหมาย
-- Repository เชื่อม GitHub/Vercel แล้ว และยืนยัน deploy preview กับ HTTPS จริงแล้ว; ยังต้องกำหนด branch protection ใน GitHub
+- ยังไม่ได้กำหนด branch protection หรือ ruleset สำหรับ `main` ใน GitHub
+- ยังไม่มี Lighthouse report อย่างเป็นทางการสำหรับ mobile และ desktop
+- Cloudflare DNS/WAF/Analytics ยังไม่ได้เชื่อม โดยต้องตัดสินใจเรื่อง custom domain ก่อน
 - หน้าเว็บตั้ง `noindex` ไว้ใน Foundation โดยตั้งใจ ต้องทบทวนหลังเนื้อหาและกฎผ่านการอนุมัติ
 - PWA ใช้ SVG icon แบบ regular/maskable ใน skeleton; ควรเพิ่ม PNG หลายขนาดและตรวจการติดตั้งบนอุปกรณ์จริงก่อน production
 - CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ก่อนเปิดรับข้อมูลจริงควรประเมิน nonce-based CSP เทียบกับต้นทุน dynamic rendering

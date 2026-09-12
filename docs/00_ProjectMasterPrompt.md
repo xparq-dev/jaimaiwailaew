@@ -17,7 +17,16 @@ PRODUCT IDENTITY
 - The product is NOT a tax adviser and must never present calculations as legally guaranteed outcomes.
 - Every calculation and report must state that it is an estimate to help prepare information.
 
-CURRENT PHASE
+CURRENT EXECUTION STATUS
+- Updated: 2026-09-12 (Asia/Bangkok).
+- Phase 0 foundation code and GitHub/Vercel deployment are implemented.
+- Phase 0 is not fully closed: branch protection, a recorded Lighthouse audit, and the
+  Cloudflare/custom-domain decision remain documented in `docs/PROJECT_STATUS.md`.
+- The next implementation document is `docs/02_TaxRuleEngine.md`, only after the Owner
+  acknowledges or resolves those Phase 0 gates.
+- Do not start Calculator UX, PDF Export, or later work in the same implementation response.
+
+CURRENT RELEASE SCOPE
 Build MVP 1 only, unless explicitly instructed otherwise.
 
 MVP 1 SCOPE
@@ -279,7 +288,10 @@ For every implementation response:
 7. Stop and ask for verified tax-rule data if an implementation would require inventing legal values.
 8. Prefer a working vertical slice over many unfinished pages.
 
-STARTING TASK
+PHASE 0 BASELINE TASK (IMPLEMENTED)
+Retain the following as the historical Foundation acceptance scope. Do not rerun or replace the
+Foundation automatically; inspect the current repository and `docs/PROJECT_STATUS.md` first.
+
 First, inspect the existing repository. Then create the MVP 1 project foundation:
 - Next.js structure
 - strict TypeScript

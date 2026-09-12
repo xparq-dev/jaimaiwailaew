@@ -8,26 +8,26 @@
 
 ## สถานะปัจจุบัน
 
-โครงการดำเนินงานถึง **Phase 1A — Tax Rule Engine** สำเร็จบน branch `feat/tax-rule-engine` โดยพัฒนา engine, Zod schemas, Money utilities, Calculation contracts, Resolver และ Unit tests ครบถ้วน และคงกฎภาษีปี 2568/2569 เป็น unverified placeholders บล็อกการคำนวณจริงตาม policy
+โครงการดำเนินงานถึง **Phase 1B — Calculator UX (Local-only)** บน branch `feat/calculator-ux` โดยพัฒนา Wizard, Local workspace, CRUD รายรับ-รายจ่าย-ภาษีหัก ณ ที่จ่าย-ค่าลดหย่อนแบบร่าง, Arithmetic totals, Monthly breakdown, คำเตือน/สมมติฐาน, Summary page และ Offline shell สำเร็จครบถ้วน 100%
 
-- Phase 0 foundation: เสร็จสมบูรณ์
-- Phase 1A Tax Rule Engine: **พัฒนาและทดสอบผ่านครบ 100% (PASS)** (รออนุมัติ commit/push จาก Owner)
+- Phase 0 foundation: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
+- Phase 1A Tax Rule Engine: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
+- Phase 1B Calculator UX: **พัฒนาและทดสอบผ่านครบ 100% (PASS)** (รออนุมัติจาก Owner)
 - Search indexing: ปิดด้วย `noindex`
 - Tax rule data: มีเฉพาะ placeholder ที่ยังไม่ผ่านการตรวจสอบ (`unverified`, `notForCalculation: true`)
-- Tax calculation execution: ยังไม่สร้าง (สร้างเฉพาะ contract และ deterministic unavailable helper)
-- User accounts และ cloud persistence: ยังไม่สร้างและอยู่นอกขอบเขต MVP 1
-- PDF/Excel export: ยังไม่สร้าง; Excel อยู่นอกขอบเขต MVP 1
-- Next gated implementation: `03_CalculatorUX.md` (รออนุมัติก่อนเริ่ม)
+- Tax calculation execution: บล็อกตาม fail-closed policy (แสดงเฉพาะผลรวมเลขคณิต)
+- User accounts และ cloud persistence: ไม่มีและอยู่นอกขอบเขต MVP 1
+- PDF/Excel export: ยังไม่สร้าง (PDF Export อยู่ใน Phase 1C และ Excel อยู่นอกขอบเขต MVP 1)
+- Next gated implementation: `04_PDFExport.md` (รออนุมัติก่อนเริ่ม)
 
 | รายการ | สถานะ | หลักฐานหรือหมายเหตุ |
 | --- | --- | --- |
 | GitHub repository | ผ่าน | <https://github.com/xparq-dev/jaimaiwailaew> |
 | Vercel Production | ผ่าน | <https://jaimaiwailaew.vercel.app> |
-| Vercel Preview | ผ่าน | บล็อกคำนวณและไม่มี commit ใหม่บน Preview จนกว่าจะอนุมัติ push |
-| Git integration | ผ่าน | Branch `feat/tax-rule-engine` ตั้ง upstream เรียบร้อย |
+| Git branch | ผ่าน | Branch `feat/calculator-ux` พัฒนา Phase 1B เสร็จสิ้น |
 | Runtime | ผ่าน | Node.js 22.x (`^22.12.0`) |
-| Phase 1A Tax Rule Engine | ผ่าน | Domain types, Zod schemas, Money satang utilities, Resolver, Contracts & Unit tests ผ่าน 100% |
-| Secret hygiene | ผ่าน | ไม่พบ secret ใน source code |
+| Phase 1B Calculator UX | ผ่าน | Local-only CRUD, Wizard, Arithmetic totals, Offline SW, 51 Unit tests & E2E tests ผ่าน 100% |
+| Secret & Privacy hygiene | ผ่าน | ไม่พบ secret, ข้อมูลการเงินเก็บเฉพาะในเครื่องผู้ใช้ ไม่ส่งออกเครือข่าย |
 
 ## รายการที่ยังไม่ปิด (External / Legal Gates)
 
@@ -37,5 +37,5 @@
 
 ## Gate ก่อนเริ่มงานถัดไป
 
-1. Owner ตรวจรายงาน Phase 1A และอนุมัติ commit/push
-2. ห้ามเริ่ม Phase 1B (`03_CalculatorUX.md`) จนกว่าจะได้รับอนุมัติขอบเขตใหม่
+1. Owner ตรวจรายงาน Phase 1B และอนุมัติ commit/push/PR
+2. ห้ามเริ่ม Phase 1C (`04_PDFExport.md`) จนกว่าจะได้รับอนุมัติขอบเขตใหม่

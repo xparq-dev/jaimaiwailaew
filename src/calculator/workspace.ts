@@ -1,0 +1,179 @@
+import { resolveTaxRules } from "@/tax/engine/taxRuleResolver";
+import type { TaxCalculationMode } from "@/tax/engine/contracts";
+
+import type {
+  AllowanceDraftEntry,
+  CalculatorPersona,
+  CalculatorWorkspace,
+  ExpenseEntry,
+  IncomeEntry,
+  WithholdingEntry,
+} from "./types";
+import { createLocalId, nowIsoTimestamp, taxYearPeriodDefaults } from "./utils";
+
+export interface CreateWorkspaceInput {
+  readonly persona: CalculatorPersona;
+  readonly taxYearBE: 2568 | 2569;
+  readonly calculationMode: TaxCalculationMode;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly reportName?: string | undefined;
+}
+
+export function createTaxRuleResolutionSnapshot(taxYearBE: 2568 | 2569) {
+  const resolution = resolveTaxRules({ taxYearBE });
+  return {
+    taxYearBE,
+    ruleSetId: resolution.metadata?.ruleSetId ?? null,
+    ruleSetVersion: resolution.metadata?.version ?? null,
+    availability: resolution.availability,
+    resolvedAt: nowIsoTimestamp(),
+  };
+}
+
+export function createCalculatorWorkspace(
+  input: CreateWorkspaceInput,
+): CalculatorWorkspace {
+  const timestamp = nowIsoTimestamp();
+
+  return {
+    id: createLocalId(),
+    schemaVersion: 1,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    taxYearBE: input.taxYearBE,
+    persona: input.persona,
+    calculationMode: input.calculationMode,
+    periodStart: input.periodStart,
+    periodEnd: input.periodEnd,
+    reportName: input.reportName,
+    incomeEntries: [],
+    expenseEntries: [],
+    withholdingEntries: [],
+    allowanceDraftEntries: [],
+    taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(input.taxYearBE),
+    localOnly: true,
+  };
+}
+
+export function getDefaultWorkspaceInput(
+  persona: CalculatorPersona,
+  taxYearBE: 2568 | 2569,
+  periodChoice: "first_half" | "full_year" = "first_half",
+): CreateWorkspaceInput {
+  const periods = taxYearPeriodDefaults(taxYearBE);
+
+  switch (persona) {
+    case "online_seller_business":
+      return {
+        persona,
+        taxYearBE,
+        calculationMode: "pnd94",
+        periodStart: periods.firstHalfStart,
+        periodEnd: periods.firstHalfEnd,
+      };
+    case "freelancer":
+      return {
+        persona,
+        taxYearBE,
+        calculationMode:
+          periodChoice === "full_year" ? "annual_estimate" : "pnd94",
+        periodStart:
+          periodChoice === "full_year"
+            ? periods.fullYearStart
+            : periods.firstHalfStart,
+        periodEnd:
+          periodChoice === "full_year"
+            ? periods.fullYearEnd
+            : periods.firstHalfEnd,
+      };
+    case "salaried_employee":
+      return {
+        persona,
+        taxYearBE,
+        calculationMode: "pnd91",
+        periodStart: periods.fullYearStart,
+        periodEnd: periods.fullYearEnd,
+      };
+    case "multiple_income":
+      return {
+        persona,
+        taxYearBE,
+        calculationMode: "multi_income_estimate",
+        periodStart:
+          periodChoice === "full_year"
+            ? periods.fullYearStart
+            : periods.firstHalfStart,
+        periodEnd:
+          periodChoice === "full_year"
+            ? periods.fullYearEnd
+            : periods.firstHalfEnd,
+      };
+    case "unsure":
+      return {
+        persona,
+        taxYearBE,
+        calculationMode: "annual_estimate",
+        periodStart: periods.fullYearStart,
+        periodEnd: periods.fullYearEnd,
+      };
+  }
+}
+
+export function touchWorkspace(
+  workspace: CalculatorWorkspace,
+  patch: Partial<
+    Pick<
+      CalculatorWorkspace,
+      | "incomeEntries"
+      | "expenseEntries"
+      | "withholdingEntries"
+      | "allowanceDraftEntries"
+      | "periodStart"
+      | "periodEnd"
+      | "calculationMode"
+      | "reportName"
+      | "persona"
+      | "taxYearBE"
+    >
+  >,
+): CalculatorWorkspace {
+  return {
+    ...workspace,
+    ...patch,
+    updatedAt: nowIsoTimestamp(),
+    taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(
+      patch.taxYearBE ?? workspace.taxYearBE,
+    ),
+  };
+}
+
+export function sortEntriesByDateDesc<
+  T extends { readonly occurredOn?: string },
+>(entries: readonly T[]): T[] {
+  return [...entries].sort((a, b) => {
+    if (!a.occurredOn && !b.occurredOn) {
+      return 0;
+    }
+    if (!a.occurredOn) {
+      return 1;
+    }
+    if (!b.occurredOn) {
+      return -1;
+    }
+    return a.occurredOn < b.occurredOn
+      ? 1
+      : a.occurredOn > b.occurredOn
+        ? -1
+        : 0;
+  });
+}
+
+export type EntryCollectionKey =
+  | "incomeEntries"
+  | "expenseEntries"
+  | "withholdingEntries"
+  | "allowanceDraftEntries";
+
+export type WorkspaceEntry =
+  IncomeEntry | ExpenseEntry | WithholdingEntry | AllowanceDraftEntry;

@@ -2,11 +2,11 @@
 
 "use strict";
 
-// This service worker intentionally starts with a narrow public-asset allowlist.
-// Financial entries, generated reports, PDFs, API responses, and page responses
-// are never written to a service-worker cache by this Phase 0 implementation.
+// Service Worker for Phase 1B: Calculator UX.
+// Caches public static assets, app shell, and route assets needed to open the calculator offline.
+// Strictly NEVER caches user-generated data, entries, localStorage, PDF/CSV/Excel, or API responses.
 const CACHE_NAMESPACE = "jmwl-public-static";
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `${CACHE_NAMESPACE}-${CACHE_VERSION}`;
 const OFFLINE_FALLBACK = "/offline-fallback.html";
 
@@ -23,8 +23,9 @@ const SAFE_STATIC_PATHS = new Set([
   "/site.webmanifest",
 ]);
 
+// Never cache API routes, export/download endpoints, generated documents, uploads, or sensitive paths
 const NEVER_CACHE_PATH =
-  /(?:^\/api(?:\/|$)|^\/calculator(?:\/|$)|^\/start(?:\/|$)|(?:^|\/)(?:export|download|receipt|document)(?:\/|$)|\.(?:pdf|csv|xlsx?)(?:$|\/))/i;
+  /(?:^\/api(?:\/|$)|(?:^|\/)(?:export|download|receipt|document|upload)(?:\/|$)|\.(?:pdf|csv|xlsx?)(?:$|\/))/i;
 
 function isSafeStaticRequest(request, url) {
   if (
@@ -34,7 +35,7 @@ function isSafeStaticRequest(request, url) {
     return false;
   }
 
-  // Query-bearing public paths are not cached to avoid an unbounded cache key space.
+  // Query-bearing public paths are not cached to avoid unbounded cache keys and leak risks
   if (url.search && !url.pathname.startsWith("/_next/static/")) {
     return false;
   }
@@ -101,13 +102,27 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigation stays network-only. On failure, return the static fallback without
-  // retaining the requested page or any data it might contain.
+  // Navigation requests: Network-first for fresh static HTML shell, falling back to cached shell or offline fallback.
+  // The static HTML shell contains NO user financial data (financial data resides purely in localStorage via Zustand).
   if (request.mode === "navigate") {
+    const canCacheShell = !url.search && !NEVER_CACHE_PATH.test(url.pathname);
+
     event.respondWith(
-      fetch(request).catch(() =>
-        caches.match(OFFLINE_FALLBACK, { ignoreSearch: true }),
-      ),
+      fetch(request)
+        .then(async (response) => {
+          if (canCacheShell && response.ok && response.type === "basic") {
+            const cache = await caches.open(STATIC_CACHE);
+            await cache.put(request, response.clone());
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cachedShell = await caches.match(request);
+          if (cachedShell) {
+            return cachedShell;
+          }
+          return caches.match(OFFLINE_FALLBACK, { ignoreSearch: true });
+        }),
     );
     return;
   }

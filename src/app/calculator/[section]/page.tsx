@@ -1,5 +1,10 @@
 import { notFound } from "next/navigation";
 
+import { AllowanceSectionPage } from "@/components/calculator/allowance-section";
+import { ExpenseSectionPage } from "@/components/calculator/expense-section";
+import { IncomeSectionPage } from "@/components/calculator/income-section";
+import { SummarySectionPage } from "@/components/calculator/summary-section";
+import { WithholdingSectionPage } from "@/components/calculator/withholding-section";
 import { PlaceholderPage } from "@/components/placeholder-page";
 import { calculatorPlaceholders } from "@/content/route-placeholders";
 
@@ -13,10 +18,23 @@ export default async function CalculatorSectionPage({
   params: Promise<{ section: string }>;
 }) {
   const { section } = await params;
-  const content =
-    calculatorPlaceholders[section as keyof typeof calculatorPlaceholders];
 
-  if (!content) notFound();
-
-  return <PlaceholderPage content={content} />;
+  switch (section) {
+    case "income":
+      return <IncomeSectionPage />;
+    case "expenses":
+      return <ExpenseSectionPage />;
+    case "withholding-tax":
+      return <WithholdingSectionPage />;
+    case "allowances":
+      return <AllowanceSectionPage />;
+    case "summary":
+      return <SummarySectionPage />;
+    case "export-pdf": {
+      const content = calculatorPlaceholders["export-pdf"];
+      return <PlaceholderPage content={content} />;
+    }
+    default:
+      notFound();
+  }
 }

@@ -8,7 +8,7 @@ import {
   type WithholdingEntryFormValues,
 } from "@/calculator/schemas";
 import { useCalculatorStore } from "@/calculator/store";
-import { formatThaiDate, isDateWithinPeriod } from "@/calculator/utils";
+import { formatEntryPeriod, isEntryWithinPeriod } from "@/calculator/utils";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
 import { Button } from "@/components/ui/button";
 import { formatThaiBaht } from "@/tax/money";
@@ -22,7 +22,9 @@ import {
 } from "./entry-form-dialog";
 
 const emptyForm: WithholdingEntryFormValues = {
+  entryFrequency: "one_time",
   occurredOn: "",
+  occurredMonth: "",
   payerName: "",
   certificateReference: "",
   amount: "",
@@ -52,11 +54,17 @@ export function WithholdingSectionPage() {
     return sortEntriesByDateDesc(workspace.withholdingEntries);
   }, [workspace]);
 
-  const defaultValues = useMemo(() => {
-    if (!editingId || !workspace) {
+  const defaultValues = useMemo((): WithholdingEntryFormValues => {
+    if (!workspace) {
+      return emptyForm;
+    }
+
+    if (!editingId) {
       return {
         ...emptyForm,
-        occurredOn: workspace?.periodStart ?? "",
+        entryFrequency: "one_time",
+        occurredOn: workspace.periodStart,
+        occurredMonth: workspace.periodStart.slice(0, 7),
       };
     }
 
@@ -68,7 +76,9 @@ export function WithholdingSectionPage() {
     }
 
     return {
-      occurredOn: entry.occurredOn,
+      entryFrequency: entry.entryFrequency,
+      occurredOn: entry.occurredOn ?? "",
+      occurredMonth: entry.occurredMonth ?? "",
       payerName: entry.payerName ?? "",
       certificateReference: entry.certificateReference ?? "",
       amount: (entry.amountSatang / 100).toFixed(2),
@@ -133,7 +143,10 @@ export function WithholdingSectionPage() {
             <table className="border-border w-full min-w-[640px] border-separate border-spacing-0 overflow-hidden rounded-2xl border text-sm">
               <thead className="bg-muted/60">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">วันที่</th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    วันที่ / เดือน
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">รูปแบบ</th>
                   <th className="px-4 py-3 text-left font-semibold">
                     ผู้จ่ายเงิน
                   </th>
@@ -150,15 +163,20 @@ export function WithholdingSectionPage() {
               </thead>
               <tbody>
                 {entries.map((entry) => {
-                  const inPeriod = isDateWithinPeriod(
-                    entry.occurredOn,
+                  const inPeriod = isEntryWithinPeriod(
+                    entry,
                     workspace.periodStart,
                     workspace.periodEnd,
                   );
                   return (
                     <tr className="border-border border-t" key={entry.id}>
+                      <td className="px-4 py-3">{formatEntryPeriod(entry)}</td>
                       <td className="px-4 py-3">
-                        {formatThaiDate(entry.occurredOn)}
+                        <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium">
+                          {entry.entryFrequency === "monthly"
+                            ? "รายเดือน"
+                            : "ระบุวัน"}
+                        </span>
                       </td>
                       <td className="px-4 py-3">{entry.payerName ?? "—"}</td>
                       <td className="px-4 py-3">
@@ -170,7 +188,7 @@ export function WithholdingSectionPage() {
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           {!inPeriod ? (
-                            <span className="text-warning-strong text-xs">
+                            <span className="text-warning-strong text-xs font-medium">
                               นอกช่วง
                             </span>
                           ) : null}
@@ -206,8 +224,8 @@ export function WithholdingSectionPage() {
 
           <ul className="space-y-3 lg:hidden">
             {entries.map((entry) => {
-              const inPeriod = isDateWithinPeriod(
-                entry.occurredOn,
+              const inPeriod = isEntryWithinPeriod(
+                entry,
                 workspace.periodStart,
                 workspace.periodEnd,
               );
@@ -218,19 +236,26 @@ export function WithholdingSectionPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold">
-                        {entry.payerName || "ไม่ระบุผู้จ่าย"}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">
+                          {entry.payerName || "ไม่ระบุผู้จ่าย"}
+                        </p>
+                        <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium">
+                          {entry.entryFrequency === "monthly"
+                            ? "รายเดือน"
+                            : "ระบุวัน"}
+                        </span>
+                      </div>
                       {entry.certificateReference ? (
                         <p className="text-muted-foreground text-xs">
                           เลขที่: {entry.certificateReference}
                         </p>
                       ) : null}
                       <p className="text-muted-foreground mt-1 text-sm">
-                        {formatThaiDate(entry.occurredOn)}
+                        {formatEntryPeriod(entry)}
                       </p>
                       {!inPeriod ? (
-                        <p className="text-warning-strong mt-1 text-xs">
+                        <p className="text-warning-strong mt-1 text-xs font-medium">
                           อยู่นอกช่วงที่เลือก
                         </p>
                       ) : null}
@@ -309,61 +334,122 @@ export function WithholdingSectionPage() {
         submitLabel={editingId ? "บันทึกการแก้ไข" : "เพิ่มรายการ"}
         title={editingId ? "แก้ไขภาษีหัก ณ ที่จ่าย" : "เพิ่มภาษีหัก ณ ที่จ่าย"}
       >
-        {(form) => (
-          <>
-            <FormField
-              error={form.formState.errors.occurredOn?.message}
-              id="withholding-date"
-              label="วันที่"
-            >
-              <TextInput
-                id="withholding-date"
-                type="date"
-                {...form.register("occurredOn")}
-              />
-            </FormField>
-            <FormField
-              id="withholding-payer"
-              label="ผู้จ่ายเงิน / บริษัท (ไม่บังคับ)"
-            >
-              <TextInput
+        {(form) => {
+          const frequency = form.watch("entryFrequency");
+          return (
+            <>
+              <div className="space-y-2">
+                <label className="text-foreground block text-sm font-medium">
+                  รูปแบบรายการ *
+                </label>
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <input
+                      type="radio"
+                      value="one_time"
+                      {...form.register("entryFrequency", {
+                        onChange: () => {
+                          form.setValue("occurredMonth", "");
+                          if (!form.getValues("occurredOn")) {
+                            form.setValue("occurredOn", workspace.periodStart);
+                          }
+                        },
+                      })}
+                    />
+                    <span>ระบุวัน / รายการครั้งเดียว</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <input
+                      type="radio"
+                      value="monthly"
+                      {...form.register("entryFrequency", {
+                        onChange: () => {
+                          form.setValue("occurredOn", "");
+                          if (!form.getValues("occurredMonth")) {
+                            form.setValue(
+                              "occurredMonth",
+                              workspace.periodStart.slice(0, 7),
+                            );
+                          }
+                        },
+                      })}
+                    />
+                    <span>ระบุเดือน / รายการรายเดือน</span>
+                  </label>
+                </div>
+              </div>
+
+              {frequency === "one_time" ? (
+                <FormField
+                  error={form.formState.errors.occurredOn?.message}
+                  hint="เหมาะกับยอดขาย ค่าขนส่ง หรืองานที่เกิดขึ้นเป็นครั้ง ๆ"
+                  id="withholding-date"
+                  label="วันที่เกิดรายการ *"
+                >
+                  <TextInput
+                    id="withholding-date"
+                    type="date"
+                    {...form.register("occurredOn")}
+                  />
+                </FormField>
+              ) : (
+                <FormField
+                  error={form.formState.errors.occurredMonth?.message}
+                  hint="เหมาะกับเงินเดือน ค่าเช่า ค่าสมาชิก หรือค่าใช้จ่ายที่สรุปเป็นรายเดือน"
+                  id="withholding-month"
+                  label="เดือนที่เกิดรายการ *"
+                >
+                  <TextInput
+                    id="withholding-month"
+                    type="month"
+                    {...form.register("occurredMonth")}
+                  />
+                </FormField>
+              )}
+
+              <FormField
                 id="withholding-payer"
-                placeholder="เช่น บริษัท ลูกค้า จำกัด"
-                {...form.register("payerName")}
-              />
-            </FormField>
-            <FormField
-              hint="ระบบไม่ได้ตรวจสอบหรือรับรองความถูกต้องของเอกสารภาษี"
-              id="withholding-ref"
-              label="เลขอ้างอิงเอกสารภาษีหัก ณ ที่จ่าย (ถ้ามี)"
-            >
-              <TextInput
+                label="ผู้จ่ายเงิน / บริษัท (ไม่บังคับ)"
+              >
+                <TextInput
+                  id="withholding-payer"
+                  placeholder="เช่น บริษัท ลูกค้า จำกัด"
+                  {...form.register("payerName")}
+                />
+              </FormField>
+              <FormField
+                hint="ระบบไม่ได้ตรวจสอบหรือรับรองความถูกต้องของเอกสารภาษี"
                 id="withholding-ref"
-                placeholder="เช่น REF-2026-001"
-                {...form.register("certificateReference")}
-              />
-            </FormField>
-            <FormField
-              error={form.formState.errors.amount?.message}
-              id="withholding-amount"
-              label="ยอดภาษีที่ถูกหัก (บาท)"
-            >
-              <TextInput
+                label="เลขอ้างอิงเอกสารภาษีหัก ณ ที่จ่าย (ถ้ามี)"
+              >
+                <TextInput
+                  id="withholding-ref"
+                  placeholder="เช่น REF-2026-001"
+                  {...form.register("certificateReference")}
+                />
+              </FormField>
+              <FormField
+                error={form.formState.errors.amount?.message}
                 id="withholding-amount"
-                inputMode="decimal"
-                placeholder="0.00"
-                {...form.register("amount")}
-              />
-            </FormField>
-            <FormField id="withholding-note" label="หมายเหตุ (ไม่บังคับ)">
-              <TextAreaInput
-                id="withholding-note"
-                placeholder="รายละเอียดเพิ่มเติม"
-                {...form.register("note")}
-              />
-            </FormField>
-          </>
-        )}
+                label="ยอดภาษีที่ถูกหัก (บาท) *"
+              >
+                <TextInput
+                  id="withholding-amount"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  {...form.register("amount")}
+                />
+              </FormField>
+              <FormField id="withholding-note" label="หมายเหตุ (ไม่บังคับ)">
+                <TextAreaInput
+                  id="withholding-note"
+                  placeholder="รายละเอียดเพิ่มเติม"
+                  {...form.register("note")}
+                />
+              </FormField>
+            </>
+          );
+        }}
       </EntryFormDialog>
 
       {deleteTargetId ? (

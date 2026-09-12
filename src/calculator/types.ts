@@ -1,7 +1,7 @@
 import type { MoneySatang } from "@/tax/money";
 import type { TaxCalculationMode } from "@/tax/engine/contracts";
 
-export const CALCULATOR_SCHEMA_VERSION = 1 as const;
+export const CALCULATOR_SCHEMA_VERSION = 2 as const;
 
 export const CALCULATOR_PERSONAS = [
   "online_seller_business",
@@ -12,6 +12,9 @@ export const CALCULATOR_PERSONAS = [
 ] as const;
 
 export type CalculatorPersona = (typeof CALCULATOR_PERSONAS)[number];
+
+export const ENTRY_FREQUENCIES = ["one_time", "monthly"] as const;
+export type EntryFrequency = (typeof ENTRY_FREQUENCIES)[number];
 
 export const INCOME_CATEGORY_CODES = [
   "salary",
@@ -60,9 +63,8 @@ export const ALLOWANCE_DRAFT_CATEGORY_CODES = [
 export type AllowanceDraftCategoryCode =
   (typeof ALLOWANCE_DRAFT_CATEGORY_CODES)[number];
 
-export interface IncomeEntry {
+export interface BaseIncomeEntry {
   readonly id: string;
-  readonly occurredOn: string;
   readonly categoryCode: IncomeCategoryCode;
   readonly sourceName?: string | undefined;
   readonly amountSatang: MoneySatang;
@@ -71,9 +73,22 @@ export interface IncomeEntry {
   readonly updatedAt: string;
 }
 
-export interface ExpenseEntry {
-  readonly id: string;
+export interface OneTimeIncomeEntry extends BaseIncomeEntry {
+  readonly entryFrequency: "one_time";
   readonly occurredOn: string;
+  readonly occurredMonth: null;
+}
+
+export interface MonthlyIncomeEntry extends BaseIncomeEntry {
+  readonly entryFrequency: "monthly";
+  readonly occurredOn: null;
+  readonly occurredMonth: string;
+}
+
+export type IncomeEntry = OneTimeIncomeEntry | MonthlyIncomeEntry;
+
+export interface BaseExpenseEntry {
+  readonly id: string;
   readonly categoryCode: ExpenseCategoryCode;
   readonly amountSatang: MoneySatang;
   readonly taxRelevanceStatus: ExpenseTaxRelevanceStatus;
@@ -82,9 +97,22 @@ export interface ExpenseEntry {
   readonly updatedAt: string;
 }
 
-export interface WithholdingEntry {
-  readonly id: string;
+export interface OneTimeExpenseEntry extends BaseExpenseEntry {
+  readonly entryFrequency: "one_time";
   readonly occurredOn: string;
+  readonly occurredMonth: null;
+}
+
+export interface MonthlyExpenseEntry extends BaseExpenseEntry {
+  readonly entryFrequency: "monthly";
+  readonly occurredOn: null;
+  readonly occurredMonth: string;
+}
+
+export type ExpenseEntry = OneTimeExpenseEntry | MonthlyExpenseEntry;
+
+export interface BaseWithholdingEntry {
+  readonly id: string;
   readonly payerName?: string | undefined;
   readonly certificateReference?: string | undefined;
   readonly amountSatang: MoneySatang;
@@ -92,6 +120,21 @@ export interface WithholdingEntry {
   readonly createdAt: string;
   readonly updatedAt: string;
 }
+
+export interface OneTimeWithholdingEntry extends BaseWithholdingEntry {
+  readonly entryFrequency: "one_time";
+  readonly occurredOn: string;
+  readonly occurredMonth: null;
+}
+
+export interface MonthlyWithholdingEntry extends BaseWithholdingEntry {
+  readonly entryFrequency: "monthly";
+  readonly occurredOn: null;
+  readonly occurredMonth: string;
+}
+
+export type WithholdingEntry =
+  OneTimeWithholdingEntry | MonthlyWithholdingEntry;
 
 export interface AllowanceDraftEntry {
   readonly id: string;

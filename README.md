@@ -9,13 +9,13 @@
 
 ## สถานะโครงการ
 
-> สถานะ: Phase 1A Tax Rule Engine เสร็จสมบูรณ์แล้วบน branch feat/tax-rule-engine โดยมี Zod schemas, Money satang precision utilities, resolver และ calculation contracts โดยกฎภาษียังคงเป็น unverified placeholder ที่บล็อกการคำนวณจริงตาม policy
+> สถานะ: Phase 1B UX Hotfix เสร็จสมบูรณ์แล้วบน branch fix/calculator-local-data-and-monthly-entry โดยปรับปรุง Compact Privacy Indicator และรองรับ Entry Frequency ทั้งแบบระบุวัน (one_time) และรายเดือน (monthly) พร้อม local schema v2 และ atomic migration โดยกฎภาษียังคงเป็น unverified placeholder ที่บล็อกการคำนวณจริงตาม fail-closed policy
 
-โครงการพัฒนาผ่าน **Phase 0 — Project Foundation** และอยู่ในขอบเขต **Phase 1A — Tax Rule Engine** โค้ด Tax Architecture และ Validation Rules เสร็จสิ้นแล้วแต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
+โครงการพัฒนาผ่าน **Phase 0 — Project Foundation**, **Phase 1A — Tax Rule Engine**, **Phase 1B — Calculator UX** และอยู่ในระหว่าง **Phase 1B UX Hotfix** โค้ด Tax Architecture, Validation Rules และ Calculator Local Workspace เสร็จสิ้นแล้วแต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
-[`02_TaxRuleEngine.md`](./docs/02_TaxRuleEngine.md) รายละเอียด workflow กฎภาษีอยู่ที่ [`docs/TaxRuleSourceReviewWorkflow.md`](./docs/TaxRuleSourceReviewWorkflow.md) ส่วนสถานะล่าสุดและรายการคงค้างอยู่ที่
+[`03_CalculatorUX.md`](./docs/03_CalculatorUX.md) รายละเอียด workflow กฎภาษีอยู่ที่ [`docs/TaxRuleSourceReviewWorkflow.md`](./docs/TaxRuleSourceReviewWorkflow.md) ส่วนสถานะล่าสุดและรายการคงค้างอยู่ที่
 [`PROJECT_STATUS.md`](./docs/PROJECT_STATUS.md)
 
 ## หลักการสำคัญของ MVP 1

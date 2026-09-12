@@ -1,15 +1,21 @@
 import { resolveTaxRules } from "@/tax/engine/taxRuleResolver";
 import type { TaxCalculationMode } from "@/tax/engine/contracts";
 
-import type {
-  AllowanceDraftEntry,
-  CalculatorPersona,
-  CalculatorWorkspace,
-  ExpenseEntry,
-  IncomeEntry,
-  WithholdingEntry,
+import {
+  CALCULATOR_SCHEMA_VERSION,
+  type AllowanceDraftEntry,
+  type CalculatorPersona,
+  type CalculatorWorkspace,
+  type ExpenseEntry,
+  type IncomeEntry,
+  type WithholdingEntry,
 } from "./types";
-import { createLocalId, nowIsoTimestamp, taxYearPeriodDefaults } from "./utils";
+import {
+  createLocalId,
+  getEntryChronologicalSortKey,
+  nowIsoTimestamp,
+  taxYearPeriodDefaults,
+} from "./utils";
 
 export interface CreateWorkspaceInput {
   readonly persona: CalculatorPersona;
@@ -38,7 +44,7 @@ export function createCalculatorWorkspace(
 
   return {
     id: createLocalId(),
-    schemaVersion: 1,
+    schemaVersion: CALCULATOR_SCHEMA_VERSION,
     createdAt: timestamp,
     updatedAt: timestamp,
     taxYearBE: input.taxYearBE,
@@ -149,23 +155,16 @@ export function touchWorkspace(
 }
 
 export function sortEntriesByDateDesc<
-  T extends { readonly occurredOn?: string },
+  T extends {
+    readonly entryFrequency: "one_time" | "monthly";
+    readonly occurredOn: string | null;
+    readonly occurredMonth: string | null;
+  },
 >(entries: readonly T[]): T[] {
   return [...entries].sort((a, b) => {
-    if (!a.occurredOn && !b.occurredOn) {
-      return 0;
-    }
-    if (!a.occurredOn) {
-      return 1;
-    }
-    if (!b.occurredOn) {
-      return -1;
-    }
-    return a.occurredOn < b.occurredOn
-      ? 1
-      : a.occurredOn > b.occurredOn
-        ? -1
-        : 0;
+    const keyA = getEntryChronologicalSortKey(a);
+    const keyB = getEntryChronologicalSortKey(b);
+    return keyA < keyB ? 1 : keyA > keyB ? -1 : 0;
   });
 }
 

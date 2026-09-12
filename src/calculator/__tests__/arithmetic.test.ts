@@ -9,11 +9,17 @@ import {
 import {
   createCalculatorWorkspace,
   getDefaultWorkspaceInput,
+  sortEntriesByDateDesc,
 } from "@/calculator/workspace";
+import {
+  getEntryChronologicalSortKey,
+  isEntryWithinPeriod,
+} from "@/calculator/utils";
 import { decimalStringToSatang, toMoneySatang } from "@/tax/money";
+import type { IncomeEntry } from "@/calculator/types";
 
-describe("Calculator Arithmetic Totals", () => {
-  it("computes exact integer satang totals for income, expense, and withholding within period", () => {
+describe("Calculator Arithmetic Totals and Mixed Frequencies", () => {
+  it("computes exact integer satang totals for mixed frequency income, expense, and withholding within period", () => {
     const input = getDefaultWorkspaceInput(
       "online_seller_business",
       2569,
@@ -24,9 +30,12 @@ describe("Calculator Arithmetic Totals", () => {
     const updatedWorkspace = {
       ...workspace,
       incomeEntries: [
+        // One-time entry in Feb
         {
           id: "inc-1",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-02-15",
+          occurredMonth: null,
           categoryCode: "online_sales" as const,
           amountSatang: decimalStringToSatang("50000.50", {
             roundingPolicy: "exact_only",
@@ -34,45 +43,56 @@ describe("Calculator Arithmetic Totals", () => {
           createdAt: "2026-02-15T00:00:00.000Z",
           updatedAt: "2026-02-15T00:00:00.000Z",
         },
+        // Monthly entry in March (Salary)
         {
           id: "inc-2",
-          occurredOn: "2026-03-20",
-          categoryCode: "online_sales" as const,
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-03",
+          categoryCode: "salary" as const,
           amountSatang: decimalStringToSatang("25000.25", {
             roundingPolicy: "exact_only",
           }),
-          createdAt: "2026-03-20T00:00:00.000Z",
-          updatedAt: "2026-03-20T00:00:00.000Z",
+          createdAt: "2026-03-01T00:00:00.000Z",
+          updatedAt: "2026-03-01T00:00:00.000Z",
         },
-        // Outside period (first half ends 2026-06-30)
+        // Outside period (July, first half ends 2026-06-30)
         {
           id: "inc-3",
-          occurredOn: "2026-07-10",
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-07",
           categoryCode: "online_sales" as const,
           amountSatang: decimalStringToSatang("10000.00", {
             roundingPolicy: "exact_only",
           }),
-          createdAt: "2026-07-10T00:00:00.000Z",
-          updatedAt: "2026-07-10T00:00:00.000Z",
+          createdAt: "2026-07-01T00:00:00.000Z",
+          updatedAt: "2026-07-01T00:00:00.000Z",
         },
       ],
       expenseEntries: [
+        // Monthly rent expense in March
         {
           id: "exp-1",
-          occurredOn: "2026-02-18",
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-03",
           categoryCode: "shipping" as const,
           taxRelevanceStatus: "likely_related" as const,
           amountSatang: decimalStringToSatang("12000.75", {
             roundingPolicy: "exact_only",
           }),
-          createdAt: "2026-02-18T00:00:00.000Z",
-          updatedAt: "2026-02-18T00:00:00.000Z",
+          createdAt: "2026-03-01T00:00:00.000Z",
+          updatedAt: "2026-03-01T00:00:00.000Z",
         },
       ],
       withholdingEntries: [
+        // One-time withholding in March
         {
           id: "wht-1",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-03-20",
+          occurredMonth: null,
           payerName: "Shopee Platform",
           certificateReference: "50TW-001",
           amountSatang: decimalStringToSatang("750.00", {
@@ -109,6 +129,57 @@ describe("Calculator Arithmetic Totals", () => {
     expect(totals.totalDeclaredAllowanceSatang).toBe(toMoneySatang(6000000));
   });
 
+  it("handles period filtering for both one_time and monthly frequencies", () => {
+    const oneTimeInPeriod: IncomeEntry = {
+      id: "inc-ot-in",
+      entryFrequency: "one_time",
+      occurredOn: "2026-03-10",
+      occurredMonth: null,
+      categoryCode: "online_sales",
+      amountSatang: toMoneySatang(100000),
+      createdAt: "2026-03-10T00:00:00.000Z",
+      updatedAt: "2026-03-10T00:00:00.000Z",
+    };
+    const oneTimeOutPeriod: IncomeEntry = {
+      id: "inc-ot-out",
+      entryFrequency: "one_time",
+      occurredOn: "2026-08-10",
+      occurredMonth: null,
+      categoryCode: "online_sales",
+      amountSatang: toMoneySatang(100000),
+      createdAt: "2026-08-10T00:00:00.000Z",
+      updatedAt: "2026-08-10T00:00:00.000Z",
+    };
+    const monthlyInPeriod: IncomeEntry = {
+      id: "inc-m-in",
+      entryFrequency: "monthly",
+      occurredOn: null,
+      occurredMonth: "2026-05",
+      categoryCode: "salary",
+      amountSatang: toMoneySatang(200000),
+      createdAt: "2026-05-01T00:00:00.000Z",
+      updatedAt: "2026-05-01T00:00:00.000Z",
+    };
+    const monthlyOutPeriod: IncomeEntry = {
+      id: "inc-m-out",
+      entryFrequency: "monthly",
+      occurredOn: null,
+      occurredMonth: "2026-07",
+      categoryCode: "salary",
+      amountSatang: toMoneySatang(200000),
+      createdAt: "2026-07-01T00:00:00.000Z",
+      updatedAt: "2026-07-01T00:00:00.000Z",
+    };
+
+    const pStart = "2026-01-01";
+    const pEnd = "2026-06-30";
+
+    expect(isEntryWithinPeriod(oneTimeInPeriod, pStart, pEnd)).toBe(true);
+    expect(isEntryWithinPeriod(oneTimeOutPeriod, pStart, pEnd)).toBe(false);
+    expect(isEntryWithinPeriod(monthlyInPeriod, pStart, pEnd)).toBe(true);
+    expect(isEntryWithinPeriod(monthlyOutPeriod, pStart, pEnd)).toBe(false);
+  });
+
   it("handles negative netBeforeTax when expenses exceed income without throwing", () => {
     const input = getDefaultWorkspaceInput(
       "online_seller_business",
@@ -122,7 +193,9 @@ describe("Calculator Arithmetic Totals", () => {
       incomeEntries: [
         {
           id: "inc-1",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-02-01",
+          occurredMonth: null,
           categoryCode: "online_sales" as const,
           amountSatang: toMoneySatang(100000), // 1,000 Baht
           createdAt: "2026-02-01T00:00:00.000Z",
@@ -132,12 +205,14 @@ describe("Calculator Arithmetic Totals", () => {
       expenseEntries: [
         {
           id: "exp-1",
-          occurredOn: "2026-02-05",
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-02",
           categoryCode: "inventory" as const,
           taxRelevanceStatus: "likely_related" as const,
           amountSatang: toMoneySatang(500000), // 5,000 Baht
-          createdAt: "2026-02-05T00:00:00.000Z",
-          updatedAt: "2026-02-05T00:00:00.000Z",
+          createdAt: "2026-02-01T00:00:00.000Z",
+          updatedAt: "2026-02-01T00:00:00.000Z",
         },
       ],
     };
@@ -149,7 +224,7 @@ describe("Calculator Arithmetic Totals", () => {
     );
   });
 
-  it("identifies when entries exist outside selected period", () => {
+  it("identifies when entries exist outside selected period for mixed frequencies", () => {
     const input = getDefaultWorkspaceInput(
       "online_seller_business",
       2569,
@@ -159,23 +234,25 @@ describe("Calculator Arithmetic Totals", () => {
 
     expect(hasEntriesOutsidePeriod(workspace)).toBe(false);
 
-    const withOutside = {
+    const withOutsideMonthly = {
       ...workspace,
       incomeEntries: [
         {
           id: "inc-outside",
-          occurredOn: "2026-08-01",
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-09",
           categoryCode: "online_sales" as const,
           amountSatang: toMoneySatang(10000),
-          createdAt: "2026-08-01T00:00:00.000Z",
-          updatedAt: "2026-08-01T00:00:00.000Z",
+          createdAt: "2026-09-01T00:00:00.000Z",
+          updatedAt: "2026-09-01T00:00:00.000Z",
         },
       ],
     };
-    expect(hasEntriesOutsidePeriod(withOutside)).toBe(true);
+    expect(hasEntriesOutsidePeriod(withOutsideMonthly)).toBe(true);
   });
 
-  it("computes monthly breakdown correctly with monthly sorting", () => {
+  it("computes monthly breakdown correctly with mixed frequencies", () => {
     const input = getDefaultWorkspaceInput(
       "online_seller_business",
       2569,
@@ -186,38 +263,60 @@ describe("Calculator Arithmetic Totals", () => {
     const updatedWorkspace = {
       ...workspace,
       incomeEntries: [
+        // One-time in Jan
         {
           id: "inc-jan",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-01-10",
+          occurredMonth: null,
           categoryCode: "online_sales" as const,
           amountSatang: toMoneySatang(200000),
           createdAt: "2026-01-10T00:00:00.000Z",
           updatedAt: "2026-01-10T00:00:00.000Z",
         },
+        // Monthly in Feb
         {
           id: "inc-feb",
-          occurredOn: "2026-02-15",
-          categoryCode: "online_sales" as const,
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-02",
+          categoryCode: "salary" as const,
           amountSatang: toMoneySatang(300000),
-          createdAt: "2026-02-15T00:00:00.000Z",
-          updatedAt: "2026-02-15T00:00:00.000Z",
+          createdAt: "2026-02-01T00:00:00.000Z",
+          updatedAt: "2026-02-01T00:00:00.000Z",
         },
       ],
       expenseEntries: [
+        // One-time in Jan
         {
           id: "exp-jan",
+          entryFrequency: "one_time" as const,
           occurredOn: "2026-01-20",
+          occurredMonth: null,
           categoryCode: "shipping" as const,
           taxRelevanceStatus: "likely_related" as const,
           amountSatang: toMoneySatang(50000),
           createdAt: "2026-01-20T00:00:00.000Z",
           updatedAt: "2026-01-20T00:00:00.000Z",
         },
+        // Monthly in Feb
+        {
+          id: "exp-feb",
+          entryFrequency: "monthly" as const,
+          occurredOn: null,
+          occurredMonth: "2026-02",
+          categoryCode: "utilities" as const,
+          taxRelevanceStatus: "likely_related" as const,
+          amountSatang: toMoneySatang(70000),
+          createdAt: "2026-02-01T00:00:00.000Z",
+          updatedAt: "2026-02-01T00:00:00.000Z",
+        },
       ],
     };
 
     const breakdown = computeMonthlyBreakdown(updatedWorkspace);
     expect(breakdown).toHaveLength(2);
+
     expect(breakdown[0]?.monthKey).toBe("2026-01");
     expect(breakdown[0]?.incomeSatang).toBe(toMoneySatang(200000));
     expect(breakdown[0]?.expenseSatang).toBe(toMoneySatang(50000));
@@ -225,8 +324,39 @@ describe("Calculator Arithmetic Totals", () => {
 
     expect(breakdown[1]?.monthKey).toBe("2026-02");
     expect(breakdown[1]?.incomeSatang).toBe(toMoneySatang(300000));
-    expect(breakdown[1]?.expenseSatang).toBe(toMoneySatang(0));
-    expect(breakdown[1]?.netSatang).toBe(toMoneySatang(300000));
+    expect(breakdown[1]?.expenseSatang).toBe(toMoneySatang(70000));
+    expect(breakdown[1]?.netSatang).toBe(toMoneySatang(230000));
+  });
+
+  it("sorts mixed entries chronologically descending", () => {
+    const entries = [
+      {
+        id: "e1",
+        entryFrequency: "one_time" as const,
+        occurredOn: "2026-01-15",
+        occurredMonth: null,
+      },
+      {
+        id: "e2",
+        entryFrequency: "monthly" as const,
+        occurredOn: null,
+        occurredMonth: "2026-03",
+      },
+      {
+        id: "e3",
+        entryFrequency: "one_time" as const,
+        occurredOn: "2026-02-20",
+        occurredMonth: null,
+      },
+    ];
+
+    expect(getEntryChronologicalSortKey(entries[0]!)).toBe("2026-01-15");
+    expect(getEntryChronologicalSortKey(entries[1]!)).toBe("2026-03-01");
+    expect(getEntryChronologicalSortKey(entries[2]!)).toBe("2026-02-20");
+
+    const sorted = sortEntriesByDateDesc(entries);
+    // e2 (March 2026) -> e3 (Feb 20, 2026) -> e1 (Jan 15, 2026)
+    expect(sorted.map((e) => e.id)).toEqual(["e2", "e3", "e1"]);
   });
 
   it("returns zeroed totals correctly", () => {

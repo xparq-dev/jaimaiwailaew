@@ -39,7 +39,7 @@ TanStack Table, Recharts และ browser-safe PDF renderer เป็น depend
 
 ## เริ่มพัฒนา
 
-ต้องมี Node.js 22.12 หรือใหม่กว่า และ npm เวอร์ชันที่มากับ Node.js
+ต้องมี Node.js 22.x ตั้งแต่ 22.12 ขึ้นไป และ npm เวอร์ชันที่มากับ Node.js
 
 ```bash
 npm install
@@ -137,7 +137,7 @@ PDF หลุดเข้า Cache Storage
 
 - กฎภาษีปี 2568/2569 ยังไม่มีค่าจริงและต้องผ่านผู้เชี่ยวชาญก่อนเปิดการคำนวณ
 - Privacy, Terms และ Disclaimer เป็นร่าง ต้องเติมผู้ควบคุมข้อมูล ช่องทางติดต่อ และตรวจด้านกฎหมาย
-- Repository นี้ยังต้องเชื่อม GitHub/Vercel เพื่อยืนยัน deploy preview, branch protection และ HTTPS จริง
+- Repository เชื่อม GitHub/Vercel แล้ว และยืนยัน deploy preview กับ HTTPS จริงแล้ว; ยังต้องกำหนด branch protection ใน GitHub
 - หน้าเว็บตั้ง `noindex` ไว้ใน Foundation โดยตั้งใจ ต้องทบทวนหลังเนื้อหาและกฎผ่านการอนุมัติ
 - PWA ใช้ SVG icon แบบ regular/maskable ใน skeleton; ควรเพิ่ม PNG หลายขนาดและตรวจการติดตั้งบนอุปกรณ์จริงก่อน production
 - CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ก่อนเปิดรับข้อมูลจริงควรประเมิน nonce-based CSP เทียบกับต้นทุน dynamic rendering

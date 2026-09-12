@@ -126,15 +126,10 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   }
 });
 
-test("serves every route family as an honest Phase 0 placeholder", async ({
+test("serves remaining unstarted route families as honest placeholders", async ({
   page,
 }) => {
-  for (const route of [
-    "/start/pnd94",
-    "/calculator/income",
-    "/learn/tax-basics",
-    "/offline",
-  ]) {
+  for (const route of ["/learn/tax-basics", "/offline"]) {
     await page.goto(route);
     await expect(page.getByText("ยังไม่เปิดใช้การคำนวณ")).toBeVisible();
   }

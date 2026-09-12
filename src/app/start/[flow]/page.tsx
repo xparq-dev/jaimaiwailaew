@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { OnboardingWizard } from "@/components/calculator/onboarding-wizard";
 import { startPlaceholders } from "@/content/route-placeholders";
+
+const validFlows = ["income-type", "pnd94", "pnd91", "multi-income"] as const;
+type ValidFlow = (typeof validFlows)[number];
 
 export function generateStaticParams() {
   return Object.keys(startPlaceholders).map((flow) => ({ flow }));
@@ -13,9 +16,10 @@ export default async function StartFlowPage({
   params: Promise<{ flow: string }>;
 }) {
   const { flow } = await params;
-  const content = startPlaceholders[flow as keyof typeof startPlaceholders];
 
-  if (!content) notFound();
+  if (!validFlows.includes(flow as ValidFlow)) {
+    notFound();
+  }
 
-  return <PlaceholderPage content={content} />;
+  return <OnboardingWizard initialFlow={flow as ValidFlow} />;
 }

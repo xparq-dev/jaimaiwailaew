@@ -145,7 +145,7 @@ function Footer() {
   ] as const;
 
   return (
-    <footer className="border-border bg-card mt-auto border-t px-4 py-6 sm:px-6">
+    <footer className="border-border bg-card mt-auto border-t px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
       <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} Jai Mai Wai Laew · Phase 0</p>
         <nav

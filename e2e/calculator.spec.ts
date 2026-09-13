@@ -162,12 +162,99 @@ test.describe("Calculator UX (Local-only)", () => {
 
     await expectVisible("10,000.00 ฿");
 
+    // Income ledger separates months, while a month can contain both frequencies.
+    const incomeMonthGroups = page.getByTestId("income-month-groups");
+    expect(
+      await incomeMonthGroups
+        .locator("[data-month-key]")
+        .evaluateAll((groups) =>
+          groups.map((group) => group.getAttribute("data-month-key")),
+        ),
+    ).toEqual(["2026-04", "2026-03"]);
+
+    const marchIncomeGroup = page.getByTestId("income-month-2026-03");
+    await expect(
+      marchIncomeGroup.getByRole("heading", { name: "มีนาคม 2569" }),
+    ).toBeVisible();
+    await expect(
+      marchIncomeGroup
+        .getByText("90,000.00 ฿", { exact: true })
+        .filter({ visible: true })
+        .first(),
+    ).toBeVisible();
+    for (const frequencyHeading of ["รายการรายเดือน", "รายการระบุวัน"]) {
+      await expect(
+        marchIncomeGroup
+          .getByText(frequencyHeading, { exact: true })
+          .filter({ visible: true })
+          .first(),
+      ).toBeVisible();
+    }
+    await expect(
+      marchIncomeGroup
+        .getByText("40,000.00 ฿", { exact: true })
+        .filter({ visible: true })
+        .first(),
+    ).toBeVisible();
+    await expect(
+      marchIncomeGroup
+        .getByText("50,000.00 ฿", { exact: true })
+        .filter({ visible: true })
+        .first(),
+    ).toBeVisible();
+
+    const aprilIncomeGroup = page.getByTestId("income-month-2026-04");
+    await expect(
+      aprilIncomeGroup.getByRole("heading", { name: "เมษายน 2569" }),
+    ).toBeVisible();
+    await expect(
+      aprilIncomeGroup
+        .getByText("10,000.00 ฿", { exact: true })
+        .filter({ visible: true })
+        .first(),
+    ).toBeVisible();
+
+    const viewportBeforeNarrowCheck = page.viewportSize();
+    await page.setViewportSize({ width: 320, height: 700 });
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      )
+      .toBe(true);
+
+    const incomeHtml = page.locator("html");
+    const incomeWasDark = await incomeHtml.evaluate((element) =>
+      element.classList.contains("dark"),
+    );
+    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await expect
+      .poll(() =>
+        incomeHtml.evaluate((element) => element.classList.contains("dark")),
+      )
+      .toBe(!incomeWasDark);
+    await expect(
+      marchIncomeGroup.getByRole("heading", { name: "มีนาคม 2569" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await expect
+      .poll(() =>
+        incomeHtml.evaluate((element) => element.classList.contains("dark")),
+      )
+      .toBe(incomeWasDark);
+
+    if (viewportBeforeNarrowCheck) {
+      await page.setViewportSize(viewportBeforeNarrowCheck);
+    }
+
     // 2d. Test edit frequency switch clears incompatible period field
     if (!isMobile) {
       const editButton = page
         .getByRole("button", { name: /แก้ไขรายการ/ })
         .first();
-      await editButton.click();
+      await editButton.focus();
+      await page.keyboard.press("Enter");
       await expect(
         page.getByRole("heading", { name: "แก้ไขรายรับ" }),
       ).toBeVisible();

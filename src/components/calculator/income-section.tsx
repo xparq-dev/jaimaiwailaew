@@ -1,9 +1,15 @@
 "use client";
 
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 
 import { formatThaiBaht } from "@/tax/money";
+import {
+  buildIncomeMonthGroups,
+  buildIncomeMonthGroupsForPeriod,
+  type IncomeFrequencyGroup,
+  type IncomeMonthGroup,
+} from "@/calculator/income-month-groups";
 import { useCalculatorStore } from "@/calculator/store";
 import {
   getIncomeCategoryLabel,
@@ -13,7 +19,7 @@ import {
   incomeEntryFormSchema,
   type IncomeEntryFormValues,
 } from "@/calculator/schemas";
-import { sortEntriesByDateDesc } from "@/calculator/workspace";
+import type { IncomeEntry } from "@/calculator/types";
 import { formatEntryPeriod, isEntryWithinPeriod } from "@/calculator/utils";
 import { Button } from "@/components/ui/button";
 
@@ -50,11 +56,28 @@ export function IncomeSectionPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
 
-  const entries = useMemo(() => {
+  const { monthGroups, outsidePeriodMonthGroups } = useMemo(() => {
     if (!workspace) {
-      return [];
+      return { monthGroups: [], outsidePeriodMonthGroups: [] };
     }
-    return sortEntriesByDateDesc(workspace.incomeEntries);
+
+    return {
+      monthGroups: buildIncomeMonthGroupsForPeriod(
+        workspace.incomeEntries,
+        workspace.periodStart,
+        workspace.periodEnd,
+      ),
+      outsidePeriodMonthGroups: buildIncomeMonthGroups(
+        workspace.incomeEntries.filter(
+          (entry) =>
+            !isEntryWithinPeriod(
+              entry,
+              workspace.periodStart,
+              workspace.periodEnd,
+            ),
+        ),
+      ),
+    };
   }, [workspace]);
 
   const defaultValues = useMemo((): IncomeEntryFormValues => {
@@ -133,7 +156,7 @@ export function IncomeSectionPage() {
         </Button>
       </div>
 
-      {entries.length === 0 ? (
+      {workspace.incomeEntries.length === 0 ? (
         <div className="border-border bg-card rounded-2xl border p-6 text-center">
           <p className="font-medium">ยังไม่มีรายการรายรับ</p>
           <p className="text-muted-foreground mt-2 text-sm">
@@ -141,158 +164,68 @@ export function IncomeSectionPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          <div className="hidden overflow-x-auto lg:block">
-            <table className="border-border w-full min-w-[640px] border-separate border-spacing-0 overflow-hidden rounded-2xl border text-sm">
-              <thead className="bg-muted/60">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">
-                    วันที่ / เดือน
-                  </th>
-                  <th className="px-4 py-3 text-left font-semibold">รูปแบบ</th>
-                  <th className="px-4 py-3 text-left font-semibold">
-                    หมวดหมู่
-                  </th>
-                  <th className="px-4 py-3 text-left font-semibold">
-                    แหล่งรายได้
-                  </th>
-                  <th className="px-4 py-3 text-right font-semibold">
-                    จำนวนเงิน
-                  </th>
-                  <th className="px-4 py-3 text-right font-semibold">
-                    การทำงาน
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry) => {
-                  const inPeriod = isEntryWithinPeriod(
-                    entry,
-                    workspace.periodStart,
-                    workspace.periodEnd,
-                  );
-                  return (
-                    <tr className="border-border border-t" key={entry.id}>
-                      <td className="px-4 py-3">{formatEntryPeriod(entry)}</td>
-                      <td className="px-4 py-3">
-                        <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium">
-                          {entry.entryFrequency === "monthly"
-                            ? "รายเดือน"
-                            : "ระบุวัน"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {getIncomeCategoryLabel(entry.categoryCode)}
-                      </td>
-                      <td className="px-4 py-3">{entry.sourceName ?? "—"}</td>
-                      <td className="px-4 py-3 text-right font-medium">
-                        {formatThaiBaht(entry.amountSatang)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          {!inPeriod ? (
-                            <span className="text-warning-strong text-xs font-medium">
-                              นอกช่วง
-                            </span>
-                          ) : null}
-                          <Button
-                            aria-label={`แก้ไขรายการ ${entry.id}`}
-                            onClick={() => {
-                              setEditingId(entry.id);
-                              setDialogOpen(true);
-                            }}
-                            size="sm"
-                            type="button"
-                            variant="secondary"
-                          >
-                            <Pencil aria-hidden="true" className="size-4" />
-                          </Button>
-                          <Button
-                            aria-label={`ลบรายการ ${entry.id}`}
-                            onClick={() => setDeleteTargetId(entry.id)}
-                            size="sm"
-                            type="button"
-                            variant="danger"
-                          >
-                            <Trash2 aria-hidden="true" className="size-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        <>
+          {monthGroups.length === 0 ? (
+            <div className="border-border bg-card rounded-2xl border p-6 text-center">
+              <p className="font-medium">ยังไม่มีรายการรายรับในช่วงที่เลือก</p>
+              <p className="text-muted-foreground mt-2 text-sm">
+                รายการนอกช่วงจะแสดงแยกด้านล่างและไม่รวมในยอดสรุป
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-5" data-testid="income-month-groups">
+              {monthGroups.map((group) => (
+                <IncomeMonthSection
+                  group={group}
+                  key={group.monthKey}
+                  onDelete={setDeleteTargetId}
+                  onEdit={(entryId) => {
+                    setEditingId(entryId);
+                    setDialogOpen(true);
+                  }}
+                  periodEnd={workspace.periodEnd}
+                  periodStart={workspace.periodStart}
+                  testIdPrefix="income-month"
+                  totalLabel="ยอดรวมเดือน"
+                />
+              ))}
+            </div>
+          )}
 
-          <ul className="space-y-3 lg:hidden">
-            {entries.map((entry) => {
-              const inPeriod = isEntryWithinPeriod(
-                entry,
-                workspace.periodStart,
-                workspace.periodEnd,
-              );
-              return (
-                <li
-                  className="border-border bg-card rounded-2xl border p-4 shadow-sm"
-                  key={entry.id}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">
-                          {getIncomeCategoryLabel(entry.categoryCode)}
-                        </p>
-                        <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium">
-                          {entry.entryFrequency === "monthly"
-                            ? "รายเดือน"
-                            : "ระบุวัน"}
-                        </span>
-                      </div>
-                      <p className="text-muted-foreground mt-1 text-sm">
-                        {formatEntryPeriod(entry)}
-                      </p>
-                      {entry.sourceName ? (
-                        <p className="text-muted-foreground mt-1 text-sm">
-                          {entry.sourceName}
-                        </p>
-                      ) : null}
-                      {!inPeriod ? (
-                        <p className="text-warning-strong mt-1 text-xs font-medium">
-                          อยู่นอกช่วงที่เลือก
-                        </p>
-                      ) : null}
-                    </div>
-                    <p className="font-semibold">
-                      {formatThaiBaht(entry.amountSatang)}
-                    </p>
-                  </div>
-                  <div className="mt-4 flex gap-2">
-                    <Button
-                      className="flex-1"
-                      onClick={() => {
-                        setEditingId(entry.id);
-                        setDialogOpen(true);
-                      }}
-                      type="button"
-                      variant="secondary"
-                    >
-                      แก้ไข
-                    </Button>
-                    <Button
-                      className="flex-1"
-                      onClick={() => setDeleteTargetId(entry.id)}
-                      type="button"
-                      variant="danger"
-                    >
-                      ลบ
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+          {outsidePeriodMonthGroups.length > 0 ? (
+            <section
+              aria-labelledby="outside-period-income-title"
+              className="space-y-4"
+              data-testid="income-outside-period-groups"
+            >
+              <div>
+                <h2 className="font-bold" id="outside-period-income-title">
+                  รายการนอกช่วงที่เลือก
+                </h2>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  แสดงไว้เพื่อให้แก้ไขหรือลบได้ แต่ไม่รวมในยอดสรุปของช่วงนี้
+                </p>
+              </div>
+              <div className="space-y-5">
+                {outsidePeriodMonthGroups.map((group) => (
+                  <IncomeMonthSection
+                    group={group}
+                    key={group.monthKey}
+                    onDelete={setDeleteTargetId}
+                    onEdit={(entryId) => {
+                      setEditingId(entryId);
+                      setDialogOpen(true);
+                    }}
+                    periodEnd={workspace.periodEnd}
+                    periodStart={workspace.periodStart}
+                    testIdPrefix="income-outside-month"
+                    totalLabel="ยอดรวมนอกช่วง"
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </>
       )}
 
       <EntryFormDialog
@@ -485,5 +418,273 @@ export function IncomeSectionPage() {
         </Button>
       </div>
     </CalculatorLayout>
+  );
+}
+
+function IncomeMonthSection({
+  group,
+  periodStart,
+  periodEnd,
+  testIdPrefix,
+  totalLabel,
+  onEdit,
+  onDelete,
+}: {
+  readonly group: IncomeMonthGroup;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly testIdPrefix: "income-month" | "income-outside-month";
+  readonly totalLabel: string;
+  readonly onEdit: (entryId: string) => void;
+  readonly onDelete: (entryId: string) => void;
+}) {
+  const titleId = `${testIdPrefix}-${group.monthKey}-title`;
+
+  return (
+    <section
+      aria-labelledby={titleId}
+      className="border-border bg-card min-w-0 overflow-hidden rounded-2xl border shadow-sm"
+      data-month-key={group.monthKey}
+      data-testid={`${testIdPrefix}-${group.monthKey}`}
+    >
+      <header className="border-border bg-muted/40 flex flex-wrap items-start justify-between gap-3 border-b px-4 py-4 sm:px-5">
+        <div>
+          <h2 className="font-bold" id={titleId}>
+            {group.label}
+          </h2>
+          <p className="text-muted-foreground mt-1 text-xs">
+            {group.entryCount} รายการ
+          </p>
+        </div>
+        <p className="text-right">
+          <span className="text-muted-foreground block text-xs">
+            {totalLabel}
+          </span>
+          <span className="font-semibold tabular-nums">
+            {formatThaiBaht(group.totalSatang)}
+          </span>
+        </p>
+      </header>
+
+      <div className="hidden overflow-x-auto lg:block">
+        <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
+          <caption className="sr-only">รายการรายรับ {group.label}</caption>
+          <thead className="bg-background">
+            <tr>
+              <th className="px-4 py-3 text-left font-semibold">
+                วันที่ / เดือน
+              </th>
+              <th className="px-4 py-3 text-left font-semibold">รูปแบบ</th>
+              <th className="px-4 py-3 text-left font-semibold">หมวดหมู่</th>
+              <th className="px-4 py-3 text-left font-semibold">แหล่งรายได้</th>
+              <th className="px-4 py-3 text-right font-semibold">จำนวนเงิน</th>
+              <th className="px-4 py-3 text-right font-semibold">การทำงาน</th>
+            </tr>
+          </thead>
+          <tbody>
+            {group.frequencyGroups.map((frequencyGroup) => (
+              <Fragment key={frequencyGroup.entryFrequency}>
+                <IncomeFrequencyTableHeader group={frequencyGroup} />
+                {frequencyGroup.entries.map((entry) => (
+                  <IncomeTableRow
+                    entry={entry}
+                    key={entry.id}
+                    onDelete={onDelete}
+                    onEdit={onEdit}
+                    periodEnd={periodEnd}
+                    periodStart={periodStart}
+                  />
+                ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="space-y-5 p-4 lg:hidden">
+        {group.frequencyGroups.map((frequencyGroup) => (
+          <section
+            aria-labelledby={`${titleId}-${frequencyGroup.entryFrequency}`}
+            key={frequencyGroup.entryFrequency}
+          >
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+              <h3
+                className="text-sm font-semibold"
+                id={`${titleId}-${frequencyGroup.entryFrequency}`}
+              >
+                {frequencyGroup.label}
+              </h3>
+              <p className="text-muted-foreground text-xs">
+                {frequencyGroup.entries.length} รายการ ·{" "}
+                <span className="tabular-nums">
+                  {formatThaiBaht(frequencyGroup.totalSatang)}
+                </span>
+              </p>
+            </div>
+            <ul className="space-y-3">
+              {frequencyGroup.entries.map((entry) => (
+                <IncomeMobileEntryCard
+                  entry={entry}
+                  key={entry.id}
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                  periodEnd={periodEnd}
+                  periodStart={periodStart}
+                />
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function IncomeFrequencyTableHeader({
+  group,
+}: {
+  readonly group: IncomeFrequencyGroup;
+}) {
+  return (
+    <tr className="border-border bg-muted/25 border-t">
+      <th className="px-4 py-2 text-left" colSpan={6} scope="rowgroup">
+        <span className="font-semibold">{group.label}</span>
+        <span className="text-muted-foreground ml-2 text-xs font-normal">
+          {group.entries.length} รายการ · {formatThaiBaht(group.totalSatang)}
+        </span>
+      </th>
+    </tr>
+  );
+}
+
+function IncomeTableRow({
+  entry,
+  periodStart,
+  periodEnd,
+  onEdit,
+  onDelete,
+}: {
+  readonly entry: IncomeEntry;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly onEdit: (entryId: string) => void;
+  readonly onDelete: (entryId: string) => void;
+}) {
+  const inPeriod = isEntryWithinPeriod(entry, periodStart, periodEnd);
+
+  return (
+    <tr className="border-border border-t">
+      <td className="px-4 py-3">{formatEntryPeriod(entry)}</td>
+      <td className="px-4 py-3">
+        <IncomeFrequencyBadge entry={entry} />
+      </td>
+      <td className="px-4 py-3">
+        {getIncomeCategoryLabel(entry.categoryCode)}
+      </td>
+      <td className="px-4 py-3">{entry.sourceName ?? "—"}</td>
+      <td className="px-4 py-3 text-right font-medium tabular-nums">
+        {formatThaiBaht(entry.amountSatang)}
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-2">
+          {!inPeriod ? (
+            <span className="text-warning-strong text-xs font-medium">
+              นอกช่วง
+            </span>
+          ) : null}
+          <Button
+            aria-label={`แก้ไขรายการ ${entry.id}`}
+            onClick={() => onEdit(entry.id)}
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            <Pencil aria-hidden="true" className="size-4" />
+          </Button>
+          <Button
+            aria-label={`ลบรายการ ${entry.id}`}
+            onClick={() => onDelete(entry.id)}
+            size="sm"
+            type="button"
+            variant="danger"
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function IncomeMobileEntryCard({
+  entry,
+  periodStart,
+  periodEnd,
+  onEdit,
+  onDelete,
+}: {
+  readonly entry: IncomeEntry;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly onEdit: (entryId: string) => void;
+  readonly onDelete: (entryId: string) => void;
+}) {
+  const inPeriod = isEntryWithinPeriod(entry, periodStart, periodEnd);
+
+  return (
+    <li className="border-border bg-background rounded-xl border p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold break-words">
+              {getIncomeCategoryLabel(entry.categoryCode)}
+            </p>
+            <IncomeFrequencyBadge entry={entry} />
+          </div>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {formatEntryPeriod(entry)}
+          </p>
+          {entry.sourceName ? (
+            <p className="text-muted-foreground mt-1 text-sm break-words">
+              {entry.sourceName}
+            </p>
+          ) : null}
+          {!inPeriod ? (
+            <p className="text-warning-strong mt-1 text-xs font-medium">
+              อยู่นอกช่วงที่เลือก
+            </p>
+          ) : null}
+        </div>
+        <p className="shrink-0 font-semibold tabular-nums">
+          {formatThaiBaht(entry.amountSatang)}
+        </p>
+      </div>
+      <div className="mt-4 flex gap-2">
+        <Button
+          className="flex-1"
+          onClick={() => onEdit(entry.id)}
+          type="button"
+          variant="secondary"
+        >
+          แก้ไข
+        </Button>
+        <Button
+          className="flex-1"
+          onClick={() => onDelete(entry.id)}
+          type="button"
+          variant="danger"
+        >
+          ลบ
+        </Button>
+      </div>
+    </li>
+  );
+}
+
+function IncomeFrequencyBadge({ entry }: { readonly entry: IncomeEntry }) {
+  return (
+    <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium">
+      {entry.entryFrequency === "monthly" ? "รายเดือน" : "ระบุวัน"}
+    </span>
   );
 }

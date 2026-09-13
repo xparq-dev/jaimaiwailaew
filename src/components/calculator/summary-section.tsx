@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { CalculatorLayout } from "./calculator-layout";
 import { ClearDataDialog } from "./clear-data-dialog";
 import { TaxEstimateUnavailableCard } from "./tax-estimate-unavailable-card";
+import { SummaryBreakdown } from "./summary-breakdown";
 
 export function SummarySectionPage() {
   const workspace = useCalculatorStore((state) => state.workspace);
@@ -84,6 +85,8 @@ export function SummarySectionPage() {
           value={formatThaiBaht(totals.totalDeclaredAllowanceSatang)}
         />
       </section>
+
+      <SummaryBreakdown workspace={workspace} />
 
       <TaxEstimateUnavailableCard />
 

@@ -16,7 +16,7 @@ import {
   isEntryWithinPeriod,
 } from "./utils";
 
-function filterByPeriod<
+export function filterEntriesByPeriod<
   T extends {
     readonly entryFrequency: "one_time" | "monthly";
     readonly occurredOn: string | null;
@@ -31,17 +31,17 @@ function filterByPeriod<
 export function computeArithmeticTotals(
   workspace: CalculatorWorkspace,
 ): CalculatorArithmeticTotals {
-  const incomeInPeriod = filterByPeriod(
+  const incomeInPeriod = filterEntriesByPeriod(
     workspace.incomeEntries,
     workspace.periodStart,
     workspace.periodEnd,
   );
-  const expenseInPeriod = filterByPeriod(
+  const expenseInPeriod = filterEntriesByPeriod(
     workspace.expenseEntries,
     workspace.periodStart,
     workspace.periodEnd,
   );
-  const withholdingInPeriod = filterByPeriod(
+  const withholdingInPeriod = filterEntriesByPeriod(
     workspace.withholdingEntries,
     workspace.periodStart,
     workspace.periodEnd,
@@ -79,12 +79,12 @@ export function computeArithmeticTotals(
 export function computeMonthlyBreakdown(
   workspace: CalculatorWorkspace,
 ): MonthlyArithmeticBreakdownRow[] {
-  const incomeInPeriod = filterByPeriod(
+  const incomeInPeriod = filterEntriesByPeriod(
     workspace.incomeEntries,
     workspace.periodStart,
     workspace.periodEnd,
   );
-  const expenseInPeriod = filterByPeriod(
+  const expenseInPeriod = filterEntriesByPeriod(
     workspace.expenseEntries,
     workspace.periodStart,
     workspace.periodEnd,

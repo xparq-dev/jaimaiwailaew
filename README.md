@@ -9,9 +9,9 @@
 
 ## สถานะโครงการ
 
-> สถานะ: Phase 1B UX Hotfix เสร็จสมบูรณ์แล้วบน branch fix/calculator-local-data-and-monthly-entry โดยปรับปรุง Compact Privacy Indicator และรองรับ Entry Frequency ทั้งแบบระบุวัน (one_time) และรายเดือน (monthly) พร้อม local schema v2 และ atomic migration โดยกฎภาษียังคงเป็น unverified placeholder ที่บล็อกการคำนวณจริงตาม fail-closed policy
+> สถานะ: Summary Breakdown UX Improvement พัฒนาและทดสอบบน branch `feat/summary-breakdown` แล้ว โดยเพิ่มการรวมกลุ่มรายรับ/รายจ่ายและ Detail Dialog แบบ local-only ต่อจาก Hotfix PR #6 ทั้งนี้กฎภาษียังคงเป็น unverified placeholder ที่บล็อกการคำนวณจริงตาม fail-closed policy และยังไม่เริ่ม Phase 1C PDF Export
 
-โครงการพัฒนาผ่าน **Phase 0 — Project Foundation**, **Phase 1A — Tax Rule Engine**, **Phase 1B — Calculator UX** และอยู่ในระหว่าง **Phase 1B UX Hotfix** โค้ด Tax Architecture, Validation Rules และ Calculator Local Workspace เสร็จสิ้นแล้วแต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
+โครงการพัฒนาผ่าน **Phase 0 — Project Foundation**, **Phase 1A — Tax Rule Engine**, **Phase 1B — Calculator UX** และ **Phase 1B UX Hotfix** แล้ว ขณะนี้มี Summary Breakdown สำหรับทบทวนข้อมูลในช่วงเวลาที่เลือก แต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
@@ -23,6 +23,7 @@
 - ใช้งานสาธารณะได้โดยไม่ต้องสมัครสมาชิกหรือเข้าสู่ระบบ
 - ข้อมูลรายการการเงินของผู้เยี่ยมชมประมวลผลภายในอุปกรณ์และไม่ส่งไป backend
 - ไม่ใส่ข้อมูลการเงินใน URL, analytics, log หรือ error tracking
+- Summary Breakdown เป็น arithmetic aggregation ใน browser; Detail Dialog ใช้ ephemeral state และไม่ส่งข้อมูลออกเครือข่าย
 - PDF ต้องสร้างฝั่ง browser และ service worker ต้องไม่ cache PDF หรือข้อมูลที่ผู้ใช้กรอก
 - กฎภาษีต้องแยกจาก UI, มี version และผ่าน schema validation
 - ค่ากฎหมายที่ยังไม่ได้ตรวจสอบต้องระบุ `unverified` และห้ามนำไปใช้เป็นค่าจริง
@@ -112,6 +113,7 @@ PDF หลุดเข้า Cache Storage
 ├─ docs/                    # PRD, ขอบเขตเฟส, Tax review workflow และ deploy checklist
 ├─ public/                  # PWA assets, offline fallback และ service worker
 ├─ src/                     # Next.js app, shared code และ tax architecture
+│  ├─ calculator/           # Local workspace, MoneySatang arithmetic และ pure breakdown grouping
 │  └─ tax/                  # Tax schemas, domain types, money satang utils & resolver
 ├─ .env.example             # ตัวอย่างตัวแปรโดยไม่มี secret
 └─ README.md

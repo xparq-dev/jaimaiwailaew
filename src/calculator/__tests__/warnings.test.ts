@@ -224,7 +224,7 @@ describe("Calculator Warnings, Assumptions, and Completeness", () => {
 
   it("provides product data grouping disclaimers that do not determine tax status", () => {
     expect(INCOME_CATEGORY_DISCLAIMER).toContain(
-      "หมวดนี้ใช้เพื่อจัดระเบียบข้อมูลส่วนตัวเท่านั้น ไม่ใช่การจัดประเภทเงินได้หรือคำวินิจฉัยภาษีตามกฎหมาย",
+      "หมวดบันทึกนี้ใช้เพื่อจัดระเบียบข้อมูลส่วนตัวเท่านั้น ไม่ใช่การจัดประเภทเงินได้หรือคำวินิจฉัยภาษีตามกฎหมาย",
     );
     expect(EXPENSE_CATEGORY_DISCLAIMER).toContain(
       "สถานะการจัดกลุ่มรายการเป็นเพียงเครื่องช่วยทบทวนข้อมูล ไม่ได้ยืนยันว่ารายจ่ายรายการใดหักภาษีได้",

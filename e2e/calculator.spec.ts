@@ -12,6 +12,7 @@ test.describe("Calculator UX (Local-only)", () => {
       if (postData) {
         expect(postData).not.toContain("50000");
         expect(postData).not.toContain("40000");
+        expect(postData).not.toContain("10000");
         expect(postData).not.toContain("Shopee");
       }
     });
@@ -143,7 +144,25 @@ test.describe("Calculator UX (Local-only)", () => {
     await expectVisible("มีนาคม 2569");
     await expectVisible("รายเดือน", true);
 
-    // 2c. Test edit frequency switch clears incompatible period field
+    // 2c. Add income without a source so Summary can group it safely
+    if (isMobile) {
+      await page.getByRole("button", { name: "เพิ่มรายการรายรับ" }).click();
+    } else {
+      await page.getByRole("button", { name: "เพิ่มรายการ" }).first().click();
+    }
+
+    await page.locator("#income-date").fill("2026-04-10");
+    await page.locator("#income-category").selectOption("freelance_service");
+    await page.locator("#income-amount").fill("10000.00");
+    await page.locator("#income-note").fill("งานที่ไม่ระบุแหล่งที่มา");
+    await page
+      .locator("dialog[open]")
+      .getByRole("button", { name: "เพิ่มรายการ", exact: true })
+      .click();
+
+    await expectVisible("10,000.00 ฿");
+
+    // 2d. Test edit frequency switch clears incompatible period field
     if (!isMobile) {
       const editButton = page
         .getByRole("button", { name: /แก้ไขรายการ/ })
@@ -284,12 +303,12 @@ test.describe("Calculator UX (Local-only)", () => {
       page.getByRole("heading", { level: 1, name: "สรุปข้อมูล" }),
     ).toBeVisible();
 
-    // Total income: 50,000 + 40,000 = 90,000
+    // Total income: 50,000 + 40,000 + 10,000 = 100,000
     await expect(
       page
         .getByRole("article")
         .filter({ hasText: "รายรับรวม" })
-        .getByText("90,000.00 ฿"),
+        .getByText("100,000.00 ฿"),
     ).toBeVisible();
 
     // Total expense: 15,000 + 5,000 = 20,000
@@ -300,12 +319,12 @@ test.describe("Calculator UX (Local-only)", () => {
         .getByText("20,000.00 ฿"),
     ).toBeVisible();
 
-    // Net before tax: 90,000 - 20,000 = 70,000
+    // Net before tax: 100,000 - 20,000 = 80,000
     await expect(
       page
         .getByRole("article")
         .filter({ hasText: "ส่วนต่างก่อนภาษี" })
-        .getByText("70,000.00 ฿"),
+        .getByText("80,000.00 ฿"),
     ).toBeVisible();
 
     // Total withholding: 1,500
@@ -316,6 +335,78 @@ test.describe("Calculator UX (Local-only)", () => {
         .getByText("1,500.00 ฿"),
     ).toBeVisible();
 
+    // 6a. Summary Breakdown renders all local-only arithmetic views
+    const summaryBreakdown = page.getByTestId("summary-breakdown");
+    for (const heading of [
+      "รายรับตามแหล่งที่มา",
+      "รายรับตามหมวดบันทึก",
+      "รายจ่ายตามหมวดบันทึก",
+      "รายจ่ายตามสถานะการจัดกลุ่ม",
+    ]) {
+      await expect(
+        summaryBreakdown.getByRole("heading", { name: heading }),
+      ).toBeVisible();
+    }
+
+    const summaryUrl = page.url();
+    const requestCountBeforeDialog = requestedUrls.length;
+    const missingSourceTrigger = summaryBreakdown.getByRole("button", {
+      name: /ดูรายละเอียดรายรับตามแหล่งที่มา ไม่ระบุแหล่งที่มา จำนวน 1 รายการ รวม 10,000.00 ฿/,
+    });
+    await missingSourceTrigger.click();
+    const breakdownDialog = page.getByRole("dialog", {
+      name: "รายรับตามแหล่งที่มา: ไม่ระบุแหล่งที่มา",
+    });
+    await expect(breakdownDialog).toBeVisible();
+    await expect(
+      breakdownDialog.getByText("งานที่ไม่ระบุแหล่งที่มา"),
+    ).toBeVisible();
+    await expect(
+      breakdownDialog.getByText("10,000.00 ฿").first(),
+    ).toBeVisible();
+    await expect(breakdownDialog.getByText("Shopee Store")).toBeHidden();
+    expect(page.url()).toBe(summaryUrl);
+    expect(requestedUrls).toHaveLength(requestCountBeforeDialog);
+
+    await page.keyboard.press("Escape");
+    await expect(breakdownDialog).toBeHidden();
+    await expect(missingSourceTrigger).toBeFocused();
+    expect(page.url()).toBe(summaryUrl);
+    expect(requestedUrls).toHaveLength(requestCountBeforeDialog);
+
+    // Keyboard activation opens only the matching source entries
+    const shopeeTrigger = summaryBreakdown.getByRole("button", {
+      name: /ดูรายละเอียดรายรับตามแหล่งที่มา Shopee Store จำนวน 1 รายการ รวม 50,000.00 ฿/,
+    });
+    await shopeeTrigger.focus();
+    await page.keyboard.press("Enter");
+    const shopeeDialog = page.getByRole("dialog", {
+      name: "รายรับตามแหล่งที่มา: Shopee Store",
+    });
+    await expect(shopeeDialog).toBeVisible();
+    await expect(shopeeDialog.getByText("ยอดขายครั้งเดียว")).toBeVisible();
+    await expect(
+      shopeeDialog.getByText("งานที่ไม่ระบุแหล่งที่มา"),
+    ).toBeHidden();
+    await shopeeDialog
+      .getByRole("button", { name: "ปิดรายละเอียดรายการ" })
+      .click();
+    await expect(shopeeDialog).toBeHidden();
+    await expect(shopeeTrigger).toBeFocused();
+
+    // Dark mode keeps the breakdown and dialog content readable
+    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await missingSourceTrigger.click();
+    await expect(breakdownDialog).toBeVisible();
+    await expect(
+      breakdownDialog.getByRole("heading", {
+        name: "รายรับตามแหล่งที่มา: ไม่ระบุแหล่งที่มา",
+      }),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(breakdownDialog).toBeHidden();
+
     // 7. Verify Local Persistence across Page Reload
     await page.reload();
     await expect(
@@ -325,12 +416,12 @@ test.describe("Calculator UX (Local-only)", () => {
       page
         .getByRole("article")
         .filter({ hasText: "ส่วนต่างก่อนภาษี" })
-        .getByText("70,000.00 ฿"),
+        .getByText("80,000.00 ฿"),
     ).toBeVisible();
 
     // 8. Verify No Financial Data in URL
-    expect(page.url()).not.toContain("90000");
-    expect(page.url()).not.toContain("70000");
+    expect(page.url()).not.toContain("100000");
+    expect(page.url()).not.toContain("80000");
     expect(page.url()).not.toContain("Shopee");
 
     // 9. Responsive Viewport Check (320px)
@@ -339,6 +430,15 @@ test.describe("Calculator UX (Local-only)", () => {
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
     expect(hasHorizontalOverflow).toBe(false);
+
+    await missingSourceTrigger.click();
+    await expect(breakdownDialog).toBeVisible();
+    const dialogFitsViewport = await breakdownDialog.evaluate(
+      (dialog) => dialog.getBoundingClientRect().width <= window.innerWidth,
+    );
+    expect(dialogFitsViewport).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(breakdownDialog).toBeHidden();
 
     // 10. Clear Local Data
     await page.getByRole("button", { name: "ล้างข้อมูลในอุปกรณ์นี้" }).click();

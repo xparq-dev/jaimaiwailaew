@@ -106,7 +106,7 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
     const readyRegistration = await navigator.serviceWorker.ready;
     return readyRegistration.scope;
   });
-  expect(registrationScope).toBe("http://127.0.0.1:3000/");
+  expect(registrationScope).toBe(new URL("/", page.url()).toString());
 
   await page.reload();
   await expect

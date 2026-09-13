@@ -116,6 +116,269 @@ textarea {
   font-variant-numeric: tabular-nums lining-nums;
 }
 
+.pdf-export-report {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    min-width: 0 !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .pdf-export-report,
+  .pdf-export-report * {
+    visibility: visible !important;
+  }
+
+  .pdf-export-report {
+    position: absolute;
+    inset: 0 auto auto 0;
+    z-index: 9999;
+    display: block !important;
+    width: 100%;
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-family:
+      var(--font-noto-sans-thai), "Noto Sans Thai", Tahoma, sans-serif;
+    font-size: 10pt;
+    line-height: 1.45;
+    print-color-adjust: exact;
+  }
+
+  .pdf-export-watermark {
+    position: fixed;
+    top: 47%;
+    left: 50%;
+    z-index: -1;
+    display: grid;
+    width: 170mm;
+    transform: translate(-50%, -50%) rotate(-38deg);
+    color: rgba(17, 24, 39, 0.06) !important;
+    font-size: 16pt;
+    line-height: 1.6;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .pdf-export-watermark strong {
+    font-size: 28pt;
+  }
+
+  .pdf-export-document-header {
+    padding-bottom: 5mm;
+    border-bottom: 1.5pt solid #334155;
+  }
+
+  .pdf-export-product-name {
+    margin: 0 0 1mm;
+    color: #334155 !important;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .pdf-export-document-header h1 {
+    margin: 0;
+    font-size: 18pt;
+    line-height: 1.25;
+  }
+
+  .pdf-export-document-header > p:not(.pdf-export-product-name) {
+    margin: 2mm 0 0;
+  }
+
+  .pdf-export-meta-grid,
+  .pdf-export-summary-grid,
+  .pdf-export-rule-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5mm 6mm;
+    margin: 4mm 0 0;
+  }
+
+  .pdf-export-meta-grid div,
+  .pdf-export-summary-grid div,
+  .pdf-export-rule-grid div {
+    break-inside: avoid;
+  }
+
+  .pdf-export-report dt {
+    color: #475569 !important;
+    font-size: 8pt;
+  }
+
+  .pdf-export-report dd {
+    margin: 0.5mm 0 0;
+    font-weight: 600;
+  }
+
+  .pdf-export-section {
+    margin-top: 6mm;
+  }
+
+  .pdf-export-section > h2,
+  .pdf-export-disclaimer h2 {
+    margin: 0 0 2.5mm;
+    padding-bottom: 1mm;
+    border-bottom: 0.75pt solid #cbd5e1;
+    font-size: 14pt;
+    line-height: 1.3;
+  }
+
+  .pdf-export-summary-grid {
+    margin-top: 0;
+  }
+
+  .pdf-export-summary-grid div {
+    padding: 2.5mm;
+    border: 0.75pt solid #cbd5e1;
+    border-radius: 2mm;
+    background: #f8fafc !important;
+  }
+
+  .pdf-export-summary-grid dd {
+    font-size: 13pt;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pdf-export-alert {
+    display: grid;
+    gap: 1mm;
+    margin-top: 3mm;
+    padding: 2.5mm;
+    border: 0.75pt solid #94a3b8;
+    border-radius: 2mm;
+    background: #f1f5f9 !important;
+    break-inside: avoid;
+  }
+
+  .pdf-export-entry-group,
+  .pdf-export-breakdown,
+  .pdf-export-disclaimer {
+    margin-top: 3mm;
+    break-inside: avoid-page;
+  }
+
+  .pdf-export-group-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4mm;
+    margin-bottom: 1.5mm;
+  }
+
+  .pdf-export-group-heading h3,
+  .pdf-export-breakdown h3 {
+    margin: 0;
+    font-size: 11pt;
+  }
+
+  .pdf-export-group-heading p {
+    margin: 0;
+    color: #475569 !important;
+    font-size: 8.5pt;
+  }
+
+  .pdf-export-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 8.5pt;
+  }
+
+  .pdf-export-table thead {
+    display: table-header-group;
+  }
+
+  .pdf-export-table tr {
+    break-inside: avoid;
+  }
+
+  .pdf-export-table th,
+  .pdf-export-table td {
+    padding: 1.5mm 1.25mm;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+    border: 0.5pt solid #cbd5e1;
+  }
+
+  .pdf-export-table th {
+    background: #e2e8f0 !important;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .pdf-export-number {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .pdf-export-empty,
+  .pdf-export-note {
+    margin: 2mm 0 0;
+    color: #475569 !important;
+  }
+
+  .pdf-export-note {
+    font-size: 8.5pt;
+  }
+
+  .pdf-export-breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3mm;
+  }
+
+  .pdf-export-rule-grid {
+    margin-top: 0;
+    padding: 3mm;
+    border: 0.75pt solid #cbd5e1;
+  }
+
+  .pdf-export-list {
+    display: grid;
+    gap: 1.5mm;
+    margin: 0;
+    padding-left: 5mm;
+  }
+
+  .pdf-export-disclaimer {
+    margin: 7mm 0 12mm;
+    padding: 3mm;
+    border: 1pt solid #475569;
+    background: #f8fafc !important;
+  }
+
+  .pdf-export-disclaimer p {
+    margin: 1mm 0 0;
+  }
+
+  .pdf-export-footer {
+    position: fixed;
+    right: 0;
+    bottom: -9mm;
+    left: 0;
+    padding-top: 1.5mm;
+    border-top: 0.5pt solid #cbd5e1;
+    color: #475569 !important;
+    font-size: 7.5pt;
+    text-align: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

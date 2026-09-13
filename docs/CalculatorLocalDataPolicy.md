@@ -1,6 +1,6 @@
 # นโยบายการจัดเก็บข้อมูลภายในอุปกรณ์ (Calculator Local Data Policy)
 
-อัปเดตล่าสุด: 2026-09-13 (Summary Breakdown UX Improvement)
+อัปเดตล่าสุด: 2026-09-13 (Phase 1C Local-only PDF Export)
 
 เอกสารนี้ระบุนโยบายและสถาปัตยกรรมความปลอดภัยและการปกป้องความเป็นส่วนตัวของข้อมูลการเงินในส่วนเครื่องคำนวณของ **Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว)**
 
@@ -60,6 +60,12 @@
    - ไม่ persist ลง localStorage และไม่เพิ่ม field ใน calculator schema
    - ไม่ใส่ข้อมูลรายการ, จำนวนเงิน, หมายเหตุ หรือ selected group ลง URL query/hash
    - ไม่ส่ง network request, analytics หรือ log เมื่อเปิด/ปิดหรือดูรายละเอียด
+9. **Local-only PDF Export:** รายงาน A4 ถูกสร้างเมื่อผู้ใช้กดปุ่มเท่านั้น โดย render จาก workspace ใน memory และเรียก browser print dialog ให้ผู้ใช้เลือกบันทึกเป็น PDF
+   - ชื่อรายงานและชื่อที่แสดงในรายงานเป็น ephemeral UI state ไม่ persist เพิ่มใน localStorage และไม่อยู่ใน URL
+   - ไม่มีการส่งข้อมูลรายงานหรือไฟล์ PDF ไปยัง Vercel, API, analytics หรือบริการภายนอก
+   - ใช้ light printable theme และ Noto Sans Thai ที่ bundle ในแอป ไม่มี font CDN/runtime request สำหรับการ export
+   - รายงานแสดงเฉพาะยอดรวมเชิงคณิตศาสตร์ รายการต้นทาง Summary Breakdown และสถานะกฎที่ยังไม่พร้อมคำนวณ
+   - ไม่มี tax estimate, tax due, refund, tax rate, Excel หรือ CSV
 
 ---
 

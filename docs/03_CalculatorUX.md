@@ -15,7 +15,7 @@
 - `/calculator/expenses`: ตารางและรายการการ์ดบนมือถือสำหรับ เพิ่ม/แก้ไข/ลบ รายจ่าย (พร้อมสถานะ likely related, needs review) รองรับทั้งแบบระบุวันและรายเดือน
 - `/calculator/withholding-tax`: ตารางและรายการการ์ดสำหรับบันทึกภาษีหัก ณ ที่จ่ายตามเอกสารอ้างอิงภาษีหัก ณ ที่จ่ายที่มี รองรับทั้งแบบระบุวันและรายเดือน
 - `/calculator/allowances`: แบบฟอร์มค่าลดหย่อนแบบร่าง พร้อมคำเตือนชัดเจนว่าไม่ใช่การอนุมัติสิทธิทางภาษี (ไม่มี entry frequency เพราะเป็นแบบร่างรวม)
-- `/calculator/summary`: Summary cards แสดงยอดรวมเลขคณิต, Summary Breakdown ตามแหล่งที่มา/หมวดบันทึก/สถานะการจัดกลุ่ม, Detail Dialog ของรายการต้นทาง, ตารางแจกแจงรายเดือน, รายการคำเตือน/สมมติฐาน, Tax Estimate Unavailable Card และ Local-only A4 PDF ผ่าน browser print dialog
+- `/calculator/summary`: Summary cards แสดงยอดรวมเลขคณิต, Summary Breakdown ตามแหล่งที่มา/หมวดบันทึก/สถานะการจัดกลุ่ม, Detail Dialog ของรายการต้นทาง, ตารางแจกแจงรายเดือน, รายการคำเตือน/สมมติฐาน, Tax Estimate Unavailable Card และ Local-only A4 PDF แบบดาวน์โหลดโดยตรง
 - **Compact Privacy Indicator:** ปรับจากแบนเนอร์/การ์ดขนาดใหญ่เป็น inline status control กะทัดรัดใต้ heading แสดง “ข้อมูลบันทึกในอุปกรณ์นี้” พร้อมเวลาบันทึกล่าสุด มีปุ่มกดเปิด Dialog ดูรายละเอียดความเป็นส่วนตัว พร้อมปุ่มล้างข้อมูล และลิงก์ไปยังหน้านโยบายความเป็นส่วนตัว
 - **Entry Frequency (ความถี่ของรายการ):** รองรับทั้ง `one_time` (ระบุวัน / รายการครั้งเดียว) และ `monthly` (ระบุเดือน / รายการรายเดือน) ในฟอร์มรายรับ, รายจ่าย และภาษีหัก ณ ที่จ่าย เพื่อให้ผู้ใช้เงินเดือนหรือค่าใช้จ่ายรายเดือนกรอกได้โดยไม่ต้องระบุวัน
 - **Income Month Groups:** หน้า `รายรับ` จัดรายการในช่วงที่เลือกเป็นกลุ่มตามเดือนล่าสุดก่อน ภายในแยก `รายการรายเดือน` และ `รายการระบุวัน` พร้อมยอดรวมของแต่ละกลุ่ม ส่วนรายการนอกช่วงแสดงแยกและไม่รวมในยอด Summary โดยไม่เปลี่ยนข้อมูลต้นทาง
@@ -50,7 +50,7 @@
 - ห้าม persist selected Summary Breakdown หรือ Detail Dialog state ลง localStorage
 - มี accessibility labels, aria-live, aria-expanded, dialog focus management และ keyboard navigation รองรับครบถ้วน
 - ห้ามแสดงคำว่า “ภาษีที่ต้องจ่ายแน่นอน” หรือตัวเลขภาษีใด ๆ; แสดงเฉพาะ “ยังไม่พร้อมคำนวณภาษีประมาณการ” เนื่องจากกฎภาษียัง unverified
-- ไม่มี Cloud sync และไม่มี Excel/CSV export; PDF Phase 1C สร้างด้วย browser print engine จากข้อมูลในอุปกรณ์โดยไม่ upload
+- ไม่มี Cloud sync และไม่มี Excel/CSV export; PDF Phase 1C สร้างด้วย client-side PDF renderer และฟอนต์ไทยที่ฝังในแอปจากข้อมูลในอุปกรณ์โดยไม่ upload
 
 ## Gate ของ Phase 1C:
 1. Local tests, CI และ Vercel Preview ต้องผ่าน

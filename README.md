@@ -37,7 +37,7 @@
 - Vitest สำหรับ unit tests และ Playwright สำหรับ essential end-to-end flows
 - ESLint, Prettier และ GitHub Actions
 
-Phase 1C ใช้ browser print engine และฟอนต์ Noto Sans Thai ที่ bundle ในแอป จึงไม่เพิ่ม PDF SDK หรือ runtime font CDN; TanStack Table และ Recharts ยังไม่ถูกเพิ่มเพราะยังไม่มี flow ที่ต้องใช้
+Phase 1C ใช้ pdfmake ฝั่งเบราว์เซอร์และฟอนต์ Sarabun ที่ฝังในแอปเพื่อดาวน์โหลด PDF โดยตรง ไม่มี runtime font CDN; TanStack Table และ Recharts ยังไม่ถูกเพิ่มเพราะยังไม่มี flow ที่ต้องใช้
 
 ## เริ่มพัฒนา
 

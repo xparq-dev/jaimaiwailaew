@@ -113,8 +113,10 @@ describe("buildLocalPdfReportModel", () => {
 
     expect(report.title).toBe("รายงานทดสอบ");
     expect(report.displayName).toBe("ผู้ใช้ตัวอย่าง");
-    expect(report.generatedAtLabel).toContain("2569");
-    expect(report.generatedAtLabel).toContain("14:55");
+    expect(report.generatedAtLabel).toBe(
+      "13 กันยายน 2569 14:55 น. (Asia/Bangkok)",
+    );
+    expect(report.generatedAtFileStamp).toBe("20260913-1455");
     expect(report.totals).toMatchObject({
       totalIncomeSatang: toMoneySatang(50_000_00),
       totalExpenseSatang: toMoneySatang(2_000_00),
@@ -130,7 +132,7 @@ describe("buildLocalPdfReportModel", () => {
     ).toEqual(["income-monthly", "income-one-time"]);
     expect(
       report.breakdownSections[0]?.details.map((detail) => detail.group.label),
-    ).toContain("ไม่ระบุแหล่งที่มา");
+    ).not.toContain("ไม่ระบุแหล่งที่มา");
     expect(report.allowanceRows[0]).toMatchObject({
       label: "ประกัน (ร่าง)",
       amountSatang: toMoneySatang(5_000_00),
@@ -138,16 +140,23 @@ describe("buildLocalPdfReportModel", () => {
     expect(workspace).toEqual(before);
   });
 
-  it("keeps unverified rules fail-closed and exposes no numeric tax result", () => {
+  it("does not expose internal rule metadata, notes, or numeric tax results", () => {
     const report = buildLocalPdfReportModel(createWorkspaceFixture(), {
       generatedAt: new Date("2026-09-13T07:55:00.000Z"),
     });
 
-    expect(report.ruleSetId).toBe("th-pit-2569-placeholder-v0");
-    expect(report.ruleSetVersion).toBe("0.0.0-unverified");
-    expect(report.ruleStatus).toBe("unverified");
-    expect(report.validationStatus).toBe("unverified");
-    expect(report.resolverStatus).toContain("fail-closed");
+    expect(report).not.toHaveProperty("ruleSetId");
+    expect(report).not.toHaveProperty("ruleSetVersion");
+    expect(report).not.toHaveProperty("ruleStatus");
+    expect(report).not.toHaveProperty("validationStatus");
+    expect(report).not.toHaveProperty("resolverStatus");
+    expect(report).not.toHaveProperty("warnings");
+    expect(report).not.toHaveProperty("assumptions");
+    expect(report.incomeGroups[1]?.rows[0]).not.toHaveProperty("note");
+    expect(report.allowanceRows[0]).not.toHaveProperty("note");
+    expect(report.withholdingGroups[0]?.rows[0]?.primaryLabel).not.toContain(
+      "ไม่ระบุ",
+    );
     expect(report).not.toHaveProperty("taxEstimateSatang");
     expect(report).not.toHaveProperty("taxDueSatang");
     expect(report).not.toHaveProperty("refundSatang");

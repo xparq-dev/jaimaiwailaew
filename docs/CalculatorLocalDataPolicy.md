@@ -60,11 +60,12 @@
    - ไม่ persist ลง localStorage และไม่เพิ่ม field ใน calculator schema
    - ไม่ใส่ข้อมูลรายการ, จำนวนเงิน, หมายเหตุ หรือ selected group ลง URL query/hash
    - ไม่ส่ง network request, analytics หรือ log เมื่อเปิด/ปิดหรือดูรายละเอียด
-9. **Local-only PDF Export:** รายงาน A4 ถูกสร้างเมื่อผู้ใช้กดปุ่มเท่านั้น โดย render จาก workspace ใน memory และเรียก browser print dialog ให้ผู้ใช้เลือกบันทึกเป็น PDF
+9. **Local-only PDF Export:** รายงาน A4 ถูกสร้างเมื่อผู้ใช้กดปุ่มเท่านั้น โดยตัวสร้าง PDF ฝั่งเบราว์เซอร์อ่าน workspace ใน memory และดาวน์โหลดไฟล์ลงอุปกรณ์โดยตรง
    - ชื่อรายงานและชื่อที่แสดงในรายงานเป็น ephemeral UI state ไม่ persist เพิ่มใน localStorage และไม่อยู่ใน URL
    - ไม่มีการส่งข้อมูลรายงานหรือไฟล์ PDF ไปยัง Vercel, API, analytics หรือบริการภายนอก
-   - ใช้ light printable theme และ Noto Sans Thai ที่ bundle ในแอป ไม่มี font CDN/runtime request สำหรับการ export
-   - รายงานแสดงเฉพาะยอดรวมเชิงคณิตศาสตร์ รายการต้นทาง Summary Breakdown และสถานะกฎที่ยังไม่พร้อมคำนวณ
+   - ใช้รูปแบบเอกสารสีอ่อนและฟอนต์ Sarabun ที่ฝังในแอป ไม่มี font CDN/runtime request สำหรับการ export
+   - รายงานแสดงเฉพาะข้อมูลที่ใช้ตรวจสอบรายการและยอดรวม โดยไม่ส่งออกหมายเหตุส่วนตัว รหัสระบบ หรือสถานะภายในภาษาอังกฤษ
+   - รายงานแสดงยอดรวมเชิงคณิตศาสตร์ รายการต้นทาง สรุปตามกลุ่ม และข้อความภาษาไทยว่าการคำนวณภาษียังไม่เปิดใช้งาน
    - ไม่มี tax estimate, tax due, refund, tax rate, Excel หรือ CSV
 
 ---

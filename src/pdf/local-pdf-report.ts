@@ -7,6 +7,7 @@ import {
   buildExpenseStatusBreakdown,
   buildIncomeCategoryBreakdown,
   buildIncomeSourceBreakdown,
+  MISSING_INCOME_SOURCE_LABEL,
   type BreakdownDetail,
 } from "@/calculator/breakdown";
 import {
@@ -24,16 +25,9 @@ import type {
   WithholdingEntry,
 } from "@/calculator/types";
 import { formatEntryPeriod, formatThaiDate } from "@/calculator/utils";
-import {
-  buildCalculatorAssumptions,
-  buildCalculatorWarnings,
-} from "@/calculator/warnings";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
-import { resolveTaxRules } from "@/tax/engine/taxRuleResolver";
 import type { MoneySatang } from "@/tax/money";
 import { safeAddMoney, toMoneySatang } from "@/tax/money";
-
-export const LOCAL_PDF_REPORT_VERSION = "1.0.0";
 
 export interface LocalPdfReportOptions {
   readonly generatedAt: Date;
@@ -48,7 +42,6 @@ export interface LocalPdfEntryRow {
   readonly primaryLabel: string;
   readonly secondaryLabel?: string | undefined;
   readonly amountSatang: MoneySatang;
-  readonly note?: string | undefined;
 }
 
 export interface LocalPdfEntryGroup {
@@ -69,13 +62,14 @@ export interface LocalPdfAllowanceRow {
   readonly id: string;
   readonly label: string;
   readonly amountSatang?: MoneySatang | undefined;
-  readonly note?: string | undefined;
 }
 
 export interface LocalPdfReportModel {
   readonly title: string;
   readonly displayName?: string | undefined;
+  readonly generatedAt: Date;
   readonly generatedAtLabel: string;
+  readonly generatedAtFileStamp: string;
   readonly taxYearBE: number;
   readonly periodLabel: string;
   readonly totals: ReturnType<typeof computeArithmeticTotals>;
@@ -84,21 +78,13 @@ export interface LocalPdfReportModel {
   readonly withholdingGroups: readonly LocalPdfEntryGroup[];
   readonly allowanceRows: readonly LocalPdfAllowanceRow[];
   readonly breakdownSections: readonly LocalPdfBreakdownSection[];
-  readonly warnings: readonly string[];
-  readonly assumptions: readonly string[];
-  readonly ruleSetId: string;
-  readonly ruleSetVersion: string;
-  readonly ruleStatus: string;
-  readonly validationStatus: string;
-  readonly resolverStatus: string;
-  readonly reportVersion: string;
 }
 
 const FREQUENCY_ORDER: readonly EntryFrequency[] = ["monthly", "one_time"];
 
 const FREQUENCY_LABELS: Record<EntryFrequency, string> = {
   monthly: "รายการรายเดือน",
-  one_time: "รายการระบุวัน / ครั้งเดียว",
+  one_time: "รายการระบุวัน",
 };
 
 function normalizeOptionalLabel(value: string | undefined): string | undefined {
@@ -107,11 +93,35 @@ function normalizeOptionalLabel(value: string | undefined): string | undefined {
 }
 
 function formatBangkokDateTime(date: Date): string {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "long",
-    timeStyle: "short",
+  const parts = new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
     timeZone: "Asia/Bangkok",
-  }).format(date);
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value ?? "";
+
+  return `${part("day")} ${part("month")} ${part("year")} ${part("hour")}:${part("minute")} น. (Asia/Bangkok)`;
+}
+
+function formatBangkokFileStamp(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "Asia/Bangkok",
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value ?? "00";
+
+  return `${part("year")}${part("month")}${part("day")}-${part("hour")}${part("minute")}`;
 }
 
 function groupEntryRows(
@@ -148,7 +158,6 @@ function incomeRows(entries: readonly IncomeEntry[]): LocalPdfEntryRow[] {
     primaryLabel: getIncomeCategoryLabel(entry.categoryCode),
     secondaryLabel: normalizeOptionalLabel(entry.sourceName),
     amountSatang: entry.amountSatang,
-    note: normalizeOptionalLabel(entry.note),
   }));
 }
 
@@ -160,7 +169,6 @@ function expenseRows(entries: readonly ExpenseEntry[]): LocalPdfEntryRow[] {
     primaryLabel: getExpenseCategoryLabel(entry.categoryCode),
     secondaryLabel: getExpenseStatusLabel(entry.taxRelevanceStatus),
     amountSatang: entry.amountSatang,
-    note: normalizeOptionalLabel(entry.note),
   }));
 }
 
@@ -171,10 +179,9 @@ function withholdingRows(
     id: entry.id,
     periodLabel: formatEntryPeriod(entry),
     entryFrequency: entry.entryFrequency,
-    primaryLabel: normalizeOptionalLabel(entry.payerName) ?? "ไม่ระบุผู้จ่าย",
+    primaryLabel: normalizeOptionalLabel(entry.payerName) ?? "",
     secondaryLabel: normalizeOptionalLabel(entry.certificateReference),
     amountSatang: entry.amountSatang,
-    note: normalizeOptionalLabel(entry.note),
   }));
 }
 
@@ -185,7 +192,6 @@ function allowanceRows(
     id: entry.id,
     label: getAllowanceCategoryLabel(entry.categoryCode),
     amountSatang: entry.declaredAmountSatang,
-    note: normalizeOptionalLabel(entry.note),
   }));
 }
 
@@ -193,8 +199,6 @@ export function buildLocalPdfReportModel(
   workspace: CalculatorWorkspace,
   options: LocalPdfReportOptions,
 ): LocalPdfReportModel {
-  const ruleResolution = resolveTaxRules({ taxYearBE: workspace.taxYearBE });
-  const metadata = ruleResolution.metadata;
   const incomeInPeriod = filterEntriesByPeriod(
     workspace.incomeEntries,
     workspace.periodStart,
@@ -217,7 +221,9 @@ export function buildLocalPdfReportModel(
       normalizeOptionalLabel(workspace.reportName) ??
       "รายงานสรุปข้อมูลรายได้และค่าใช้จ่าย",
     displayName: normalizeOptionalLabel(options.displayName),
+    generatedAt: options.generatedAt,
     generatedAtLabel: formatBangkokDateTime(options.generatedAt),
+    generatedAtFileStamp: formatBangkokFileStamp(options.generatedAt),
     taxYearBE: workspace.taxYearBE,
     periodLabel: `${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`,
     totals: computeArithmeticTotals(workspace),
@@ -229,7 +235,9 @@ export function buildLocalPdfReportModel(
       {
         key: "income-source",
         title: "รายรับตามแหล่งที่มา",
-        details: buildIncomeSourceBreakdown(workspace),
+        details: buildIncomeSourceBreakdown(workspace).filter(
+          ({ group }) => group.label !== MISSING_INCOME_SOURCE_LABEL,
+        ),
       },
       {
         key: "income-category",
@@ -247,14 +255,5 @@ export function buildLocalPdfReportModel(
         details: buildExpenseStatusBreakdown(workspace),
       },
     ],
-    warnings: buildCalculatorWarnings(workspace).map((item) => item.message),
-    assumptions: buildCalculatorAssumptions().map((item) => item.message),
-    ruleSetId: metadata?.ruleSetId ?? "ไม่พร้อมใช้งาน",
-    ruleSetVersion: metadata?.version ?? "ไม่พร้อมใช้งาน",
-    ruleStatus: metadata?.status ?? "unavailable",
-    validationStatus:
-      metadata?.validationStatus ?? ruleResolution.validation.validationStatus,
-    resolverStatus: `${ruleResolution.availability} / fail-closed`,
-    reportVersion: LOCAL_PDF_REPORT_VERSION,
   };
 }

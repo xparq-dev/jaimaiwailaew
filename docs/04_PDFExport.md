@@ -1,30 +1,43 @@
-> สถานะ: กำลังพัฒนาบน branch `feat/local-pdf-export` — Owner อนุมัติเริ่ม Phase 1C แล้ว; ยังรอ Final Review, Vercel Preview และอนุมัติ PR
+> สถานะ: ปรับรูปแบบเอกสารบน branch `feat/local-pdf-export` แล้ว — ยังรอ Final Review และอนุมัติ PR
 
-เพิ่มระบบ Export PDF ฝั่ง client สำหรับ Jai Mai Wai Laew MVP 1 ผ่าน browser print engine ผู้ใช้เลือก “บันทึกเป็น PDF” ในหน้าต่างพิมพ์ โดยไม่มีการส่งข้อมูลการเงินออกจากอุปกรณ์
+Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอร์และดาวน์โหลดลงอุปกรณ์โดยตรง ไม่มีการเปิดหน้าต่างพิมพ์ ไม่มีหัวกระดาษหรือ URL ที่เบราว์เซอร์เติมเอง และไม่มีการส่งข้อมูลการเงินออกจากอุปกรณ์
 
-ข้อกำหนด:
-- ทำงานโดยไม่ส่งข้อมูลรายรับรายจ่ายไป server
-- PDF ขนาด A4 portrait
-- รองรับข้อความภาษาไทยด้วย font ที่ embed ได้จริง
-- มีฟอร์ม optional report name และ optional name to show on report
-- รายงานต้องประกอบด้วย:
-  1. ชื่อผลิตภัณฑ์
-  2. ชื่อรายงาน
-  3. ปีภาษีและช่วงเวลา
-  4. วันเวลา Asia/Bangkok
-  5. ruleSetId และ rule version
-  6. สรุปรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย ค่าลดหย่อน และสถานะ Tax estimate unavailable (ไม่มีตัวเลขภาษี)
-  7. ตารางรายละเอียดรายการทั้งหมด
-  8. warnings
-  9. assumptions
-  10. source/version information
-  11. disclaimer
-- ใส่ watermark ซ้ำทั่วเอกสารด้วยข้อความ:
-  “JAI MAI WAI LAEW — รายงานชั่วคราวเพื่อการอ้างอิง — ไม่ใช่แบบยื่นภาษีอย่างเป็นทางการ”
-- watermark ต้องเป็นแนวทแยง, opacity 4–7%, และไม่บังเนื้อหา
-- PDF ต้องใช้ light printable theme แม้เว็บอยู่ Dark Mode
-- ต้องมี loading/error UI และ test อย่างน้อยระดับ component/unit
-- ห้ามมี signature field ใน MVP 1
-- ไม่มี PDF renderer หรือ font CDN runtime; ใช้ Noto Sans Thai ที่ bundle อยู่ในแอปและ browser print engine เพื่อสร้างเอกสาร A4 หลายหน้า
-- ชื่อรายงานและชื่อที่แสดงเป็น ephemeral form state ไม่ persist ลง localStorage และไม่อยู่ใน URL
-- Service Worker ห้าม cache เอกสารที่สร้าง และไม่มี API route, upload, cloud storage, Excel หรือ CSV
+## รูปแบบเอกสาร
+
+- A4 แนวตั้ง ระยะขอบบน/ล่าง 25 มม. และซ้าย/ขวา 20 มม. บนพื้นขาวแบบ light print theme เท่านั้น
+- ใช้ฟอนต์ Sarabun Regular, Semibold, Italic และ Semibold Italic ที่ฝังอยู่ในตัวแอป ไม่มีการเรียก font CDN ขณะสร้างเอกสาร
+- ใช้ตัวอักษรสีดำและ line-height 1.5 โดยชื่อแอป 16 pt, ชื่อเอกสาร 18 pt, หัวข้อส่วน 14 pt, หัวตาราง 12 pt, เนื้อหาตาราง 11 pt, สถานะกฎ 10 pt และ footer 9 pt
+- หัวเอกสารแสดงชื่อแอป ชื่อรายงาน เวลา Asia/Bangkok และ `Tax Rules 2568/2569: unverified / not for calculation` พร้อมเส้นสีดำ 1.5 pt
+- แต่ละส่วนเริ่มหน้าใหม่ ยกเว้นส่วนแรกที่ต่อจากหัวเอกสาร และหน้าถัดไปมีหัวกระดาษแบบย่อ
+- หัวข้อส่วนมีเส้นคั่นสีเทาเข้ม 0.5 pt และเว้นระยะ 6 มม.
+- ตารางตีเส้นครบทุกด้าน: ขอบนอกสีดำ 1 pt, ขอบในสีเทาเข้ม 0.5 pt, หัวตารางเทาอ่อน 10%, padding บน/ล่าง 4 pt และซ้าย/ขวา 6 pt
+- ตารางซ้ำหัวตารางเมื่อขึ้นหน้าใหม่ ไม่ตัดแถวกลางหน้า และเก็บตารางขนาดสั้นไว้หน้าเดียวเมื่อพื้นที่เพียงพอ
+- ลายน้ำ 6% เอียง −38 องศา แสดงชื่อแอป ขอบเขตการใช้งานส่วนตัว และข้อความว่าไม่ใช่แบบยื่นภาษีอย่างเป็นทางการ
+- ท้ายหน้ามีเส้นสีเทาเข้ม 0.5 pt, disclaimer ตัวเอียง, เวลา Asia/Bangkok และเลขหน้า `หน้า X จาก Y`
+
+## ข้อมูลในเอกสาร
+
+1. ภาพรวมทางการเงิน: รายรับรวม รายจ่ายรวม ภาษีหัก ณ ที่จ่ายรวม และค่าลดหย่อน/ค่าลดภาษีรวม
+2. Summary Breakdown แยกตามแหล่งที่มา หมวดหมู่ และสถานะ
+3. รายการรายรับ: วันที่ แหล่งที่มา หมวดหมู่ และจำนวนเงิน
+4. รายการรายจ่าย: วันที่ หมวดหมู่ และจำนวนเงิน
+5. ภาษีหัก ณ ที่จ่าย: วันที่ ผู้จ่าย เลขอ้างอิงหนังสือรับรองเมื่อมีข้อมูล และจำนวนเงิน
+6. ค่าลดหย่อน / ค่าลดภาษี: หมวดหมู่และจำนวนเงินที่ผู้ใช้ระบุ
+
+ข้อมูลที่ไม่ออกเอกสาร ได้แก่ field ที่ผู้ใช้ไม่กรอก หมายเหตุส่วนตัว รหัสภายใน ข้อความ debug/test/placeholder ข้อมูลเชิงเทคนิค URL path filename version build number commit SHA และข้อมูลหัว–ท้ายหน้าจากเบราว์เซอร์
+
+## Privacy และขอบเขต
+
+- สร้างเมื่อผู้ใช้กดดาวน์โหลดเท่านั้น โดยอ่าน workspace ปัจจุบันใน memory
+- ชื่อรายงานและชื่อผู้จัดทำเป็น ephemeral UI state ไม่ persist เพิ่มใน localStorage และไม่อยู่ใน URL
+- ไม่มี API route, server action, upload, analytics, cloud storage, Auth, Excel หรือ CSV
+- Service Worker ไม่ cache ไฟล์ PDF หรือข้อมูลผู้ใช้
+- ไม่มี tax rate, tax bracket, tax estimate, tax due หรือ refund
+- Tax Rules 2568/2569 ยังคง unverified/not for calculation และ resolver ยังคง fail-closed
+
+## การทดสอบ
+
+- Unit test ตรวจ selected-period arithmetic, model purity และไม่เปิดเผยข้อมูลระบบ/หมายเหตุ
+- Unit test ตรวจโครง A4, margin, typography, section order, header/footer, watermark, เนื้อหาภาษาไทย และชื่อไฟล์
+- Component test ตรวจการดาวน์โหลดโดยไม่เขียน storage ไม่เปลี่ยน URL และไม่เรียก fetch
+- Browser test ตรวจไฟล์ดาวน์โหลดเป็น PDF จริง ใช้ได้ใน Dark Mode และไม่มีข้อมูลการเงินใน request URL/body

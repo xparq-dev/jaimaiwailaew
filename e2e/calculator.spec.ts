@@ -481,76 +481,50 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(shopeeDialog).toBeHidden();
     await expect(shopeeTrigger).toBeFocused();
 
-    // 6b. Local PDF uses the browser print engine without URL or network changes.
-    await page.evaluate(() => {
-      Object.defineProperty(window, "print", {
-        configurable: true,
-        value: () => {
-          const currentCount = Number(
-            document.documentElement.dataset.pdfPrintCount ?? "0",
-          );
-          document.documentElement.dataset.pdfPrintCount = String(
-            currentCount + 1,
-          );
-        },
-      });
-    });
+    // 6b. Local PDF downloads directly without leaking financial data.
     const requestCountBeforePdf = requestedUrls.length;
     const pdfUrl = page.url();
     const pdfPanel = page.getByRole("region", {
-      name: "สร้าง PDF ในอุปกรณ์นี้",
+      name: "ดาวน์โหลดรายงาน PDF",
     });
     await pdfPanel
       .getByRole("textbox", {
-        name: "ชื่อที่ต้องการแสดงในรายงาน (ไม่บังคับ)",
+        name: "ชื่อผู้จัดทำ (ไม่บังคับ)",
       })
       .fill("ผู้ใช้ทดสอบ");
-    await pdfPanel.getByRole("button", { name: "สร้าง PDF" }).click();
-    await expect
-      .poll(() => page.locator("html").getAttribute("data-pdf-print-count"))
-      .toBe("1");
+    const downloadPromise = page.waitForEvent("download");
+    await pdfPanel.getByRole("button", { name: "ดาวน์โหลด PDF" }).click();
+    const download = await downloadPromise;
+    await download.saveAs(testInfo.outputPath("professional-report.pdf"));
     await expect(
-      pdfPanel.getByText("เปิดหน้าต่างพิมพ์แล้ว โปรดเลือกบันทึกเป็น PDF"),
+      pdfPanel.getByText("ดาวน์โหลดรายงานเรียบร้อยแล้ว"),
     ).toBeVisible();
-
-    const printableReport = page.getByTestId("local-pdf-report");
-    await expect(printableReport).toContainText("ผู้ใช้ทดสอบ");
-    await expect(printableReport).toContainText("Tax estimate unavailable");
-    await expect(printableReport).toContainText("Summary Breakdown");
-    await expect(printableReport).toContainText("ไม่ระบุแหล่งที่มา");
-    await expect(printableReport).toContainText("0.0.0-unverified");
-    await expect(printableReport).toContainText("fail-closed");
-    await expect(printableReport).toContainText(
-      "ไม่ใช่แบบยื่นภาษีอย่างเป็นทางการ",
+    expect(download.suggestedFilename()).toMatch(
+      /^รายงานสรุปรายรับรายจ่าย-2569-\d{8}-\d{4}\.pdf$/,
     );
-    expect(page.url()).toBe(pdfUrl);
-    expect(requestedUrls).toHaveLength(requestCountBeforePdf);
-
-    await page.emulateMedia({ media: "print" });
-    const pdfBytes = await page.pdf({ format: "A4", printBackground: true });
+    const pdfStream = await download.createReadStream();
+    const pdfChunks: Buffer[] = [];
+    for await (const chunk of pdfStream) {
+      pdfChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const pdfBytes = Buffer.concat(pdfChunks);
     expect(pdfBytes.subarray(0, 5).toString()).toBe("%PDF-");
     expect(pdfBytes.byteLength).toBeGreaterThan(10_000);
-    await page.emulateMedia({ media: "screen" });
+    expect(page.url()).toBe(pdfUrl);
+    for (const requestUrl of requestedUrls.slice(requestCountBeforePdf)) {
+      expect(requestUrl).not.toContain("100000");
+      expect(requestUrl).not.toContain("Shopee");
+      expect(requestUrl).not.toContain("ผู้ใช้ทดสอบ");
+    }
 
-    // Dark mode keeps the breakdown and dialog content readable
+    // Dark mode does not alter the generated document or block downloading.
     await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
     const requestCountBeforeDarkPdf = requestedUrls.length;
-    await pdfPanel.getByRole("button", { name: "สร้าง PDF" }).click();
-    await expect
-      .poll(() => page.locator("html").getAttribute("data-pdf-print-count"))
-      .toBe("2");
+    const darkDownloadPromise = page.waitForEvent("download");
+    await pdfPanel.getByRole("button", { name: "ดาวน์โหลด PDF" }).click();
+    await darkDownloadPromise;
     expect(requestedUrls).toHaveLength(requestCountBeforeDarkPdf);
-    await page.emulateMedia({ media: "print" });
-    await expect
-      .poll(() =>
-        printableReport.evaluate((element) => {
-          const style = getComputedStyle(element);
-          return `${style.color}|${style.backgroundColor}`;
-        }),
-      )
-      .toBe("rgb(17, 24, 39)|rgb(255, 255, 255)");
-    await page.emulateMedia({ media: "screen" });
     await missingSourceTrigger.click();
     await expect(breakdownDialog).toBeVisible();
     await expect(

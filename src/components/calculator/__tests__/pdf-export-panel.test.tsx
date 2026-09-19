@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createCalculatorWorkspace,
@@ -9,17 +9,57 @@ import {
 
 import { PdfExportPanel } from "../pdf-export-panel";
 
-const downloadLocalPdfMock = vi.hoisted(() =>
-  vi.fn<(report: unknown) => Promise<void>>().mockResolvedValue(undefined),
+const createLocalPdfArtifactMock = vi.hoisted(() => vi.fn());
+const downloadLocalPdfArtifactMock = vi.hoisted(() => vi.fn());
+const createObjectUrlMock = vi.hoisted(() =>
+  vi.fn(() => "blob:local-pdf-preview"),
 );
+const revokeObjectUrlMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/pdf/download-local-pdf", () => ({
-  downloadLocalPdf: downloadLocalPdfMock,
+  createLocalPdfArtifact: createLocalPdfArtifactMock,
+  downloadLocalPdfArtifact: downloadLocalPdfArtifactMock,
 }));
 
+beforeAll(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.setAttribute("open", "");
+    },
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, "close", {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.removeAttribute("open");
+      this.dispatchEvent(new Event("close"));
+    },
+  });
+  Object.defineProperty(URL, "createObjectURL", {
+    configurable: true,
+    value: createObjectUrlMock,
+  });
+  Object.defineProperty(URL, "revokeObjectURL", {
+    configurable: true,
+    value: revokeObjectUrlMock,
+  });
+});
+
+beforeEach(() => {
+  createLocalPdfArtifactMock.mockReset();
+  downloadLocalPdfArtifactMock.mockReset();
+  createObjectUrlMock.mockClear();
+  revokeObjectUrlMock.mockClear();
+});
+
 describe("PdfExportPanel", () => {
-  it("downloads a local report without network, storage, or URL changes", async () => {
+  it("previews the local report before downloading without network, storage, or URL changes", async () => {
     const user = userEvent.setup();
+    const artifact = {
+      blob: new Blob(["%PDF-test"], { type: "application/pdf" }),
+      fileName: "รายงาน.pdf",
+    };
+    createLocalPdfArtifactMock.mockResolvedValue(artifact);
     const workspace = createCalculatorWorkspace(
       getDefaultWorkspaceInput("multiple_income", 2569, "first_half"),
     );
@@ -33,7 +73,7 @@ describe("PdfExportPanel", () => {
       screen.getByRole("heading", { name: "ดาวน์โหลดรายงาน PDF" }),
     ).toBeVisible();
     expect(
-      screen.getByText(/ไม่รวมหมายเหตุส่วนตัว ข้อมูลระบบภายใน/),
+      screen.getByText(/ไม่รวมหมายเหตุส่วนตัว ข้อมูลระบบภายใน หรือผลคำนวณภาษี/),
     ).toBeVisible();
 
     await user.clear(
@@ -47,15 +87,39 @@ describe("PdfExportPanel", () => {
       screen.getByRole("textbox", { name: "ชื่อผู้จัดทำ (ไม่บังคับ)" }),
       "ผู้ใช้ตัวอย่าง",
     );
-    await user.click(screen.getByRole("button", { name: "ดาวน์โหลด PDF" }));
+    await user.click(screen.getByRole("button", { name: "ดูตัวอย่าง PDF" }));
 
-    await waitFor(() => expect(downloadLocalPdfMock).toHaveBeenCalledOnce());
-    expect(downloadLocalPdfMock.mock.calls[0]?.[0]).toMatchObject({
+    await waitFor(() =>
+      expect(createLocalPdfArtifactMock).toHaveBeenCalledOnce(),
+    );
+    expect(createLocalPdfArtifactMock.mock.calls[0]?.[0]).toMatchObject({
       title: "รายงานสำหรับประชุม",
       displayName: "ผู้ใช้ตัวอย่าง",
       taxYearBE: 2569,
     });
-    expect(screen.getByText("ดาวน์โหลดรายงานเรียบร้อยแล้ว")).toBeVisible();
+    expect(downloadLocalPdfArtifactMock).not.toHaveBeenCalled();
+    expect(createObjectUrlMock).toHaveBeenCalledWith(artifact.blob);
+
+    const previewDialog = await screen.findByRole("dialog", {
+      name: "ตัวอย่างรายงาน PDF",
+    });
+    expect(previewDialog).toBeVisible();
+    expect(
+      screen.getByTitle<HTMLIFrameElement>("ตัวอย่างรายงาน PDF"),
+    ).toHaveAttribute("src", "blob:local-pdf-preview");
+
+    await user.click(screen.getByRole("button", { name: "ดาวน์โหลด PDF" }));
+    expect(downloadLocalPdfArtifactMock).toHaveBeenCalledWith(artifact);
+    expect(
+      screen.getAllByText("ดาวน์โหลดรายงานเรียบร้อยแล้ว"),
+    ).not.toHaveLength(0);
+
+    await user.click(screen.getByRole("button", { name: "ปิดตัวอย่าง" }));
+    await waitFor(() =>
+      expect(revokeObjectUrlMock).toHaveBeenCalledWith(
+        "blob:local-pdf-preview",
+      ),
+    );
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(storageSpy).not.toHaveBeenCalled();
     expect(window.location.href).toBe(initialUrl);

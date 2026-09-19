@@ -523,7 +523,7 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(shopeeDialog).toBeHidden();
     await expect(shopeeTrigger).toBeFocused();
 
-    // 6b. Local PDF downloads directly without leaking financial data.
+    // 6b. Local PDF previews before download without leaking financial data.
     const requestCountBeforePdf = requestedUrls.length;
     const pdfUrl = page.url();
     const pdfPanel = page.getByRole("region", {
@@ -534,12 +534,22 @@ test.describe("Calculator UX (Local-only)", () => {
         name: "ชื่อผู้จัดทำ (ไม่บังคับ)",
       })
       .fill("ผู้ใช้ทดสอบ");
+    await pdfPanel.getByRole("button", { name: "ดูตัวอย่าง PDF" }).click();
+    const pdfPreviewDialog = page.getByRole("dialog", {
+      name: "ตัวอย่างรายงาน PDF",
+    });
+    await expect(pdfPreviewDialog).toBeVisible();
+    await expect(
+      pdfPreviewDialog.getByTitle("ตัวอย่างรายงาน PDF"),
+    ).toHaveAttribute("src", /^blob:/);
     const downloadPromise = page.waitForEvent("download");
-    await pdfPanel.getByRole("button", { name: "ดาวน์โหลด PDF" }).click();
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ดาวน์โหลด PDF" })
+      .click();
     const download = await downloadPromise;
     await download.saveAs(testInfo.outputPath("professional-report.pdf"));
     await expect(
-      pdfPanel.getByText("ดาวน์โหลดรายงานเรียบร้อยแล้ว"),
+      pdfPreviewDialog.getByText("ดาวน์โหลดรายงานเรียบร้อยแล้ว"),
     ).toBeVisible();
     expect(download.suggestedFilename()).toMatch(
       /^รายงานสรุปรายรับรายจ่าย-2569-\d{8}-\d{4}\.pdf$/,
@@ -558,15 +568,26 @@ test.describe("Calculator UX (Local-only)", () => {
       expect(requestUrl).not.toContain("Shopee");
       expect(requestUrl).not.toContain("ผู้ใช้ทดสอบ");
     }
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
+      .click();
+    await expect(pdfPreviewDialog).toBeHidden();
 
-    // Dark mode does not alter the generated document or block downloading.
+    // Dark mode does not alter the previewed document or block downloading.
     await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
     const requestCountBeforeDarkPdf = requestedUrls.length;
+    await pdfPanel.getByRole("button", { name: "ดูตัวอย่าง PDF" }).click();
+    await expect(pdfPreviewDialog).toBeVisible();
     const darkDownloadPromise = page.waitForEvent("download");
-    await pdfPanel.getByRole("button", { name: "ดาวน์โหลด PDF" }).click();
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ดาวน์โหลด PDF" })
+      .click();
     await darkDownloadPromise;
     expect(requestedUrls).toHaveLength(requestCountBeforeDarkPdf);
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
+      .click();
     await missingSourceTrigger.click();
     await expect(breakdownDialog).toBeVisible();
     await expect(

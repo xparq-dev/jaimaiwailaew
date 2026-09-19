@@ -13,7 +13,7 @@
 2. **Entry Frequency:** เพิ่มตัวเลือกระบุความถี่ของรายการทั้งแบบ `one_time` (ระบุวัน / รายการครั้งเดียว) และ `monthly` (ระบุเดือน / รายการรายเดือน) พร้อมระบบ Atomic-like Local Storage Migration (v1 → v2) แบบ fail-safe
 3. **Summary Breakdown:** เพิ่มการรวมกลุ่มเชิงคณิตศาสตร์แบบ local-only สำหรับรายรับตามแหล่งที่มา/หมวดบันทึก และรายจ่ายตามหมวดบันทึก/สถานะ พร้อม Detail Dialog ที่แสดงเฉพาะรายการต้นทางในกลุ่มและใช้ ephemeral UI state
 4. **Income Month Grouping:** แยกรายรับตามเดือนและความถี่ พร้อมยอดรวมที่สอดคล้องกับ selected-period Summary
-5. **Local-only PDF Export:** เตรียมรายงาน A4 ภาษาไทยด้วย client-side PDF renderer และฟอนต์ Sarabun ที่ฝังในแอป พร้อมตารางที่จัดหน้าแน่นอน หัว/ท้ายทุกหน้า รายการ สรุปตามกลุ่ม ลายน้ำ ข้อควรทราบ และ Bangkok timestamp โดยไม่มีการ upload
+5. **Local-only PDF Export:** เตรียมรายงาน A4 ภาษาไทยด้วย client-side PDF renderer และฟอนต์ Sarabun ที่ฝังในแอป พร้อม Preview ก่อนดาวน์โหลด ตารางที่จัดหน้าแน่นอน หัว/ท้ายทุกหน้า รายการ สรุปตามกลุ่ม ลายน้ำ ข้อควรทราบ และ Bangkok timestamp โดยไม่มีการ upload
 6. **Workspace UX Follow-up:** เพิ่มคำแนะนำแหล่งรายได้ตามหมวดหมู่, แสดง Workspace เดิมบนหน้าเริ่มต้น, เตือนก่อนสร้างใหม่ในโหมดไม่สมัครสมาชิก และแก้ไขประเภทผู้ใช้งานได้โดยไม่ล้างข้อมูล
 
 - Phase 0 foundation: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
@@ -37,7 +37,7 @@
 | Runtime | ผ่าน | Node.js 22.x (`^22.12.0`) |
 | UX Hotfix (Privacy & Frequency) | ผ่าน | Compact indicator, monthly/one-time entry, v1→v2 migration, 70 unit tests & E2E tests ผ่าน 100% |
 | Summary Breakdown | ผ่าน | merge เข้า main แล้วผ่าน PR #7 |
-| Local-only PDF Export | กำลังพัฒนา | A4 direct download, embedded Thai font, formal tables, header/footer, watermark, no upload และไม่มี tax estimate |
+| Local-only PDF Export | กำลังพัฒนา | A4 preview-before-download, embedded Thai font, formal tables, header/footer, watermark, no upload และไม่มี tax estimate |
 | Secret & Privacy hygiene | ผ่าน | ไม่พบ secret, ข้อมูลการเงินเก็บเฉพาะในเครื่องผู้ใช้ ไม่ส่งออกเครือข่าย |
 
 ## รายการที่ยังไม่ปิด (External / Legal Gates)

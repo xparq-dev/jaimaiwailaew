@@ -1,6 +1,6 @@
 > สถานะ: ปรับรูปแบบเอกสารบน branch `feat/local-pdf-export` แล้ว — ยังรอ Final Review และอนุมัติ PR
 
-Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอร์และดาวน์โหลดลงอุปกรณ์โดยตรง ไม่มีการเปิดหน้าต่างพิมพ์ ไม่มีหัวกระดาษหรือ URL ที่เบราว์เซอร์เติมเอง และไม่มีการส่งข้อมูลการเงินออกจากอุปกรณ์
+Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอร์ เปิด Preview ของเอกสารจริงให้ตรวจสอบก่อน และดาวน์โหลดลงอุปกรณ์เมื่อผู้ใช้ยืนยัน ไม่มีการเปิดหน้าต่างพิมพ์ ไม่มีหัวกระดาษหรือ URL ที่เบราว์เซอร์เติมเอง และไม่มีการส่งข้อมูลการเงินออกจากอุปกรณ์
 
 ## รูปแบบเอกสาร
 
@@ -28,7 +28,8 @@ Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอ
 
 ## Privacy และขอบเขต
 
-- สร้างเมื่อผู้ใช้กดดาวน์โหลดเท่านั้น โดยอ่าน workspace ปัจจุบันใน memory
+- สร้างเมื่อผู้ใช้กดดูตัวอย่างเท่านั้น โดยอ่าน workspace ปัจจุบันใน memory จากนั้นใช้ PDF blob เดียวกันสำหรับ Preview และการดาวน์โหลด
+- Preview ใช้ `blob:` URL ภายในเบราว์เซอร์และ revoke เมื่อปิดหน้าต่างตัวอย่างหรือออกจากหน้า
 - ชื่อรายงานและชื่อผู้จัดทำเป็น ephemeral UI state ไม่ persist เพิ่มใน localStorage และไม่อยู่ใน URL
 - ไม่มี API route, server action, upload, analytics, cloud storage, Auth, Excel หรือ CSV
 - Service Worker ไม่ cache ไฟล์ PDF หรือข้อมูลผู้ใช้
@@ -39,5 +40,5 @@ Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอ
 
 - Unit test ตรวจ selected-period arithmetic, model purity และไม่เปิดเผยข้อมูลระบบ/หมายเหตุ
 - Unit test ตรวจโครง A4, margin, typography, section order, header/footer, watermark, เนื้อหาภาษาไทย และชื่อไฟล์
-- Component test ตรวจการดาวน์โหลดโดยไม่เขียน storage ไม่เปลี่ยน URL และไม่เรียก fetch
-- Browser test ตรวจไฟล์ดาวน์โหลดเป็น PDF จริง ใช้ได้ใน Dark Mode และไม่มีข้อมูลการเงินใน request URL/body
+- Component test ตรวจว่าต้องเห็น Preview ก่อนจึงดาวน์โหลดได้ รวมถึงไม่เขียน storage ไม่เปลี่ยน URL ไม่เรียก fetch และคืน `blob:` URL หลังปิด
+- Browser test ตรวจ Preview จาก PDF blob, ไฟล์ดาวน์โหลดเป็น PDF จริง ใช้ได้ใน Dark Mode และไม่มีข้อมูลการเงินใน request URL/body

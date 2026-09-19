@@ -1,6 +1,6 @@
 # สถานะโครงการ
 
-ตรวจสอบล่าสุด: 2026-09-13 (Asia/Bangkok)
+ตรวจสอบล่าสุด: 2026-09-19 (Asia/Bangkok)
 
 เอกสารนี้บันทึกสถานะการดำเนินงานจริง ส่วนข้อกำหนดผลิตภัณฑ์และขอบเขตหลักให้ยึด
 [`ProductRequirementsDocument.md`](./ProductRequirementsDocument.md) และ
@@ -14,6 +14,7 @@
 3. **Summary Breakdown:** เพิ่มการรวมกลุ่มเชิงคณิตศาสตร์แบบ local-only สำหรับรายรับตามแหล่งที่มา/หมวดบันทึก และรายจ่ายตามหมวดบันทึก/สถานะ พร้อม Detail Dialog ที่แสดงเฉพาะรายการต้นทางในกลุ่มและใช้ ephemeral UI state
 4. **Income Month Grouping:** แยกรายรับตามเดือนและความถี่ พร้อมยอดรวมที่สอดคล้องกับ selected-period Summary
 5. **Local-only PDF Export:** เตรียมรายงาน A4 ภาษาไทยด้วย client-side PDF renderer และฟอนต์ Sarabun ที่ฝังในแอป พร้อมตารางที่จัดหน้าแน่นอน หัว/ท้ายทุกหน้า รายการ สรุปตามกลุ่ม ลายน้ำ ข้อควรทราบ และ Bangkok timestamp โดยไม่มีการ upload
+6. **Workspace UX Follow-up:** เพิ่มคำแนะนำแหล่งรายได้ตามหมวดหมู่, แสดง Workspace เดิมบนหน้าเริ่มต้น, เตือนก่อนสร้างใหม่ในโหมดไม่สมัครสมาชิก และแก้ไขประเภทผู้ใช้งานได้โดยไม่ล้างข้อมูล
 
 - Phase 0 foundation: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
 - Phase 1A Tax Rule Engine: เสร็จสมบูรณ์ (merge เข้า main แล้ว)

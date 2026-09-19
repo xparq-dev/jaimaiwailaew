@@ -13,7 +13,10 @@ import Link from "next/link";
 import { useCalculatorStore } from "@/calculator/store";
 import { formatThaiBaht } from "@/tax/money";
 import { computeArithmeticTotals } from "@/calculator/arithmetic";
+import { getPersonaLabel } from "@/calculator/categories";
+import { formatThaiDate } from "@/calculator/utils";
 import { CalculatorLayout } from "./calculator-layout";
+import { WorkspacePersonaEditor } from "./workspace-persona-editor";
 
 const sections = [
   {
@@ -76,9 +79,34 @@ function CalculatorOverviewContent({
   >;
 }) {
   const totals = computeArithmeticTotals(workspace);
+  const updateWorkspacePersona = useCalculatorStore(
+    (state) => state.updateWorkspacePersona,
+  );
 
   return (
     <>
+      <section
+        aria-label="ข้อมูล Workspace"
+        className="border-border bg-card flex flex-col gap-4 rounded-2xl border p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div>
+          <p className="text-muted-foreground text-xs font-medium">
+            Workspace ปัจจุบัน
+          </p>
+          <h2 className="mt-1 text-lg font-bold">
+            {getPersonaLabel(workspace.persona)} · ปีภาษี {workspace.taxYearBE}
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {formatThaiDate(workspace.periodStart)} –{" "}
+            {formatThaiDate(workspace.periodEnd)}
+          </p>
+        </div>
+        <WorkspacePersonaEditor
+          onSave={updateWorkspacePersona}
+          persona={workspace.persona}
+        />
+      </section>
+
       <section aria-label="สรุปเบื้องต้น" className="grid gap-3 sm:grid-cols-3">
         <div className="border-border bg-card rounded-2xl border p-4">
           <p className="text-muted-foreground text-xs font-medium">รายรับรวม</p>

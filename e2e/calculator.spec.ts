@@ -41,6 +41,33 @@ test.describe("Calculator UX (Local-only)", () => {
     // URL should now be /calculator
     await expect(page).toHaveURL(/\/calculator$/);
 
+    // Workspace persona can be corrected without clearing existing data.
+    await expect(
+      page.getByRole("heading", {
+        name: "ขายออนไลน์ / ธุรกิจ · ปีภาษี 2569",
+      }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "แก้ไขประเภทผู้ใช้งาน" }).click();
+    await page.getByRole("radio", { name: /ฟรีแลนซ์/ }).click();
+    await page.getByRole("button", { name: "บันทึกประเภทผู้ใช้งาน" }).click();
+    await expect(
+      page.getByRole("heading", { name: "ฟรีแลนซ์ · ปีภาษี 2569" }),
+    ).toBeVisible();
+
+    // Start page exposes the existing workspace and warns before adding another.
+    await page.goto("/start");
+    await expect(page.getByText("พบ Workspace เดิมในอุปกรณ์นี้")).toBeVisible();
+    await page.getByRole("button", { name: "เพิ่ม Workspace" }).click();
+    const addWorkspaceDialog = page.getByRole("dialog", {
+      name: "เพิ่ม Workspace ใหม่",
+    });
+    await expect(addWorkspaceDialog).toContainText(
+      "โหมดไม่สมัครสมาชิกเก็บได้ 1 Workspace",
+    );
+    await addWorkspaceDialog.getByRole("button", { name: "ยกเลิก" }).click();
+    await page.getByRole("link", { name: "เปิด Workspace เดิม" }).click();
+    await expect(page).toHaveURL(/\/calculator$/);
+
     // Requirement A: Compact Privacy Indicator
     // Check that it's rendered as a compact inline control, NOT a large section banner
     const privacyTrigger = page.getByRole("button", {
@@ -105,6 +132,11 @@ test.describe("Calculator UX (Local-only)", () => {
     // Ensure one_time is selected by default and date input is present
     await page.locator("#income-date").fill("2026-03-01");
     await page.locator("#income-category").selectOption("online_sales");
+    await expect(
+      page.getByRole("checkbox", {
+        name: "เลือกแหล่งรายได้ ขายสินค้า / ขายออนไลน์",
+      }),
+    ).toBeChecked();
     await page.locator("#income-source").fill("Shopee Store");
     await page.locator("#income-amount").fill("50000.00");
     await page.locator("#income-note").fill("ยอดขายครั้งเดียว");
@@ -133,7 +165,11 @@ test.describe("Calculator UX (Local-only)", () => {
 
     await page.locator("#income-month").fill("2026-03");
     await page.locator("#income-category").selectOption("salary");
-    await page.locator("#income-source").fill("ประจำเดือน มี.ค.");
+    await expect(
+      page.getByRole("checkbox", {
+        name: "เลือกแหล่งรายได้ เงินเดือน / ค่าจ้างประจำ",
+      }),
+    ).toBeChecked();
     await page.locator("#income-amount").fill("40000.00");
     await page
       .locator("dialog[open]")
@@ -153,6 +189,12 @@ test.describe("Calculator UX (Local-only)", () => {
 
     await page.locator("#income-date").fill("2026-04-10");
     await page.locator("#income-category").selectOption("freelance_service");
+    await page
+      .getByRole("checkbox", {
+        name: "เลือกแหล่งรายได้ รับจ้าง / งานอิสระ / บริการ",
+      })
+      .locator("..")
+      .click();
     await page.locator("#income-amount").fill("10000.00");
     await page.locator("#income-note").fill("งานที่ไม่ระบุแหล่งที่มา");
     await page

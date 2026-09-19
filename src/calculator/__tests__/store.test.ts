@@ -44,6 +44,29 @@ describe("Calculator Zustand Local Store and Migration Safety", () => {
     expect(parsed.state.workspace.schemaVersion).toBe(2);
   });
 
+  it("updates the workspace persona without clearing existing entries", () => {
+    useCalculatorStore
+      .getState()
+      .initializeWorkspace(
+        getDefaultWorkspaceInput("online_seller_business", 2569, "first_half"),
+      );
+    useCalculatorStore.getState().addIncomeEntry({
+      entryFrequency: "one_time",
+      occurredOn: "2026-03-01",
+      categoryCode: "online_sales",
+      sourceName: "Shopee",
+      amount: "15000.00",
+    });
+
+    const workspaceId = useCalculatorStore.getState().workspace?.id;
+    useCalculatorStore.getState().updateWorkspacePersona("freelancer");
+
+    const workspace = useCalculatorStore.getState().workspace;
+    expect(workspace?.id).toBe(workspaceId);
+    expect(workspace?.persona).toBe("freelancer");
+    expect(workspace?.incomeEntries).toHaveLength(1);
+  });
+
   it("performs local CRUD operations for one_time and monthly income entries", () => {
     const input = getDefaultWorkspaceInput(
       "online_seller_business",

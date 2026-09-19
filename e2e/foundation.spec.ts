@@ -57,6 +57,9 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   expect(pageResponse?.headers()["content-security-policy"]).toContain(
     "upgrade-insecure-requests",
   );
+  expect(pageResponse?.headers()["content-security-policy"]).toContain(
+    "frame-src 'self' blob:",
+  );
   expect(pageResponse?.headers()["x-content-type-options"]).toBe("nosniff");
 
   const manifestResponse = await request.get("/manifest.webmanifest");

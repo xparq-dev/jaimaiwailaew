@@ -30,6 +30,7 @@ Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอ
 
 - สร้างเมื่อผู้ใช้กดดูตัวอย่างเท่านั้น โดยอ่าน workspace ปัจจุบันใน memory จากนั้นใช้ PDF blob เดียวกันสำหรับ Preview และการดาวน์โหลด
 - Preview ใช้ `blob:` URL ภายในเบราว์เซอร์และ revoke เมื่อปิดหน้าต่างตัวอย่างหรือออกจากหน้า
+- Content Security Policy อนุญาต `frame-src 'self' blob:` เฉพาะเพื่อแสดง PDF blob ที่สร้างในอุปกรณ์ โดยยังคงปิดกั้น frame จากแหล่งภายนอก
 - ชื่อรายงานและชื่อผู้จัดทำเป็น ephemeral UI state ไม่ persist เพิ่มใน localStorage และไม่อยู่ใน URL
 - ไม่มี API route, server action, upload, analytics, cloud storage, Auth, Excel หรือ CSV
 - Service Worker ไม่ cache ไฟล์ PDF หรือข้อมูลผู้ใช้

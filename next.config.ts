@@ -10,6 +10,7 @@ const contentSecurityPolicy = [
   "font-src 'self' data:",
   `connect-src 'self'${isDevelopment ? " ws: http:" : ""}`,
   "worker-src 'self' blob:",
+  "frame-src 'self' blob:",
   "manifest-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",

@@ -6,6 +6,15 @@ test.describe("Calculator UX (Local-only)", () => {
   }, testInfo) => {
     // Track network requests to verify NO financial data is transmitted
     const requestedUrls: string[] = [];
+    const contentSecurityPolicyErrors: string[] = [];
+    page.on("console", (message) => {
+      if (
+        message.type() === "error" &&
+        message.text().includes("Content Security Policy")
+      ) {
+        contentSecurityPolicyErrors.push(message.text());
+      }
+    });
     page.on("request", (request) => {
       requestedUrls.push(request.url());
       const postData = request.postData();
@@ -542,6 +551,8 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(
       pdfPreviewDialog.getByTitle("ตัวอย่างรายงาน PDF"),
     ).toHaveAttribute("src", /^blob:/);
+    await page.waitForTimeout(250);
+    expect(contentSecurityPolicyErrors).toEqual([]);
     const downloadPromise = page.waitForEvent("download");
     await pdfPreviewDialog
       .getByRole("button", { name: "ดาวน์โหลด PDF" })
@@ -584,7 +595,11 @@ test.describe("Calculator UX (Local-only)", () => {
       .getByRole("button", { name: "ดาวน์โหลด PDF" })
       .click();
     await darkDownloadPromise;
-    expect(requestedUrls).toHaveLength(requestCountBeforeDarkPdf);
+    const darkPdfRequests = requestedUrls.slice(requestCountBeforeDarkPdf);
+    expect(darkPdfRequests.length).toBeGreaterThan(0);
+    expect(
+      darkPdfRequests.every((requestUrl) => requestUrl.startsWith("blob:")),
+    ).toBe(true);
     await pdfPreviewDialog
       .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
       .click();

@@ -1,0 +1,15 @@
+import { AuthForm } from "@/components/auth/auth-form";
+import { PageHeader } from "@/components/page-header";
+
+export default function LoginPage() {
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        description="เข้าสู่ระบบเพื่อเปิดใช้ Cloud Sync แบบสมัครใจ ข้อมูลจะยังอยู่ในอุปกรณ์จนกว่าคุณจะเปิด Cloud Sync"
+        eyebrow="Phase 1E · Supabase Auth"
+        title="เข้าสู่ระบบ"
+      />
+      <AuthForm mode="login" />
+    </div>
+  );
+}

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { AccountControls } from "@/components/account-controls";
 import { LanguageToggle } from "@/components/language-toggle";
 import { NetworkStatusBadge, OfflineBanner } from "@/components/network-status";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -196,6 +197,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <NetworkStatusBadge />
+              <AccountControls />
               <LanguageToggle />
               <ThemeToggle />
             </div>

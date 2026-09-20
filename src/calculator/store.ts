@@ -78,6 +78,7 @@ interface CalculatorStoreState {
   updateSocialSecuritySettings: (
     values: SocialSecuritySettingsFormValues,
   ) => string | null;
+  restoreWorkspaceFromSync: (workspace: CalculatorWorkspace) => string | null;
 }
 
 function parseMoneyAmount(amount: string) {
@@ -601,6 +602,28 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         set({
           workspace: touchWorkspace(workspace, { socialSecuritySettings }),
           lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        });
+        return null;
+      },
+
+      restoreWorkspaceFromSync: (workspace) => {
+        const parsed = persistedCalculatorStateSchema.safeParse({
+          workspace,
+          lastSavedAt: workspace.updatedAt,
+        });
+        if (!parsed.success || !parsed.data.workspace) {
+          return "ข้อมูลจาก Cloud มีรูปแบบไม่ถูกต้อง จึงยังไม่ได้นำมาใช้";
+        }
+
+        set({
+          workspace: {
+            ...parsed.data.workspace,
+            taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(
+              parsed.data.workspace.taxYearBE,
+            ),
+          },
+          lastSavedAt: parsed.data.lastSavedAt,
           persistError: null,
         });
         return null;

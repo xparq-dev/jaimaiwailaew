@@ -1,0 +1,16 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "jaimaiwailaew-sync-api",
+  "main": "index.ts",
+  "compatibility_date": "2026-09-20",
+  "r2_buckets": [
+    {
+      "binding": "DATA_BUCKET",
+      "bucket_name": "jaimaiwailaew-data",
+      "preview_bucket_name": "jaimaiwailaew-data-preview",
+    },
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app",
+  },
+}

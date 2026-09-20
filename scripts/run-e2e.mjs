@@ -18,6 +18,8 @@ const playwrightCli = join(
 const childEnvironment = {
   ...process.env,
   NEXT_TELEMETRY_DISABLED: "1",
+  NEXT_PUBLIC_E2E_AUTH_MODE: "1",
+  NEXT_PUBLIC_E2E_CLOUD_MODE: "1",
 };
 
 async function waitForServer(server) {

@@ -1,0 +1,263 @@
+[
+  {
+    "personaId": "p1-salary-employee",
+    "description": "พนักงานเงินเดือน 40(1) — เงินเดือน 480,000 บาท/ปี พร้อมประกันสังคม 9,000 บาท และประกันชีวิต 24,000 บาท",
+    "legalBasis": "มาตรา 40(1), พ.ร.ฎ. 629, กฎกระทรวง 126",
+    "rdCalculationNote": "เงินได้สุทธิ = 480,000 - 100,000 (เหมา) - 60,000 (ส่วนตัว) - 9,000 (ประกันสังคม) - 24,000 (ประกันชีวิต) = 287,000 บาท → ขั้นแรก 150,000 @ 0% = 0, ขั้นสอง 137,000 @ 5% = 6,850",
+    "input": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_1", "grossIncomeBaht": 480000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 9000,
+        "lifeInsuranceBaht": 24000,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 0,
+        "rmfBaht": 0,
+        "ssfBaht": 0,
+        "thaiEsgBaht": 0
+      },
+      "withholdingTaxPaidBaht": 0
+    },
+    "expected": {
+      "grossIncomeBaht": 480000,
+      "expenseDeductionBaht": 100000,
+      "incomeAfterExpensesBaht": 380000,
+      "totalAllowancesBaht": 93000,
+      "netTaxableIncomeBaht": 287000,
+      "grossTaxBaht": 6850,
+      "withholdingTaxPaidBaht": 0,
+      "taxDueOrRefundBaht": 6850,
+      "outcome": "pay"
+    }
+  },
+  {
+    "personaId": "p2-freelancer-mixed",
+    "description": "Freelancer 40(2) รายได้ผสม — ค่าบริการ 300,000 บาท + พร้อมประกันสังคม 9,000 บาท",
+    "legalBasis": "มาตรา 40(2), พ.ร.ฎ. 629 (รวม 40(1)+40(2) ไม่เกิน 100,000 บาท)",
+    "rdCalculationNote": "เงินได้สุทธิ = 300,000 - 100,000 (เหมา 50% แต่ 150,000 > 100,000 cap) - 60,000 - 9,000 = 131,000 → ขั้นแรก 131,000 @ 0-5% = (150,000-131,000 ยกเว้น, ส่วนที่เกิน 131,000 < 150,000 → ยกเว้นทั้งหมด) = 0",
+    "legalBasisNote": "เงินได้สุทธิ 131,000 < 150,000 → ยกเว้นภาษีทั้งหมด",
+    "rdCalculationNote2": "เงินได้สุทธิ = 300,000 - 100,000 - 60,000 - 9,000 = 131,000 → ต่ำกว่า 150,000 → ภาษี 0 บาท",
+    "input": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_2", "grossIncomeBaht": 300000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 9000,
+        "lifeInsuranceBaht": 0,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 0,
+        "rmfBaht": 0,
+        "ssfBaht": 0,
+        "thaiEsgBaht": 0
+      },
+      "withholdingTaxPaidBaht": 0
+    },
+    "expected": {
+      "grossIncomeBaht": 300000,
+      "expenseDeductionBaht": 100000,
+      "incomeAfterExpensesBaht": 200000,
+      "totalAllowancesBaht": 69000,
+      "netTaxableIncomeBaht": 131000,
+      "grossTaxBaht": 0,
+      "withholdingTaxPaidBaht": 0,
+      "taxDueOrRefundBaht": 0,
+      "outcome": "zero"
+    }
+  },
+  {
+    "personaId": "p3-liberal-profession-40-6",
+    "description": "ผู้ประกอบวิชาชีพอิสระ 40(6) — สถาปนิก/วิศวกร รายได้ 800,000 บาท หักค่าใช้จ่ายเหมา 30%",
+    "legalBasis": "มาตรา 40(6) วิชาชีพอิสระ (ไม่ใช่แพทย์) พ.ร.ฎ. 629",
+    "rdCalculationNote": "เงินได้สุทธิ = 800,000 - 240,000 (30%) - 60,000 - 9,000 = 491,000 → ขั้น1: 150,000@0%=0, ขั้น2: 150,000@5%=7,500, ขั้น3: 191,000@10%=19,100 → รวม 26,600 บาท",
+    "input": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_6_other", "grossIncomeBaht": 800000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 9000,
+        "lifeInsuranceBaht": 0,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 0,
+        "rmfBaht": 0,
+        "ssfBaht": 0,
+        "thaiEsgBaht": 0
+      },
+      "withholdingTaxPaidBaht": 0
+    },
+    "expected": {
+      "grossIncomeBaht": 800000,
+      "expenseDeductionBaht": 240000,
+      "incomeAfterExpensesBaht": 560000,
+      "totalAllowancesBaht": 69000,
+      "netTaxableIncomeBaht": 491000,
+      "grossTaxBaht": 26600,
+      "withholdingTaxPaidBaht": 0,
+      "taxDueOrRefundBaht": 26600,
+      "outcome": "pay"
+    }
+  },
+  {
+    "personaId": "p4-contractor-40-7-flat",
+    "description": "ผู้รับเหมา 40(7) — รายได้ 1,200,000 บาท หักค่าใช้จ่ายเหมา 60% พร้อมหักภาษี ณ ที่จ่าย 36,000 บาท",
+    "legalBasis": "มาตรา 40(7), พ.ร.ฎ. 629",
+    "rdCalculationNote": "เงินได้สุทธิ = 1,200,000 - 720,000 (60%) - 60,000 - 9,000 = 411,000 → ขั้น1: 150,000@0%=0, ขั้น2: 150,000@5%=7,500, ขั้น3: 111,000@10%=11,100 → ภาษี 18,600 - หัก ณ ที่จ่าย 36,000 = คืนภาษี (17,400) บาท",
+    "input": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_7", "grossIncomeBaht": 1200000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 9000,
+        "lifeInsuranceBaht": 0,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 0,
+        "rmfBaht": 0,
+        "ssfBaht": 0,
+        "thaiEsgBaht": 0
+      },
+      "withholdingTaxPaidBaht": 36000
+    },
+    "expected": {
+      "grossIncomeBaht": 1200000,
+      "expenseDeductionBaht": 720000,
+      "incomeAfterExpensesBaht": 480000,
+      "totalAllowancesBaht": 69000,
+      "netTaxableIncomeBaht": 411000,
+      "grossTaxBaht": 18600,
+      "withholdingTaxPaidBaht": 36000,
+      "taxDueOrRefundBaht": -17400,
+      "outcome": "refund"
+    }
+  },
+  {
+    "personaId": "p5-business-commerce-40-8",
+    "description": "ธุรกิจ/ขายของออนไลน์ 40(8) — รายได้ 2,000,000 บาท หักค่าใช้จ่ายเหมา 60% พร้อม SSF 200,000 บาท",
+    "legalBasis": "มาตรา 40(8), พ.ร.ฎ. 629",
+    "rdCalculationNote": "เงินได้สุทธิ = 2,000,000 - 1,200,000 (60%) - 60,000 - 200,000 (SSF) = 540,000 → ขั้น1: 150,000@0%=0, ขั้น2: 150,000@5%=7,500, ขั้น3: 200,000@10%=20,000, ขั้น4: 40,000@15%=6,000 → รวม 33,500 บาท",
+    "input": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_8", "grossIncomeBaht": 2000000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 0,
+        "lifeInsuranceBaht": 0,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 0,
+        "rmfBaht": 0,
+        "ssfBaht": 200000,
+        "thaiEsgBaht": 0
+      },
+      "withholdingTaxPaidBaht": 0
+    },
+    "expected": {
+      "grossIncomeBaht": 2000000,
+      "expenseDeductionBaht": 1200000,
+      "incomeAfterExpensesBaht": 800000,
+      "totalAllowancesBaht": 260000,
+      "netTaxableIncomeBaht": 540000,
+      "grossTaxBaht": 33500,
+      "withholdingTaxPaidBaht": 0,
+      "taxDueOrRefundBaht": 33500,
+      "outcome": "pay"
+    }
+  },
+  {
+    "personaId": "p6-multi-income-40-1-2-8",
+    "description": "ผู้มีรายได้หลายทาง — เงินเดือน 40(1) 360,000 + ฟรีแลนซ์ 40(2) 240,000 + ขายของออนไลน์ 40(8) 500,000 บาท",
+    "legalBasis": "มาตรา 40(1), 40(2), 40(8); หักค่าใช้จ่าย 40(1)+40(2) รวมกัน cap 100,000 บาท",
+    "rdCalculationNote": "ค่าใช้จ่าย: 40(1)+40(2)=(360,000+240,000)*50%=300,000 แต่ cap 100,000. 40(8)=500,000*60%=300,000. รวมค่าใช้จ่าย 400,000. เงินได้สุทธิ = 1,100,000 - 400,000 - 60,000 - 9,000 = 631,000 → ขั้น1:150,000@0%=0, ขั้น2:150,000@5%=7,500, ขั้น3:200,000@10%=20,000, ขั้น4:131,000@15%=19,650 → รวม 47,150 บาท",
+    "input": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_1", "grossIncomeBaht": 360000 },
+        { "type": "40_2", "grossIncomeBaht": 240000 },
+        { "type": "40_8", "grossIncomeBaht": 500000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 9000,
+        "lifeInsuranceBaht": 0,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 0,
+        "rmfBaht": 0,
+        "ssfBaht": 0,
+        "thaiEsgBaht": 0
+      },
+      "withholdingTaxPaidBaht": 0
+    },
+    "expected": {
+      "grossIncomeBaht": 1100000,
+      "expenseDeductionBaht": 400000,
+      "incomeAfterExpensesBaht": 700000,
+      "totalAllowancesBaht": 69000,
+      "netTaxableIncomeBaht": 631000,
+      "grossTaxBaht": 47150,
+      "withholdingTaxPaidBaht": 0,
+      "taxDueOrRefundBaht": 47150,
+      "outcome": "pay"
+    }
+  },
+  {
+    "personaId": "p7-high-income-35-bracket",
+    "description": "ผู้มีรายได้สูง 40(8) — รายได้ 15,000,000 บาท ขั้นภาษี 35% พร้อมลดหย่อนเต็มกลุ่มเกษียณ 500,000 บาท",
+    "legalBasis": "มาตรา 40(8), บัญชีอัตราภาษี (ฉบับที่ 44) ขั้นบันได 8 ขั้น",
+    "rdCalculationNote": "ค่าใช้จ่าย 40(8): 15,000,000*60%=9,000,000. เงินได้สุทธิ = 15,000,000 - 9,000,000 - 60,000 - 500,000 = 5,440,000 → ขั้น1:150,000@0%=0, ขั้น2:150,000@5%=7,500, ขั้น3:200,000@10%=20,000, ขั้น4:250,000@15%=37,500, ขั้น5:250,000@20%=50,000, ขั้น6:1,000,000@25%=250,000, ขั้น7:3,000,000@30%=900,000, ขั้น8:440,000@35%=154,000 → รวม 1,419,000 บาท",
+    "input": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_8", "grossIncomeBaht": 15000000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 0,
+        "lifeInsuranceBaht": 0,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 0,
+        "rmfBaht": 0,
+        "ssfBaht": 0,
+        "thaiEsgBaht": 0,
+        "retirementGroupBaht": 500000
+      },
+      "withholdingTaxPaidBaht": 0
+    },
+    "inputNote": "retirementGroupBaht รวมถึง PVD/RMF/SSF ที่ถึงเพดาน 500,000 บาท — ใช้ ssfBaht = 200,000 + pvdBaht = 300,000 ในการทดสอบ",
+    "input_corrected": {
+      "taxYearBE": 2568,
+      "incomes": [
+        { "type": "40_8", "grossIncomeBaht": 15000000 }
+      ],
+      "allowances": {
+        "personalBaht": 60000,
+        "socialSecurityBaht": 0,
+        "lifeInsuranceBaht": 0,
+        "healthInsuranceBaht": 0,
+        "providentFundBaht": 300000,
+        "rmfBaht": 0,
+        "ssfBaht": 200000,
+        "thaiEsgBaht": 0
+      },
+      "withholdingTaxPaidBaht": 0
+    },
+    "expected": {
+      "grossIncomeBaht": 15000000,
+      "expenseDeductionBaht": 9000000,
+      "incomeAfterExpensesBaht": 6000000,
+      "totalAllowancesBaht": 560000,
+      "netTaxableIncomeBaht": 5440000,
+      "grossTaxBaht": 1419000,
+      "withholdingTaxPaidBaht": 0,
+      "taxDueOrRefundBaht": 1419000,
+      "outcome": "pay"
+    }
+  }
+]

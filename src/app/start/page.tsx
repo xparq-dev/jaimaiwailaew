@@ -11,6 +11,7 @@ import Link from "next/link";
 
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { WorkspaceEntryPanel } from "@/components/calculator/workspace-entry-panel";
 
 const flows = [
   {
@@ -53,6 +54,8 @@ export default function StartPage() {
         eyebrow="เริ่มต้นใช้งาน"
         title="เตรียมข้อมูลภาษีในอุปกรณ์ของคุณ"
       />
+
+      <WorkspaceEntryPanel />
 
       {/* Privacy Notice Banner */}
       <section

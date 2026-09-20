@@ -50,6 +50,29 @@ export const INCOME_CATEGORY_OPTIONS: readonly CategoryOption<IncomeCategoryCode
     { code: "other", label: "รายได้อื่น ๆ" },
   ];
 
+export const INCOME_SOURCE_SUGGESTIONS: Readonly<
+  Record<IncomeCategoryCode, readonly string[]>
+> = {
+  salary: ["เงินเดือน / ค่าจ้างประจำ", "นายจ้าง / บริษัท"],
+  bonus: ["โบนัส / เงินพิเศษ", "นายจ้าง / บริษัท"],
+  online_sales: [
+    "ขายสินค้า / ขายออนไลน์",
+    "Shopee",
+    "Lazada",
+    "TikTok Shop",
+    "Facebook / Instagram",
+    "เว็บไซต์ / หน้าร้าน",
+  ],
+  freelance_service: [
+    "รับจ้าง / งานอิสระ / บริการ",
+    "ลูกค้าโดยตรง",
+    "บริษัท / ผู้ว่าจ้าง",
+    "แพลตฟอร์มฟรีแลนซ์",
+  ],
+  rental: ["รายได้จากค่าเช่า", "ผู้เช่า", "แพลตฟอร์มให้เช่า"],
+  other: ["รายได้อื่น ๆ", "ดอกเบี้ย", "เงินปันผล"],
+};
+
 export const EXPENSE_CATEGORY_OPTIONS: readonly CategoryOption<ExpenseCategoryCode>[] =
   [
     { code: "inventory", label: "สินค้าคงคลัง / ต้นทุนสินค้า" },
@@ -113,6 +136,18 @@ export function getIncomeCategoryLabel(code: IncomeCategoryCode): string {
     INCOME_CATEGORY_OPTIONS.find((option) => option.code === code)?.label ??
     code
   );
+}
+
+export function getIncomeSourceSuggestions(
+  code: IncomeCategoryCode,
+): readonly string[] {
+  return INCOME_SOURCE_SUGGESTIONS[code];
+}
+
+export function getDefaultIncomeSourceSuggestion(
+  code: IncomeCategoryCode,
+): string {
+  return INCOME_SOURCE_SUGGESTIONS[code][0] ?? getIncomeCategoryLabel(code);
 }
 
 export function getExpenseCategoryLabel(code: ExpenseCategoryCode): string {

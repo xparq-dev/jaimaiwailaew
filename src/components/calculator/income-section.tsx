@@ -12,6 +12,7 @@ import {
 } from "@/calculator/income-month-groups";
 import { useCalculatorStore } from "@/calculator/store";
 import {
+  getDefaultIncomeSourceSuggestion,
   getIncomeCategoryLabel,
   INCOME_CATEGORY_OPTIONS,
 } from "@/calculator/categories";
@@ -31,13 +32,14 @@ import {
   TextAreaInput,
   TextInput,
 } from "./entry-form-dialog";
+import { IncomeSourceSelector } from "./income-source-selector";
 
 const emptyForm: IncomeEntryFormValues = {
   entryFrequency: "one_time",
   occurredOn: "",
   occurredMonth: "",
   categoryCode: "online_sales",
-  sourceName: "",
+  sourceName: getDefaultIncomeSourceSuggestion("online_sales"),
   amount: "",
   note: "",
 };
@@ -249,6 +251,13 @@ export function IncomeSectionPage() {
       >
         {(form) => {
           const frequency = form.watch("entryFrequency");
+          const categoryCode = form.watch("categoryCode");
+          const sourceName = form.watch("sourceName") ?? "";
+          const priorSourceNames = workspace.incomeEntries.flatMap((entry) =>
+            entry.categoryCode === categoryCode && entry.sourceName
+              ? [entry.sourceName]
+              : [],
+          );
           return (
             <>
               <div className="space-y-2">
@@ -328,7 +337,20 @@ export function IncomeSectionPage() {
               >
                 <SelectInput
                   id="income-category"
-                  {...form.register("categoryCode")}
+                  {...form.register("categoryCode", {
+                    onChange: (event) => {
+                      const nextCategory = event.target
+                        .value as IncomeEntryFormValues["categoryCode"];
+                      form.setValue(
+                        "sourceName",
+                        getDefaultIncomeSourceSuggestion(nextCategory),
+                        {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        },
+                      );
+                    },
+                  })}
                 >
                   {INCOME_CATEGORY_OPTIONS.map((option) => (
                     <option key={option.code} value={option.code}>
@@ -337,13 +359,19 @@ export function IncomeSectionPage() {
                   ))}
                 </SelectInput>
               </FormField>
-              <FormField id="income-source" label="แหล่งรายได้ (ไม่บังคับ)">
-                <TextInput
-                  id="income-source"
-                  placeholder="เช่น Shopee, ลูกค้า A, เงินเดือน"
-                  {...form.register("sourceName")}
-                />
-              </FormField>
+              <input type="hidden" {...form.register("sourceName")} />
+              <IncomeSourceSelector
+                additionalOptions={priorSourceNames}
+                categoryCode={categoryCode}
+                error={form.formState.errors.sourceName?.message}
+                onChange={(nextSourceName) =>
+                  form.setValue("sourceName", nextSourceName, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+                value={sourceName}
+              />
               <FormField
                 error={form.formState.errors.amount?.message}
                 id="income-amount"

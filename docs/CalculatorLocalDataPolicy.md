@@ -1,6 +1,6 @@
 # นโยบายการจัดเก็บข้อมูลภายในอุปกรณ์ (Calculator Local Data Policy)
 
-อัปเดตล่าสุด: 2026-09-13 (Summary Breakdown UX Improvement)
+อัปเดตล่าสุด: 2026-09-13 (Phase 1C Local-only PDF Export)
 
 เอกสารนี้ระบุนโยบายและสถาปัตยกรรมความปลอดภัยและการปกป้องความเป็นส่วนตัวของข้อมูลการเงินในส่วนเครื่องคำนวณของ **Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว)**
 
@@ -60,6 +60,22 @@
    - ไม่ persist ลง localStorage และไม่เพิ่ม field ใน calculator schema
    - ไม่ใส่ข้อมูลรายการ, จำนวนเงิน, หมายเหตุ หรือ selected group ลง URL query/hash
    - ไม่ส่ง network request, analytics หรือ log เมื่อเปิด/ปิดหรือดูรายละเอียด
+9. **Local-only PDF Export:** รายงาน A4 ถูกสร้างเมื่อผู้ใช้กดดูตัวอย่าง โดยตัวสร้าง PDF ฝั่งเบราว์เซอร์อ่าน workspace ใน memory และแสดง Preview ก่อนให้ผู้ใช้กดดาวน์โหลด
+   - Preview และไฟล์ดาวน์โหลดมาจาก PDF blob เดียวกัน ไม่สร้างสำเนาบน server
+   - `blob:` URL สำหรับ Preview เป็น URL ชั่วคราวภายใน browser และถูก revoke เมื่อปิด Preview หรือออกจากหน้า
+   - Content Security Policy อนุญาตให้ iframe อ่านได้เฉพาะ origin ของแอปและ local `blob:`; ไม่อนุญาต frame จากบริการภายนอก
+   - ชื่อรายงานและชื่อที่แสดงในรายงานเป็น ephemeral UI state ไม่ persist เพิ่มใน localStorage และไม่อยู่ใน URL
+   - ไม่มีการส่งข้อมูลรายงานหรือไฟล์ PDF ไปยัง Vercel, API, analytics หรือบริการภายนอก
+   - ใช้รูปแบบเอกสารสีอ่อนและฟอนต์ Sarabun ที่ฝังในแอป ไม่มี font CDN/runtime request สำหรับการ export
+   - รายงานแสดงเฉพาะข้อมูลที่ใช้ตรวจสอบรายการและยอดรวม โดยไม่ส่งออกหมายเหตุส่วนตัว รหัสระบบ หรือสถานะภายในภาษาอังกฤษ
+   - รายงานแสดงยอดรวมเชิงคณิตศาสตร์ รายการต้นทาง สรุปตามกลุ่ม และข้อความภาษาไทยว่าการคำนวณภาษียังไม่เปิดใช้งาน
+   - ไม่มี tax estimate, tax due, refund, tax rate, Excel หรือ CSV
+10. **Workspace และประเภทผู้ใช้งาน:** โหมดไม่สมัครสมาชิกเก็บ Workspace ได้ 1 รายการใน localStorage เดิม
+   - หน้าเริ่มต้นอ่านเฉพาะ state ในอุปกรณ์เพื่อแสดง Workspace เดิมและลิงก์กลับเข้าใช้งาน
+   - การเริ่ม Workspace ใหม่ต้องผ่านคำเตือนและ confirmation เดิมก่อนแทนที่ข้อมูล
+   - การแก้ไขประเภทผู้ใช้งานเปลี่ยนเฉพาะ `persona` และ `updatedAt`; ไม่ลบหรือย้ายรายการการเงิน
+   - คำแนะนำแหล่งรายได้และสถานะ dialog เป็น UI state ใน browser ไม่มี network request และไม่เพิ่มข้อมูลสมาชิก
+   - หลาย Workspace, Auth และ Cloud persistence ยังไม่เปิดใช้งาน
 
 ---
 

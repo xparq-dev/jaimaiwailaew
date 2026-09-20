@@ -21,6 +21,7 @@ import {
 } from "./schemas";
 import type {
   AllowanceDraftEntry,
+  CalculatorPersona,
   CalculatorWorkspace,
   ExpenseEntry,
   IncomeEntry,
@@ -43,6 +44,7 @@ interface CalculatorStoreState {
   persistError: string | null;
   initializeWorkspace: (input: CreateWorkspaceInput, replace?: boolean) => void;
   replaceWorkspace: (input: CreateWorkspaceInput) => void;
+  updateWorkspacePersona: (persona: CalculatorPersona) => void;
   clearLocalData: () => void;
   dismissPersistError: () => void;
   addIncomeEntry: (values: IncomeEntryFormValues) => string | null;
@@ -220,6 +222,19 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
       replaceWorkspace: (input) => {
         set({
           workspace: createCalculatorWorkspace(input),
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        });
+      },
+
+      updateWorkspacePersona: (persona) => {
+        const workspace = get().workspace;
+        if (!workspace || workspace.persona === persona) {
+          return;
+        }
+
+        set({
+          workspace: touchWorkspace(workspace, { persona }),
           lastSavedAt: nowIsoTimestamp(),
           persistError: null,
         });

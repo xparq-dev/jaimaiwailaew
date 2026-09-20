@@ -25,6 +25,7 @@ import { CalculatorLayout } from "./calculator-layout";
 import { ClearDataDialog } from "./clear-data-dialog";
 import { TaxEstimateUnavailableCard } from "./tax-estimate-unavailable-card";
 import { SummaryBreakdown } from "./summary-breakdown";
+import { PdfExportPanel } from "./pdf-export-panel";
 
 export function SummarySectionPage() {
   const workspace = useCalculatorStore((state) => state.workspace);
@@ -87,6 +88,8 @@ export function SummarySectionPage() {
       </section>
 
       <SummaryBreakdown workspace={workspace} />
+
+      <PdfExportPanel workspace={workspace} />
 
       <TaxEstimateUnavailableCard />
 
@@ -182,15 +185,6 @@ export function SummarySectionPage() {
         </Button>
         <Button asChild variant="secondary">
           <Link href="/calculator/expenses">แก้ไขรายจ่าย</Link>
-        </Button>
-        <Button
-          aria-disabled="true"
-          disabled
-          title="Export จะเปิดใช้ใน Phase 1C หลังผ่านการตรวจสอบ"
-          type="button"
-          variant="secondary"
-        >
-          Export (ล็อก)
         </Button>
         <Button
           onClick={() => setClearDialogOpen(true)}

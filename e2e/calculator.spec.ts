@@ -6,6 +6,15 @@ test.describe("Calculator UX (Local-only)", () => {
   }, testInfo) => {
     // Track network requests to verify NO financial data is transmitted
     const requestedUrls: string[] = [];
+    const contentSecurityPolicyErrors: string[] = [];
+    page.on("console", (message) => {
+      if (
+        message.type() === "error" &&
+        message.text().includes("Content Security Policy")
+      ) {
+        contentSecurityPolicyErrors.push(message.text());
+      }
+    });
     page.on("request", (request) => {
       requestedUrls.push(request.url());
       const postData = request.postData();
@@ -39,6 +48,33 @@ test.describe("Calculator UX (Local-only)", () => {
       .click();
 
     // URL should now be /calculator
+    await expect(page).toHaveURL(/\/calculator$/);
+
+    // Workspace persona can be corrected without clearing existing data.
+    await expect(
+      page.getByRole("heading", {
+        name: "ขายออนไลน์ / ธุรกิจ · ปีภาษี 2569",
+      }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "แก้ไขประเภทผู้ใช้งาน" }).click();
+    await page.getByRole("radio", { name: /ฟรีแลนซ์/ }).click();
+    await page.getByRole("button", { name: "บันทึกประเภทผู้ใช้งาน" }).click();
+    await expect(
+      page.getByRole("heading", { name: "ฟรีแลนซ์ · ปีภาษี 2569" }),
+    ).toBeVisible();
+
+    // Start page exposes the existing workspace and warns before adding another.
+    await page.goto("/start");
+    await expect(page.getByText("พบ Workspace เดิมในอุปกรณ์นี้")).toBeVisible();
+    await page.getByRole("button", { name: "เพิ่ม Workspace" }).click();
+    const addWorkspaceDialog = page.getByRole("dialog", {
+      name: "เพิ่ม Workspace ใหม่",
+    });
+    await expect(addWorkspaceDialog).toContainText(
+      "โหมดไม่สมัครสมาชิกเก็บได้ 1 Workspace",
+    );
+    await addWorkspaceDialog.getByRole("button", { name: "ยกเลิก" }).click();
+    await page.getByRole("link", { name: "เปิด Workspace เดิม" }).click();
     await expect(page).toHaveURL(/\/calculator$/);
 
     // Requirement A: Compact Privacy Indicator
@@ -105,6 +141,11 @@ test.describe("Calculator UX (Local-only)", () => {
     // Ensure one_time is selected by default and date input is present
     await page.locator("#income-date").fill("2026-03-01");
     await page.locator("#income-category").selectOption("online_sales");
+    await expect(
+      page.getByRole("checkbox", {
+        name: "เลือกแหล่งรายได้ ขายสินค้า / ขายออนไลน์",
+      }),
+    ).toBeChecked();
     await page.locator("#income-source").fill("Shopee Store");
     await page.locator("#income-amount").fill("50000.00");
     await page.locator("#income-note").fill("ยอดขายครั้งเดียว");
@@ -133,7 +174,11 @@ test.describe("Calculator UX (Local-only)", () => {
 
     await page.locator("#income-month").fill("2026-03");
     await page.locator("#income-category").selectOption("salary");
-    await page.locator("#income-source").fill("ประจำเดือน มี.ค.");
+    await expect(
+      page.getByRole("checkbox", {
+        name: "เลือกแหล่งรายได้ เงินเดือน / ค่าจ้างประจำ",
+      }),
+    ).toBeChecked();
     await page.locator("#income-amount").fill("40000.00");
     await page
       .locator("dialog[open]")
@@ -153,6 +198,12 @@ test.describe("Calculator UX (Local-only)", () => {
 
     await page.locator("#income-date").fill("2026-04-10");
     await page.locator("#income-category").selectOption("freelance_service");
+    await page
+      .getByRole("checkbox", {
+        name: "เลือกแหล่งรายได้ รับจ้าง / งานอิสระ / บริการ",
+      })
+      .locator("..")
+      .click();
     await page.locator("#income-amount").fill("10000.00");
     await page.locator("#income-note").fill("งานที่ไม่ระบุแหล่งที่มา");
     await page
@@ -481,9 +532,77 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(shopeeDialog).toBeHidden();
     await expect(shopeeTrigger).toBeFocused();
 
-    // Dark mode keeps the breakdown and dialog content readable
+    // 6b. Local PDF previews before download without leaking financial data.
+    const requestCountBeforePdf = requestedUrls.length;
+    const pdfUrl = page.url();
+    const pdfPanel = page.getByRole("region", {
+      name: "ดาวน์โหลดรายงาน PDF",
+    });
+    await pdfPanel
+      .getByRole("textbox", {
+        name: "ชื่อผู้จัดทำ (ไม่บังคับ)",
+      })
+      .fill("ผู้ใช้ทดสอบ");
+    await pdfPanel.getByRole("button", { name: "ดูตัวอย่าง PDF" }).click();
+    const pdfPreviewDialog = page.getByRole("dialog", {
+      name: "ตัวอย่างรายงาน PDF",
+    });
+    await expect(pdfPreviewDialog).toBeVisible();
+    await expect(
+      pdfPreviewDialog.getByTitle("ตัวอย่างรายงาน PDF"),
+    ).toHaveAttribute("src", /^blob:/);
+    await page.waitForTimeout(250);
+    expect(contentSecurityPolicyErrors).toEqual([]);
+    const downloadPromise = page.waitForEvent("download");
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ดาวน์โหลด PDF" })
+      .click();
+    const download = await downloadPromise;
+    await download.saveAs(testInfo.outputPath("professional-report.pdf"));
+    await expect(
+      pdfPreviewDialog.getByText("ดาวน์โหลดรายงานเรียบร้อยแล้ว"),
+    ).toBeVisible();
+    expect(download.suggestedFilename()).toMatch(
+      /^รายงานสรุปรายรับรายจ่าย-2569-\d{8}-\d{4}\.pdf$/,
+    );
+    const pdfStream = await download.createReadStream();
+    const pdfChunks: Buffer[] = [];
+    for await (const chunk of pdfStream) {
+      pdfChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const pdfBytes = Buffer.concat(pdfChunks);
+    expect(pdfBytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(pdfBytes.byteLength).toBeGreaterThan(10_000);
+    expect(page.url()).toBe(pdfUrl);
+    for (const requestUrl of requestedUrls.slice(requestCountBeforePdf)) {
+      expect(requestUrl).not.toContain("100000");
+      expect(requestUrl).not.toContain("Shopee");
+      expect(requestUrl).not.toContain("ผู้ใช้ทดสอบ");
+    }
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
+      .click();
+    await expect(pdfPreviewDialog).toBeHidden();
+
+    // Dark mode does not alter the previewed document or block downloading.
     await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
+    const requestCountBeforeDarkPdf = requestedUrls.length;
+    await pdfPanel.getByRole("button", { name: "ดูตัวอย่าง PDF" }).click();
+    await expect(pdfPreviewDialog).toBeVisible();
+    const darkDownloadPromise = page.waitForEvent("download");
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ดาวน์โหลด PDF" })
+      .click();
+    await darkDownloadPromise;
+    const darkPdfRequests = requestedUrls.slice(requestCountBeforeDarkPdf);
+    expect(darkPdfRequests.length).toBeGreaterThan(0);
+    expect(
+      darkPdfRequests.every((requestUrl) => requestUrl.startsWith("blob:")),
+    ).toBe(true);
+    await pdfPreviewDialog
+      .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
+      .click();
     await missingSourceTrigger.click();
     await expect(breakdownDialog).toBeVisible();
     await expect(

@@ -19,6 +19,7 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "pdf:fonts": "node scripts/build-pdf-font-vfs.mjs",
     "prepare": "node scripts/setup-husky.mjs"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "lucide-react": "1.45.0",
     "next": "16.3.5",
     "next-themes": "0.4.6",
+    "pdfmake": "0.3.11",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "7.88.0",
@@ -45,6 +47,7 @@
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.7",
     "@types/node": "22.20.2",
+    "@types/pdfmake": "0.3.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.1",

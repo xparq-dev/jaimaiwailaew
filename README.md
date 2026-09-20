@@ -9,9 +9,9 @@
 
 ## สถานะโครงการ
 
-> สถานะ: Summary Breakdown UX Improvement พัฒนาและทดสอบบน branch `feat/summary-breakdown` แล้ว โดยเพิ่มการรวมกลุ่มรายรับ/รายจ่ายและ Detail Dialog แบบ local-only ต่อจาก Hotfix PR #6 ทั้งนี้กฎภาษียังคงเป็น unverified placeholder ที่บล็อกการคำนวณจริงตาม fail-closed policy และยังไม่เริ่ม Phase 1C PDF Export
+> สถานะ: Summary Breakdown และ Income Month Grouping merge เข้า main แล้วผ่าน PR #7; Phase 1C Local-only PDF Export กำลังพัฒนาบน branch `feat/local-pdf-export` โดยกฎภาษียังคงเป็น unverified placeholder และบล็อกการคำนวณจริงตาม fail-closed policy
 
-โครงการพัฒนาผ่าน **Phase 0 — Project Foundation**, **Phase 1A — Tax Rule Engine**, **Phase 1B — Calculator UX** และ **Phase 1B UX Hotfix** แล้ว ขณะนี้มี Summary Breakdown สำหรับทบทวนข้อมูลในช่วงเวลาที่เลือก แต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
+โครงการพัฒนาผ่าน **Phase 0 — Project Foundation**, **Phase 1A — Tax Rule Engine**, **Phase 1B — Calculator UX**, **Phase 1B UX Hotfix** และ Summary Breakdown/Income Month Grouping แล้ว ขณะนี้กำลังเพิ่มรายงาน A4 แบบ local-only แต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
@@ -37,8 +37,7 @@
 - Vitest สำหรับ unit tests และ Playwright สำหรับ essential end-to-end flows
 - ESLint, Prettier และ GitHub Actions
 
-TanStack Table, Recharts และ browser-safe PDF renderer เป็น dependency เรียกใช้ในเฟสถัดไป
-จึงยังไม่เพิ่ม dependency ก่อนมีหน้าจอหรือ PDF flow ที่ใช้งานจริง
+Phase 1C ใช้ pdfmake ฝั่งเบราว์เซอร์และฟอนต์ Sarabun ที่ฝังในแอปเพื่อดาวน์โหลด PDF โดยตรง ไม่มี runtime font CDN; TanStack Table และ Recharts ยังไม่ถูกเพิ่มเพราะยังไม่มี flow ที่ต้องใช้
 
 ## เริ่มพัฒนา
 

@@ -31,6 +31,7 @@ interface PreviewSection {
   readonly title: string;
   readonly headers: readonly string[];
   readonly rows: readonly (readonly PreviewCell[])[];
+  readonly note?: string;
 }
 
 const amountFormatter = new Intl.NumberFormat("th-TH", {
@@ -121,6 +122,18 @@ function buildPreviewSections(
       row.percentage,
     ]),
   });
+
+  if (report.taxEstimateRows && report.taxEstimateRows.length > 0) {
+    sections.push({
+      id: "tax-estimate",
+      title: "Tax Estimate",
+      headers: ["รายการ", "จำนวนเงิน (บาท)"],
+      rows: report.taxEstimateRows.map((row) => [row.label, row.amountBaht]),
+      ...(report.taxEstimateDisclaimer
+        ? { note: report.taxEstimateDisclaimer }
+        : {}),
+    });
+  }
 
   return sections;
 }
@@ -333,6 +346,12 @@ export function TabularExportButtons({
                     )}
                   </tbody>
                 </table>
+
+                {activeSection.note ? (
+                  <p className="border-border text-muted-foreground border-t px-4 py-3 text-xs italic">
+                    {activeSection.note}
+                  </p>
+                ) : null}
 
                 {activeSection.id === "summary" && preview ? (
                   <dl className="border-border grid gap-2 border-t px-4 py-3 text-xs sm:grid-cols-[max-content_1fr]">

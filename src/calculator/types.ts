@@ -19,9 +19,22 @@ export type EntryFrequency = (typeof ENTRY_FREQUENCIES)[number];
 export const INCOME_CATEGORY_CODES = [
   "salary",
   "bonus",
+  "overtime",
+  "commission",
   "online_sales",
+  "store_sales",
+  "business_income",
   "freelance_service",
+  "professional_service",
+  "creator_affiliate",
   "rental",
+  "interest",
+  "dividend",
+  "investment",
+  "royalty",
+  "agriculture",
+  "pension",
+  "prize_grant",
   "other",
 ] as const;
 

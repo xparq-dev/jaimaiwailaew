@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createCalculatorWorkspace,
@@ -23,6 +23,22 @@ vi.mock("@/export/download-local-artifact", () => ({
   downloadLocalArtifact: downloadLocalArtifactMock,
 }));
 
+beforeAll(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.setAttribute("open", "");
+    },
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, "close", {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.removeAttribute("open");
+      this.dispatchEvent(new Event("close"));
+    },
+  });
+});
+
 beforeEach(() => {
   createLocalXlsxArtifactMock.mockReset();
   createLocalCsvBundleArtifactMock.mockReset();
@@ -30,7 +46,7 @@ beforeEach(() => {
 });
 
 describe("TabularExportButtons", () => {
-  it("exports Excel and CSV only after user actions without network, storage, or URL changes", async () => {
+  it("previews Excel and CSV before downloading without network, storage, or URL changes", async () => {
     const user = userEvent.setup();
     const workspace = createCalculatorWorkspace(
       getDefaultWorkspaceInput("multiple_income", 2569, "first_half"),
@@ -60,17 +76,35 @@ describe("TabularExportButtons", () => {
     await waitFor(() =>
       expect(createLocalXlsxArtifactMock).toHaveBeenCalledOnce(),
     );
+    expect(downloadLocalArtifactMock).not.toHaveBeenCalled();
+    const excelPreview = screen.getByRole("dialog", {
+      name: "ตัวอย่างรายงาน Excel",
+    });
+    expect(excelPreview).toBeVisible();
+    expect(excelPreview).toHaveTextContent("รายรับรวม");
+    expect(excelPreview).toHaveTextContent(
+      "Tax Rules 2568/2569: unverified / not for calculation",
+    );
+    await user.click(screen.getByRole("button", { name: "ดาวน์โหลด Excel" }));
     expect(downloadLocalArtifactMock).toHaveBeenCalledWith(excelArtifact);
     expect(screen.getByText("ดาวน์โหลดไฟล์ Excel เรียบร้อยแล้ว")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: /^ปิดตัวอย่าง$/u }));
 
     await user.click(screen.getByRole("button", { name: "ส่งออก CSV" }));
     await waitFor(() =>
       expect(createLocalCsvBundleArtifactMock).toHaveBeenCalledOnce(),
     );
+    expect(downloadLocalArtifactMock).toHaveBeenCalledTimes(1);
+    const csvPreview = screen.getByRole("dialog", {
+      name: "ตัวอย่างรายงาน CSV",
+    });
+    expect(csvPreview).toBeVisible();
+    expect(csvPreview).toHaveTextContent(
+      "เมื่อดาวน์โหลดจะได้รับ ZIP ที่มี CSV แยกตามประเภท",
+    );
+    await user.click(screen.getByRole("button", { name: "ดาวน์โหลด CSV" }));
     expect(downloadLocalArtifactMock).toHaveBeenCalledWith(csvArtifact);
-    expect(
-      screen.getByText("ดาวน์โหลดชุดไฟล์ CSV เรียบร้อยแล้ว"),
-    ).toBeVisible();
+    expect(screen.getByText("ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว")).toBeVisible();
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(storageSpy).not.toHaveBeenCalled();
     expect(window.location.href).toBe(initialUrl);

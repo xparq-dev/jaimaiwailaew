@@ -4,7 +4,7 @@
 
 ## ขอบเขต
 
-หน้า Summary มีปุ่ม `ส่งออก Excel` และ `ส่งออก CSV` ถัดจากการสร้าง PDF การ export เริ่มเมื่อผู้ใช้กดเท่านั้นและใช้ Workspace ที่อยู่ใน memory ของ browser ไม่มี API route, server action, upload, Auth, Cloud หรือการคำนวณภาษี
+หน้า Summary มีปุ่ม `ส่งออก Excel` และ `ส่งออก CSV` ถัดจากการสร้าง PDF เมื่อกดปุ่ม ระบบจะสร้างข้อมูลใน memory และเปิด Preview แบบแท็บให้ตรวจทุก Sheet/ไฟล์ก่อน ผู้ใช้ต้องกดดาวน์โหลดใน Preview อีกครั้งจึงจะบันทึกไฟล์ลงอุปกรณ์ ไม่มี API route, server action, upload, Auth, Cloud หรือการคำนวณภาษี
 
 ## รูปแบบไฟล์
 
@@ -26,6 +26,6 @@
 
 ## การทดสอบ
 
-Unit tests เปิด ZIP และตรวจ OOXML/CSV จริง รวมทั้งชื่อ Sheet/ไฟล์, numeric cells, UTF-8 BOM, formula neutralization, optional sections และการไม่มีข้อมูลภายใน Component tests ยืนยันว่าต้องกดปุ่มก่อนจึงสร้างไฟล์และไม่มี fetch/storage/URL mutation ส่วน Playwright ตรวจการดาวน์โหลดจริงทั้ง desktop/mobile, light/dark mode และ network privacy
+Unit tests เปิด ZIP และตรวจ OOXML/CSV จริง รวมทั้งชื่อ Sheet/ไฟล์, numeric cells, UTF-8 BOM, formula neutralization, optional sections และการไม่มีข้อมูลภายใน Component tests ยืนยันว่า Preview ต้องปรากฏก่อนดาวน์โหลดและไม่มี fetch/storage/URL mutation ส่วน Playwright ตรวจ Preview, การดาวน์โหลดจริงทั้ง desktop/mobile, light/dark mode และ network privacy
 
 Phase 1E, Auth และ Cloud ไม่อยู่ในขอบเขตงานนี้

@@ -15,7 +15,8 @@
 4. **Income Month Grouping:** แยกรายรับตามเดือนและความถี่ พร้อมยอดรวมที่สอดคล้องกับ selected-period Summary
 5. **Local-only PDF Export:** เตรียมรายงาน A4 ภาษาไทยด้วย client-side PDF renderer และฟอนต์ Sarabun ที่ฝังในแอป พร้อม Preview ก่อนดาวน์โหลด ตารางที่จัดหน้าแน่นอน หัว/ท้ายทุกหน้า รายการ สรุปตามกลุ่ม ลายน้ำ ข้อควรทราบ และ Bangkok timestamp โดยไม่มีการ upload
 6. **Workspace UX Follow-up:** เพิ่มคำแนะนำแหล่งรายได้ตามหมวดหมู่, แสดง Workspace เดิมบนหน้าเริ่มต้น, เตือนก่อนสร้างใหม่ในโหมดไม่สมัครสมาชิก และแก้ไขประเภทผู้ใช้งานได้โดยไม่ล้างข้อมูล
-7. **Local-only Excel/CSV Export:** สร้าง `.xlsx` หลาย Sheet และ ZIP ที่มีไฟล์ `.csv` แยกตามประเภทจาก Workspace ใน memory เมื่อผู้ใช้กดเท่านั้น พร้อม Summary Breakdown, Bangkok timestamp, Tax Rule Status และ disclaimer โดยไม่มี API, upload, Auth หรือ Cloud
+7. **Local-only Excel/CSV Export:** สร้าง `.xlsx` หลาย Sheet และ ZIP ที่มีไฟล์ `.csv` แยกตามประเภทจาก Workspace ใน memory พร้อม Preview แบบแท็บก่อนดาวน์โหลด, Summary Breakdown, Bangkok timestamp, Tax Rule Status และ disclaimer โดยไม่มี API, upload, Auth หรือ Cloud
+8. **Income Category Coverage:** เพิ่มหมวดรายรับเป็น 19 รายการใน 5 กลุ่ม พร้อมคำแนะนำแหล่งรายได้ที่สัมพันธ์กันและยังยกเลิกหรือพิมพ์เองได้
 
 - Phase 0 foundation: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
 - Phase 1A Tax Rule Engine: เสร็จสมบูรณ์ (merge เข้า main แล้ว)
@@ -40,7 +41,7 @@
 | UX Hotfix (Privacy & Frequency) | ผ่าน | Compact indicator, monthly/one-time entry, v1→v2 migration, 70 unit tests & E2E tests ผ่าน 100% |
 | Summary Breakdown | ผ่าน | merge เข้า main แล้วผ่าน PR #7 |
 | Local-only PDF Export | ผ่าน | A4 preview-before-download, embedded Thai font, formal tables, header/footer, watermark, no upload และไม่มี tax estimate |
-| Local-only Excel/CSV Export | กำลังพัฒนา | XLSX หลาย Sheet และ ZIP ของ CSV แยกประเภท, Summary Breakdown, no upload และไม่มี tax calculation |
+| Local-only Excel/CSV Export | กำลังพัฒนา | Preview ก่อนดาวน์โหลด, XLSX หลาย Sheet และ ZIP ของ CSV แยกประเภท, Summary Breakdown, no upload และไม่มี tax calculation |
 | Secret & Privacy hygiene | ผ่าน | ไม่พบ secret, ข้อมูลการเงินเก็บเฉพาะในเครื่องผู้ใช้ ไม่ส่งออกเครือข่าย |
 
 ## รายการที่ยังไม่ปิด (External / Legal Gates)

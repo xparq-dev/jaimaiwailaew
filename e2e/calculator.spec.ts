@@ -152,6 +152,19 @@ test.describe("Calculator UX (Local-only)", () => {
 
     // Ensure one_time is selected by default and date input is present
     await page.locator("#income-date").fill("2026-03-01");
+    await expect(page.locator("#income-category optgroup")).toHaveCount(5);
+    await expect(
+      page.locator('#income-category option[value="creator_affiliate"]'),
+    ).toHaveText("คอนเทนต์ / โฆษณา / Affiliate");
+    await expect(
+      page.locator('#income-category option[value="agriculture"]'),
+    ).toHaveText("เกษตร / ปศุสัตว์ / ประมง");
+    await page.locator("#income-category").selectOption("creator_affiliate");
+    await expect(
+      page.getByRole("checkbox", {
+        name: "เลือกแหล่งรายได้ คอนเทนต์ / โฆษณา / Affiliate",
+      }),
+    ).toBeChecked();
     await page.locator("#income-category").selectOption("online_sales");
     await expect(
       page.getByRole("checkbox", {
@@ -598,8 +611,25 @@ test.describe("Calculator UX (Local-only)", () => {
 
     // 6c. Excel export is generated locally with editable numeric cells and all required sheets.
     const requestCountBeforeExcel = requestedUrls.length;
-    const excelDownloadPromise = page.waitForEvent("download");
     await pdfPanel.getByRole("button", { name: "ส่งออก Excel" }).click();
+    const excelPreviewDialog = page.getByRole("dialog", {
+      name: "ตัวอย่างรายงาน Excel",
+    });
+    await expect(excelPreviewDialog).toBeVisible();
+    await expect(excelPreviewDialog.getByText("รายรับรวม")).toBeVisible();
+    await expect(
+      excelPreviewDialog.getByText(
+        "Tax Rules 2568/2569: unverified / not for calculation",
+      ),
+    ).toBeVisible();
+    await excelPreviewDialog.getByRole("tab", { name: "Breakdown" }).click();
+    await expect(
+      excelPreviewDialog.getByText("รายรับ — แหล่งที่มา").first(),
+    ).toBeVisible();
+    const excelDownloadPromise = page.waitForEvent("download");
+    await excelPreviewDialog
+      .getByRole("button", { name: "ดาวน์โหลด Excel" })
+      .click();
     const excelDownload = await excelDownloadPromise;
     expect(excelDownload.suggestedFilename()).toMatch(
       /^รายงานข้อมูลรายรับรายจ่าย-2569-\d{8}-\d{4}\.xlsx$/,
@@ -636,13 +666,31 @@ test.describe("Calculator UX (Local-only)", () => {
       expect(requestUrl).not.toContain("100000");
       expect(requestUrl).not.toContain("Shopee");
     }
+    await excelPreviewDialog
+      .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
+      .click();
+    await expect(excelPreviewDialog).toBeHidden();
 
     // Dark mode does not block CSV or PDF downloads.
     await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
     const requestCountBeforeCsv = requestedUrls.length;
-    const csvDownloadPromise = page.waitForEvent("download");
     await pdfPanel.getByRole("button", { name: "ส่งออก CSV" }).click();
+    const csvPreviewDialog = page.getByRole("dialog", {
+      name: "ตัวอย่างรายงาน CSV",
+    });
+    await expect(csvPreviewDialog).toBeVisible();
+    await expect(
+      csvPreviewDialog.getByText(
+        "เมื่อดาวน์โหลดจะได้รับ ZIP ที่มี CSV แยกตามประเภท",
+      ),
+    ).toBeVisible();
+    await csvPreviewDialog.getByRole("tab", { name: "Income" }).click();
+    await expect(csvPreviewDialog.getByText("Shopee Store")).toBeVisible();
+    const csvDownloadPromise = page.waitForEvent("download");
+    await csvPreviewDialog
+      .getByRole("button", { name: "ดาวน์โหลด CSV" })
+      .click();
     const csvDownload = await csvDownloadPromise;
     expect(csvDownload.suggestedFilename()).toMatch(
       /^รายงานข้อมูลรายรับรายจ่าย-2569-\d{8}-\d{4}-csv\.zip$/,
@@ -673,6 +721,10 @@ test.describe("Calculator UX (Local-only)", () => {
       expect(requestUrl).not.toContain("100000");
       expect(requestUrl).not.toContain("Shopee");
     }
+    await csvPreviewDialog
+      .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
+      .click();
+    await expect(csvPreviewDialog).toBeHidden();
 
     const requestCountBeforeDarkPdf = requestedUrls.length;
     await pdfPanel.getByRole("button", { name: "ดูตัวอย่าง PDF" }).click();

@@ -71,6 +71,7 @@
    - รายงานแสดงยอดรวมเชิงคณิตศาสตร์ รายการต้นทาง สรุปตามกลุ่ม และข้อความภาษาไทยว่าการคำนวณภาษียังไม่เปิดใช้งาน
    - ไม่มี tax estimate, tax due, refund หรือ tax rate
 10. **Local-only Excel/CSV Export:** สร้างเมื่อผู้ใช้กดปุ่มจาก Workspace ที่อ่านอยู่ใน memory เท่านั้น
+   - แสดง Preview ของ Summary, Income, Expense, Withholding Tax, Deductions และ Breakdown ก่อน ผู้ใช้ต้องกดดาวน์โหลดใน Dialog อีกครั้ง
    - Excel เป็น OOXML `.xlsx` หลาย Sheet; CSV เป็น ZIP ที่มีไฟล์ `.csv` แยก Summary, Income, Expense, Withholding Tax, Deductions และ Breakdown
    - ไม่ส่งออก ID ภายใน, หมายเหตุส่วนตัว, certificate reference, rule metadata, URL, path, build/version หรือผลคำนวณภาษี
    - ข้อความที่อาจถูกโปรแกรมตารางคำนวณตีความเป็นสูตรถูกทำให้เป็นข้อความก่อนบันทึกไฟล์

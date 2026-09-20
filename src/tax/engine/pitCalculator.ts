@@ -53,7 +53,7 @@ export interface IncomeItem {
 
 export interface AllowanceInput {
   readonly personalBaht: number; // Fixed 60,000 per law — caller must provide correct value
-  readonly socialSecurityBaht: number; // Max 9,000
+  readonly socialSecurityBaht: number; // Max 9,000 (2568) or 10,500 (2569)
   readonly lifeInsuranceBaht: number; // Max 100,000
   readonly healthInsuranceBaht: number; // Max 25,000; combined with life must ≤ 100,000
   readonly providentFundBaht: number; // Max 500,000 (in retirement group cap)
@@ -173,9 +173,15 @@ function clampBaht(value: number, max: number): number {
   return Math.min(Math.max(0, value), max);
 }
 
-function calcAllowancesSatang(a: AllowanceInput): MoneySatang {
+function calcAllowancesSatang(
+  a: AllowanceInput,
+  taxYearBE: PITCalculationInput["taxYearBE"],
+): MoneySatang {
   const personal = clampBaht(a.personalBaht, 60000);
-  const sso = clampBaht(a.socialSecurityBaht, 9000);
+  const sso = clampBaht(
+    a.socialSecurityBaht,
+    taxYearBE === 2569 ? 10500 : 9000,
+  );
 
   // Life + Health combined ≤ 100,000; health alone ≤ 25,000
   const lifeCap = 100000;
@@ -337,7 +343,10 @@ export function calculatePIT(input: PITCalculationInput): PITCalculationResult {
   );
 
   // Step 3: Allowances
-  const totalAllowancesSatang = calcAllowancesSatang(input.allowances);
+  const totalAllowancesSatang = calcAllowancesSatang(
+    input.allowances,
+    input.taxYearBE,
+  );
 
   // Step 4: Net taxable income (floor at 0)
   const rawNetSatang = incomeAfterExpensesSatang - totalAllowancesSatang;

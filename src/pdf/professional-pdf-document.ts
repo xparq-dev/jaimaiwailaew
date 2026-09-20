@@ -144,6 +144,11 @@ function overviewTable(report: LocalPdfReportModel): Content {
     ["รายจ่ายรวม", report.totals.totalExpenseSatang],
     ["ภาษีหัก ณ ที่จ่ายรวม", report.totals.totalWithholdingSatang],
     ["ค่าลดหย่อน / ค่าลดภาษีรวม", report.totals.totalDeclaredAllowanceSatang],
+    ...(report.socialSecurityContributionSatang > 0
+      ? ([
+          ["ประกันสังคมที่ใช้คำนวณ", report.socialSecurityContributionSatang],
+        ] as const)
+      : []),
   ];
 
   return {

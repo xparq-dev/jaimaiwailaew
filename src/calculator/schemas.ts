@@ -15,6 +15,7 @@ import {
   EXPENSE_CATEGORY_CODES,
   EXPENSE_TAX_RELEVANCE_STATUSES,
   INCOME_CATEGORY_CODES,
+  SOCIAL_SECURITY_CALCULATION_MODES,
 } from "./types";
 
 export const CALCULATOR_STORAGE_KEY_V1 = "jaimaiwailaew:calculator:v1";
@@ -187,6 +188,17 @@ export const allowanceDraftEntrySchema = z.strictObject({
   updatedAt: timestampSchema,
 });
 
+export const socialSecuritySettingsSchema = z
+  .discriminatedUnion("mode", [
+    z.strictObject({ mode: z.literal("none") }),
+    z.strictObject({ mode: z.literal("auto_m33") }),
+    z.strictObject({
+      mode: z.literal("manual"),
+      manualContributionSatang: moneySatangSchema,
+    }),
+  ])
+  .default({ mode: "none" });
+
 export const taxRuleResolutionSnapshotSchema = z.strictObject({
   taxYearBE: z.number().int(),
   ruleSetId: z.union([z.string().trim().min(1), z.null()]),
@@ -216,6 +228,7 @@ export const calculatorWorkspaceSchema = z.strictObject({
   expenseEntries: z.array(expenseEntrySchema),
   withholdingEntries: z.array(withholdingEntrySchema),
   allowanceDraftEntries: z.array(allowanceDraftEntrySchema),
+  socialSecuritySettings: socialSecuritySettingsSchema,
   taxRuleResolutionSnapshot: taxRuleResolutionSnapshotSchema,
   localOnly: z.literal(true),
 });
@@ -453,6 +466,34 @@ export const allowanceDraftEntryFormSchema = z.strictObject({
   note: noteSchema,
 });
 
+export const socialSecuritySettingsFormSchema = z
+  .strictObject({
+    mode: z.enum(SOCIAL_SECURITY_CALCULATION_MODES),
+    manualAmount: z.string().trim().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.mode !== "manual") {
+      return;
+    }
+
+    if (!data.manualAmount) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "กรุณาระบุยอดประกันสังคมที่จ่ายจริง",
+        path: ["manualAmount"],
+      });
+      return;
+    }
+
+    if (!/^\d+(?:\.\d{1,2})?$/.test(data.manualAmount)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "รูปแบบจำนวนเงินไม่ถูกต้อง",
+        path: ["manualAmount"],
+      });
+    }
+  });
+
 export type IncomeEntryFormValues = z.infer<typeof incomeEntryFormSchema>;
 export type ExpenseEntryFormValues = z.infer<typeof expenseEntryFormSchema>;
 export type WithholdingEntryFormValues = z.infer<
@@ -460,6 +501,9 @@ export type WithholdingEntryFormValues = z.infer<
 >;
 export type AllowanceDraftEntryFormValues = z.infer<
   typeof allowanceDraftEntryFormSchema
+>;
+export type SocialSecuritySettingsFormValues = z.infer<
+  typeof socialSecuritySettingsFormSchema
 >;
 
 export function zeroMoneySatang(): MoneySatang {

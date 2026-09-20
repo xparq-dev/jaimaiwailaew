@@ -179,7 +179,7 @@ describe("Tax Rules Verification (Steps 1 & 2 Drafts)", () => {
       expect(personal?.amountBaht).toBe(60000);
 
       const sso = allowances.find((a) => a.id === "social_security");
-      expect(sso?.maxLimitBaht).toBe(9000);
+      expect(sso?.maxLimitBaht).toBe(bundle.taxYearBE === 2569 ? 10500 : 9000);
 
       const pvd = allowances.find((a) => a.id === "provident_fund");
       expect(pvd?.maxLimitBaht).toBe(500000);

@@ -3,6 +3,7 @@
 import { CheckCircle2, Info } from "lucide-react";
 
 import type { CalculatorWorkspace } from "@/calculator/types";
+import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
 import { calculateWorkspacePIT } from "@/tax/engine/workspacePitAdapter";
 import { formatThaiBaht, toMoneySatang } from "@/tax/money";
 
@@ -12,6 +13,7 @@ interface TaxEstimateCardProps {
 
 export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
   const result = calculateWorkspacePIT(workspace);
+  const socialSecurity = calculateWorkspaceSocialSecurity(workspace);
 
   return (
     <section
@@ -104,6 +106,14 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
           <dt className="text-muted-foreground">เงินได้หลังหักค่าใช้จ่าย</dt>
           <dd className="font-medium">
             {formatThaiBaht(result.incomeAfterExpensesSatang)}
+          </dd>
+        </div>
+        <div className="flex justify-between py-3">
+          <dt className="text-muted-foreground">
+            ในค่าลดหย่อน: เงินสมทบประกันสังคม
+          </dt>
+          <dd className="text-muted-foreground">
+            - {formatThaiBaht(socialSecurity.contributionSatang)}
           </dd>
         </div>
         <div className="flex justify-between py-3">

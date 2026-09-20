@@ -13,10 +13,12 @@ import {
   expenseEntryFormSchema,
   incomeEntryFormSchema,
   persistedCalculatorStateSchema,
+  socialSecuritySettingsFormSchema,
   withholdingEntryFormSchema,
   type AllowanceDraftEntryFormValues,
   type ExpenseEntryFormValues,
   type IncomeEntryFormValues,
+  type SocialSecuritySettingsFormValues,
   type WithholdingEntryFormValues,
 } from "./schemas";
 import type {
@@ -73,6 +75,9 @@ interface CalculatorStoreState {
     values: AllowanceDraftEntryFormValues,
   ) => string | null;
   deleteAllowanceDraftEntry: (id: string) => void;
+  updateSocialSecuritySettings: (
+    values: SocialSecuritySettingsFormValues,
+  ) => string | null;
 }
 
 function parseMoneyAmount(amount: string) {
@@ -571,6 +576,34 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
           }),
           lastSavedAt: nowIsoTimestamp(),
         });
+      },
+
+      updateSocialSecuritySettings: (values) => {
+        const parsed = socialSecuritySettingsFormSchema.safeParse(values);
+        const workspace = get().workspace;
+        if (!parsed.success) {
+          return parsed.error.issues[0]?.message ?? "ข้อมูลไม่ถูกต้อง";
+        }
+        if (!workspace) {
+          return "ยังไม่มี workspace";
+        }
+
+        const socialSecuritySettings =
+          parsed.data.mode === "manual"
+            ? {
+                mode: "manual" as const,
+                manualContributionSatang: parseMoneyAmount(
+                  parsed.data.manualAmount!,
+                ),
+              }
+            : { mode: parsed.data.mode };
+
+        set({
+          workspace: touchWorkspace(workspace, { socialSecuritySettings }),
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        });
+        return null;
       },
     }),
     {

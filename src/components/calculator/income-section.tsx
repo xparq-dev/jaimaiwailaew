@@ -318,7 +318,7 @@ export function IncomeSectionPage() {
               ) : (
                 <FormField
                   error={form.formState.errors.occurredMonth?.message}
-                  hint="เหมาะกับเงินเดือน ค่าเช่า ค่าสมาชิก หรือค่าใช้จ่ายที่สรุปเป็นรายเดือน"
+                  hint="กรอกยอดของเดือนนี้ 1 รายการต่อเดือน ระบบจะไม่คูณจำนวนเดือนให้อัตโนมัติ"
                   id="income-month"
                   label="เดือนที่เกิดรายการ *"
                 >
@@ -382,7 +382,8 @@ export function IncomeSectionPage() {
               <FormField
                 error={form.formState.errors.amount?.message}
                 id="income-amount"
-                label="จำนวนเงิน (บาท) *"
+                hint="กรอกยอดก่อนหักประกันสังคม ภาษีหัก ณ ที่จ่าย และรายการหักอื่น"
+                label="รายรับก่อนหัก (บาท) *"
               >
                 <TextInput
                   id="income-amount"

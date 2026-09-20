@@ -3,6 +3,7 @@ import {
   filterEntriesByPeriod,
 } from "@/calculator/arithmetic";
 import type { CalculatorWorkspace } from "@/calculator/types";
+import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
 import { satangToBaht } from "@/tax/money";
 
 import { mapIncomeCategoryToIncomeType } from "./incomeCategoryMapper";
@@ -66,7 +67,11 @@ export function buildPITInputFromWorkspace(
 
   const allowances: AllowanceInput = {
     personalBaht: 60000,
-    socialSecurityBaht: 0,
+    socialSecurityBaht: Math.round(
+      satangToBaht(
+        calculateWorkspaceSocialSecurity(workspace).contributionSatang,
+      ),
+    ),
     lifeInsuranceBaht,
     healthInsuranceBaht: 0,
     providentFundBaht: 0,

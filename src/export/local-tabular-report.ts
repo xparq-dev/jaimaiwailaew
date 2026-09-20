@@ -15,6 +15,7 @@ import {
   getIncomeCategoryLabel,
 } from "@/calculator/categories";
 import type { CalculatorWorkspace, EntryFrequency } from "@/calculator/types";
+import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
 import { calculateWorkspacePIT } from "@/tax/engine/workspacePitAdapter";
 import { satangToBaht, toMoneySatang } from "@/tax/money";
@@ -188,6 +189,7 @@ export function buildLocalTabularReportModel(
     ),
   );
   const totals = computeArithmeticTotals(workspace);
+  const socialSecurity = calculateWorkspaceSocialSecurity(workspace);
 
   let taxEstimateRows: LocalTabularSummaryRow[] | undefined = undefined;
   let taxEstimateDisclaimer: string | undefined = undefined;
@@ -266,6 +268,14 @@ export function buildLocalTabularReportModel(
         label: "ค่าลดหย่อน/ค่าลดภาษีรวม",
         amountBaht: satangToBaht(totals.totalDeclaredAllowanceSatang),
       },
+      ...(socialSecurity.contributionSatang > 0
+        ? [
+            {
+              label: "ประกันสังคมที่ใช้คำนวณ",
+              amountBaht: satangToBaht(socialSecurity.contributionSatang),
+            },
+          ]
+        : []),
       {
         label: "ยอดคงเหลือ",
         amountBaht: satangToBaht(totals.netBeforeTaxSatang),
@@ -287,16 +297,26 @@ export function buildLocalTabularReportModel(
       source: normalizedOptionalText(entry.payerName),
       amountBaht: satangToBaht(entry.amountSatang),
     })),
-    deductionRows: workspace.allowanceDraftEntries.flatMap((entry) =>
-      entry.declaredAmountSatang === undefined
-        ? []
-        : [
+    deductionRows: [
+      ...(socialSecurity.contributionSatang > 0
+        ? [
             {
-              type: getAllowanceCategoryLabel(entry.categoryCode),
-              amountBaht: satangToBaht(entry.declaredAmountSatang),
+              type: "เงินสมทบประกันสังคม",
+              amountBaht: satangToBaht(socialSecurity.contributionSatang),
             },
-          ],
-    ),
+          ]
+        : []),
+      ...workspace.allowanceDraftEntries.flatMap((entry) =>
+        entry.declaredAmountSatang === undefined
+          ? []
+          : [
+              {
+                type: getAllowanceCategoryLabel(entry.categoryCode),
+                amountBaht: satangToBaht(entry.declaredAmountSatang),
+              },
+            ],
+      ),
+    ],
     breakdownRows: [
       ...breakdownRows(
         "รายรับ — แหล่งที่มา",

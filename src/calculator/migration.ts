@@ -144,6 +144,7 @@ export function migrateLocalStorageV1ToV2(
     expenseEntries: migratedExpenseEntries,
     withholdingEntries: migratedWithholdingEntries,
     allowanceDraftEntries: legacyWorkspace.allowanceDraftEntries,
+    socialSecuritySettings: { mode: "none" },
   };
 
   const migratedState = {

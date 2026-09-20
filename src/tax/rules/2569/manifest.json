@@ -110,6 +110,19 @@
         "reviewerStatus": "reviewed",
         "lastCheckedAt": "2026-09-20",
         "notes": ["ค่าลดหย่อนและการยกเว้นภาษี"]
+      },
+      {
+        "sourceId": "mol-sso-wage-ceiling-2569",
+        "sourceType": "official_law",
+        "authority": "กระทรวงแรงงาน / จุฬาลงกรณ์มหาวิทยาลัย (สำเนาเผยแพร่)",
+        "title": "กฎกระทรวงกำหนดค่าจ้างขั้นต่ำและขั้นสูงที่ใช้เป็นฐานในการคำนวณเงินสมทบของผู้ประกันตนตามมาตรา 33 พ.ศ. 2568",
+        "url": "https://www.hrm.chula.ac.th/download/545/3-1-%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%9A%E0%B8%B5%E0%B8%A2%E0%B8%9A-%E0%B8%82%E0%B9%89%E0%B8%AD%E0%B8%9A%E0%B8%B1%E0%B8%87%E0%B8%84%E0%B8%B1%E0%B8%9A-%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%81%E0%B8%B2/46950/%E0%B8%81%E0%B8%8E%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B8%97%E0%B8%A3%E0%B8%A7%E0%B8%87-%E0%B8%84%E0%B9%88%E0%B8%B2%E0%B8%88%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B8%82%E0%B8%B1%E0%B9%89%E0%B8%99%E0%B8%95%E0%B9%88.pdf",
+        "evidenceLevel": "primary_official",
+        "reviewerStatus": "reviewed",
+        "lastCheckedAt": "2026-09-20",
+        "notes": [
+          "ปี 2569 ฐานค่าจ้างสูงสุด 17,500 บาท เงินสมทบสูงสุด 875 บาทต่อเดือน"
+        ]
       }
     ],
     "applicabilityConditions": [
@@ -120,7 +133,7 @@
     "reviewerStatus": "reviewed",
     "notForCalculation": false,
     "notes": [
-      "ลดหย่อนส่วนตัว 60,000 บาท, ประกันสังคมสูงสุด 9,000 บาท, กองทุนเกษียณและ ThaiESG, เบี้ยประกันชีวิตและสุขภาพ"
+      "ลดหย่อนส่วนตัว 60,000 บาท, ประกันสังคมปี 2569 สูงสุด 10,500 บาท, กองทุนเกษียณและ ThaiESG, เบี้ยประกันชีวิตและสุขภาพ"
     ]
   },
   {

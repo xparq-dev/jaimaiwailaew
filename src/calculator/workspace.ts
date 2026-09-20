@@ -58,6 +58,10 @@ export function createCalculatorWorkspace(
     expenseEntries: [],
     withholdingEntries: [],
     allowanceDraftEntries: [],
+    socialSecuritySettings:
+      input.persona === "salaried_employee"
+        ? { mode: "auto_m33" }
+        : { mode: "none" },
     taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(input.taxYearBE),
     localOnly: true,
   };
@@ -136,6 +140,7 @@ export function touchWorkspace(
       | "expenseEntries"
       | "withholdingEntries"
       | "allowanceDraftEntries"
+      | "socialSecuritySettings"
       | "periodStart"
       | "periodEnd"
       | "calculationMode"

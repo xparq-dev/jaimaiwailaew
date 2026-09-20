@@ -63,7 +63,20 @@
       "reviewerStatus": "reviewed",
       "lastCheckedAt": "2026-09-20",
       "notes": [
-        "ลดหย่อนส่วนตัว 60,000 บาท, ประกันสังคมสูงสุด 9,000 บาท, กองทุนสำรองเลี้ยงชีพ/RMF/SSF/ThaiESG และเบี้ยประกันชีวิต/สุขภาพ"
+        "ลดหย่อนส่วนตัว 60,000 บาท และเงินสมทบประกันสังคมหักได้ตามที่จ่ายจริงตามกฎหมายว่าด้วยประกันสังคม"
+      ]
+    },
+    {
+      "sourceId": "mol-sso-wage-ceiling-2569",
+      "sourceType": "official_law",
+      "authority": "กระทรวงแรงงาน / จุฬาลงกรณ์มหาวิทยาลัย (สำเนาเผยแพร่)",
+      "title": "กฎกระทรวงกำหนดค่าจ้างขั้นต่ำและขั้นสูงที่ใช้เป็นฐานในการคำนวณเงินสมทบของผู้ประกันตนตามมาตรา 33 พ.ศ. 2568",
+      "url": "https://www.hrm.chula.ac.th/download/545/3-1-%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%9A%E0%B8%B5%E0%B8%A2%E0%B8%9A-%E0%B8%82%E0%B9%89%E0%B8%AD%E0%B8%9A%E0%B8%B1%E0%B8%87%E0%B8%84%E0%B8%B1%E0%B8%9A-%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%81%E0%B8%B2/46950/%E0%B8%81%E0%B8%8E%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B8%97%E0%B8%A3%E0%B8%A7%E0%B8%87-%E0%B8%84%E0%B9%88%E0%B8%B2%E0%B8%88%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B8%82%E0%B8%B1%E0%B9%89%E0%B8%99%E0%B8%95%E0%B9%88.pdf",
+      "evidenceLevel": "primary_official",
+      "reviewerStatus": "reviewed",
+      "lastCheckedAt": "2026-09-20",
+      "notes": [
+        "มีผลตั้งแต่ 1 มกราคม 2569 กำหนดฐานค่าจ้างสูงสุด 17,500 บาท เงินสมทบลูกจ้าง 5% สูงสุด 875 บาทต่อเดือน"
       ]
     },
     {
@@ -91,6 +104,7 @@
         { "sourceId": "rd-royal-decree-exp-629-2569" },
         { "sourceId": "rd-pit-brackets-act44-2569" },
         { "sourceId": "rd-allowances-guide-2569" },
+        { "sourceId": "mol-sso-wage-ceiling-2569" },
         { "sourceId": "rd-forms-pnd-guide-2569" }
       ]
     },

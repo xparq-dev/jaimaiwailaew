@@ -180,9 +180,9 @@
       {
         "id": "social_security",
         "label": "เงินสมทบกองทุนประกันสังคม",
-        "maxLimitBaht": 9000,
+        "maxLimitBaht": 10500,
         "isFixed": false,
-        "condition": "ตามที่จ่ายจริง สูงสุด 9,000 บาท/ปี",
+        "condition": "ตามที่จ่ายจริง สูงสุด 10,500 บาท/ปี",
         "legalSourceId": "rd-allowances-guide-2569"
       },
       {

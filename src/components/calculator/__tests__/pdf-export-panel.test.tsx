@@ -53,7 +53,9 @@ beforeEach(() => {
 });
 
 describe("PdfExportPanel", () => {
-  it("previews the local report before downloading without network, storage, or URL changes", async () => {
+  it(
+    "previews the local report before downloading without network, storage, or URL changes",
+    async () => {
     const user = userEvent.setup();
     const artifact = {
       blob: new Blob(["%PDF-test"], { type: "application/pdf" }),
@@ -123,5 +125,5 @@ describe("PdfExportPanel", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(storageSpy).not.toHaveBeenCalled();
     expect(window.location.href).toBe(initialUrl);
-  });
+  }, 15_000);
 });

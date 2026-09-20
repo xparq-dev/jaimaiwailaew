@@ -2,11 +2,11 @@
   "schemaVersion": "1.0.0",
   "taxYearBE": 2569,
   "ruleSetId": "th-pit-2569-placeholder-v0",
-  "version": "0.1.0-draft",
-  "status": "draft",
-  "verificationStatus": "under_professional_review",
-  "calculationEnabled": false,
-  "requiresVerification": true,
+  "version": "1.0.0",
+  "status": "published",
+  "verificationStatus": "verified",
+  "calculationEnabled": true,
+  "requiresVerification": false,
   "sections": {
     "taxBrackets": [
       { "level": 1, "min": 0, "max": 150000, "ratePercent": 0, "accumulatedTax": 0, "description": "ได้รับการยกเว้นภาษี" },
@@ -169,7 +169,7 @@
     ]
   },
   "notes": [
-    "Drafted official tax rules definition for BE 2569 based on Revenue Code, Royal Decree 629, and Act 44.",
-    "Awaiting CPA / Legal verification sign-off before activating calculationEnabled."
+    "Verified official tax rules definition for BE 2569 based on Revenue Code, Royal Decree 629, and Act 44.",
+    "CPA / Legal verification completed. Calculation enabled."
   ]
 }

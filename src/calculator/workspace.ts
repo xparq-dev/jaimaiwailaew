@@ -33,6 +33,7 @@ export function createTaxRuleResolutionSnapshot(taxYearBE: 2568 | 2569) {
     ruleSetId: resolution.metadata?.ruleSetId ?? null,
     ruleSetVersion: resolution.metadata?.version ?? null,
     availability: resolution.availability,
+    status: resolution.metadata?.status ?? "unverified",
     resolvedAt: nowIsoTimestamp(),
   };
 }

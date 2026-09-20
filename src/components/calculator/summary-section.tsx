@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 
 import { CalculatorLayout } from "./calculator-layout";
 import { ClearDataDialog } from "./clear-data-dialog";
+import { TaxEstimateCard } from "./tax-estimate-card";
 import { TaxEstimateUnavailableCard } from "./tax-estimate-unavailable-card";
 import { SummaryBreakdown } from "./summary-breakdown";
 import { PdfExportPanel } from "./pdf-export-panel";
@@ -91,7 +92,11 @@ export function SummarySectionPage() {
 
       <PdfExportPanel workspace={workspace} />
 
-      <TaxEstimateUnavailableCard />
+      {workspace.taxRuleResolutionSnapshot.availability === "available" ? (
+        <TaxEstimateCard workspace={workspace} />
+      ) : (
+        <TaxEstimateUnavailableCard />
+      )}
 
       <section className="border-border bg-card rounded-2xl border p-5">
         <h2 className="font-semibold">ความครบถ้วนของข้อมูล</h2>

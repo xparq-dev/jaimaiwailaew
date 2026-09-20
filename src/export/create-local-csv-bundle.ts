@@ -111,6 +111,24 @@ function buildCsvFiles(
     ],
   });
 
+  if (report.taxEstimateRows && report.taxEstimateRows.length > 0) {
+    files.push({
+      fileName: "07-Tax-Estimate.csv",
+      rows: [
+        ["รายการ", "จำนวนเงิน (บาท)"],
+        ...report.taxEstimateRows.map(
+          (row) => [row.label, row.amountBaht] as const,
+        ),
+        ["", ""],
+        [
+          "หมายเหตุ",
+          report.taxEstimateDisclaimer ??
+            "การคำนวณภาษีเป็นเพียงประมาณการเบื้องต้น โปรดปรึกษาผู้เชี่ยวชาญหรือกรมสรรพากรก่อนยื่นภาษีจริง",
+        ],
+      ],
+    });
+  }
+
   return files;
 }
 

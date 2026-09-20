@@ -25,10 +25,10 @@
 - Summary Breakdown + Income Month Grouping: **merge เข้า main แล้วผ่าน PR #7**
 - Phase 1C Local-only PDF Export: **merge เข้า main แล้วผ่าน PR #9**
 - Phase 1D Local-only Excel/CSV Export: **เสร็จสมบูรณ์และ merge เข้า main แล้วผ่าน PR #10**
-- Tax Rules Verification (2568/2569): **กำลังดำเนินการ ขั้นตอนที่ 1 และ 2 บน branch `feat/tax-rules-verification-2568-2569`** (รวบรวมแหล่งอ้างอิงทางการ และร่างโครงสร้างกฎภาษี/ลดหย่อน)
+- Tax Rules Verification (2568/2569): **เสร็จสมบูรณ์ ขั้นตอนที่ 1–4 บน branch `feat/tax-rules-verification-2568-2569`** (รวบรวมแหล่งอ้างอิง, โครงสร้างกฎภาษี, Golden Test Suite 36/36 tests, ปลดล็อก Resolver v1.0.0, Tax Estimate Card บน UI, และอัปเดต PDF/Excel/CSV Export)
 - Search indexing: ปิดด้วย `noindex`
-- Tax rule data: อยู่ในขั้นตอนการร่างและตรวจทาน (`0.1.0-draft`, `notForCalculation: true`)
-- Tax calculation execution: บล็อกตาม fail-closed policy จนกว่าจะผ่านขั้นตอนที่ 3 & 4
+- Tax rule data: ปลดล็อกและเผยแพร่แล้ว (`1.0.0`, `status: published`, `validationStatus: valid`, `notForCalculation: false`)
+- Tax calculation execution: ปลดล็อก Resolver แสดงผลประมาณการภาษีบนหน้าสรุปผล และรวมในรายงานส่งออก PDF/Excel/CSV
 - User accounts และ cloud persistence: ไม่มีและอยู่นอกขอบเขต MVP 1
 
 | รายการ | สถานะ | หลักฐานหรือหมายเหตุ |

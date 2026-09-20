@@ -11,6 +11,8 @@ import type {
   LocalPdfReportModel,
 } from "@/pdf/local-pdf-report";
 import type { MoneySatang } from "@/tax/money";
+import { toMoneySatang } from "@/tax/money";
+import type { PITCalculationResult } from "@/tax/engine/pitCalculator";
 
 const COLORS = {
   black: "#000000",
@@ -161,6 +163,72 @@ function overviewTable(report: LocalPdfReportModel): Content {
     layout: tableLayout(2),
     unbreakable: true,
   };
+}
+
+function taxEstimateSection(
+  estimate: PITCalculationResult,
+  sectionNumber: number,
+): Content[] {
+  const finalLabel =
+    estimate.outcome === "refund"
+      ? "ภาษีที่ขอคืนได้ (Refund)"
+      : estimate.outcome === "pay"
+        ? "ภาษีที่ต้องชำระเพิ่ม (Tax Due)"
+        : "ภาษีที่ต้องชำระเพิ่ม / (ขอคืน)";
+
+  const finalAmount =
+    estimate.outcome === "refund"
+      ? formatAmount(toMoneySatang(Math.abs(estimate.taxDueOrRefundSatang)))
+      : formatAmount(estimate.taxDueOrRefundSatang);
+
+  const rows: readonly (readonly [string, string])[] = [
+    ["เงินได้พึงประเมินรวม", formatAmount(estimate.grossIncomeSatang)],
+    ["หัก ค่าใช้จ่ายตามกฎหมาย", formatAmount(estimate.expenseDeductionSatang)],
+    ["เงินได้หลังหักค่าใช้จ่าย", formatAmount(estimate.incomeAfterExpensesSatang)],
+    ["หัก ค่าลดหย่อนรวม", formatAmount(estimate.totalAllowancesSatang)],
+    [
+      "เงินได้สุทธิเพื่อคำนวณภาษี (Net Taxable Income)",
+      formatAmount(estimate.netTaxableIncomeSatang),
+    ],
+    ["ภาษีคำนวณตามขั้นบันได (Gross Tax)", formatAmount(estimate.grossTaxSatang)],
+    [
+      "หัก ภาษีหัก ณ ที่จ่ายที่ชำระไว้",
+      formatAmount(estimate.withholdingTaxPaidSatang),
+    ],
+    [finalLabel, finalAmount],
+  ];
+
+  return [
+    sectionHeading(
+      sectionNumber,
+      "ประมาณการภาษีเงินได้บุคคลธรรมดา (เบื้องต้น)",
+      false,
+    ),
+    {
+      table: {
+        headerRows: 1,
+        dontBreakRows: true,
+        keepWithHeaderRows: 1,
+        widths: ["*", 145],
+        body: [
+          [headerCell("รายการคำนวณภาษี"), headerCell("จำนวนเงิน (บาท)")],
+          ...rows.map(([label, formattedAmount]) => [
+            bodyCell(label),
+            bodyCell(formattedAmount, "right"),
+          ]),
+        ],
+      },
+      layout: tableLayout(2),
+      unbreakable: true,
+    },
+    {
+      text: "1. เอกสารนี้สร้างขึ้นเพื่อการจัดระเบียบข้อมูลส่วนตัวเท่านั้น 2. การคำนวณภาษีเป็นเพียงประมาณการเบื้องต้น 3. โปรดปรึกษาผู้เชี่ยวชาญหรือกรมสรรพากรก่อนยื่นภาษีจริง",
+      italics: true,
+      fontSize: TYPE_SCALE.footer,
+      color: COLORS.darkGray,
+      margin: [0, 4, 0, SECTION_SPACING],
+    },
+  ];
 }
 
 function breakdownTable(section: LocalPdfBreakdownSection): Content {
@@ -346,6 +414,95 @@ const styles: StyleDictionary = {
 export function buildProfessionalPdfDocument(
   report: LocalPdfReportModel,
 ): TDocumentDefinitions {
+  const taxRuleStatus = report.taxEstimate
+    ? "Tax Rules 2568/2569: verified / published (v1.0.0)"
+    : TAX_RULE_STATUS;
+  const disclaimerText = report.taxEstimate
+    ? [
+        "เอกสารนี้สร้างขึ้นเพื่อการจัดระเบียบข้อมูลส่วนตัวเท่านั้น",
+        "การคำนวณภาษีเป็นเพียงประมาณการเบื้องต้น",
+        "โปรดปรึกษาผู้เชี่ยวชาญหรือกรมสรรพากรก่อนยื่นภาษีจริง",
+      ].join("\n")
+    : DISCLAIMER_TEXT;
+
+  let sectionIndex = 1;
+  const content: Content[] = [
+    {
+      text: "JAI MAI WAI LAEW",
+      alignment: "center",
+      bold: true,
+      fontSize: TYPE_SCALE.appName,
+      margin: [0, 0, 0, 3],
+    },
+    {
+      text: report.title,
+      alignment: "center",
+      bold: true,
+      fontSize: TYPE_SCALE.documentTitle,
+      margin: [0, 0, 0, 3],
+    },
+    {
+      text: report.generatedAtLabel,
+      alignment: "center",
+      fontSize: TYPE_SCALE.body,
+      margin: [0, 0, 0, 2],
+    },
+    {
+      text: taxRuleStatus,
+      alignment: "center",
+      italics: true,
+      fontSize: TYPE_SCALE.taxStatus,
+      margin: [0, 0, 0, 5],
+    },
+    ...(report.displayName
+      ? [
+          {
+            text: `จัดทำโดย ${report.displayName}`,
+            alignment: "center" as const,
+            fontSize: TYPE_SCALE.body,
+            margin: [0, 0, 0, 5] as [number, number, number, number],
+          },
+        ]
+      : []),
+    {
+      canvas: [
+        {
+          type: "line",
+          x1: 0,
+          y1: 0,
+          x2: CONTENT_WIDTH,
+          y2: 0,
+          lineWidth: 1.5,
+          lineColor: COLORS.black,
+        },
+      ],
+      margin: [0, 0, 0, SECTION_SPACING],
+    },
+    sectionHeading(sectionIndex++, "ภาพรวมทางการเงิน", false),
+    overviewTable(report),
+  ];
+
+  if (report.taxEstimate) {
+    content.push(...taxEstimateSection(report.taxEstimate, sectionIndex++));
+  }
+
+  content.push(
+    sectionHeading(
+      sectionIndex++,
+      "Summary Breakdown (แยกตามหมวด / แหล่งที่มา)",
+      true,
+    ),
+    ...report.breakdownSections.map(breakdownTable),
+    sectionHeading(sectionIndex++, "รายการรายรับ", true),
+    incomeTable(report),
+    sectionHeading(sectionIndex++, "รายการรายจ่าย", true),
+    expenseTable(report),
+    sectionHeading(sectionIndex++, "ภาษีหัก ณ ที่จ่าย", true),
+    withholdingTable(report),
+    sectionHeading(sectionIndex++, "ค่าลดหย่อน / ค่าลดภาษี", true),
+    allowanceTable(report),
+  );
+
   return {
     pageSize: "A4",
     pageOrientation: "portrait",
@@ -440,7 +597,7 @@ export function buildProfessionalPdfDocument(
           margin: [0, 0, 0, 3],
         },
         {
-          text: DISCLAIMER_TEXT,
+          text: disclaimerText,
           alignment: "center",
           italics: true,
           fontSize: TYPE_SCALE.footer,
@@ -465,71 +622,7 @@ export function buildProfessionalPdfDocument(
         },
       ],
     }),
-    content: [
-      {
-        text: "JAI MAI WAI LAEW",
-        alignment: "center",
-        bold: true,
-        fontSize: TYPE_SCALE.appName,
-        margin: [0, 0, 0, 3],
-      },
-      {
-        text: report.title,
-        alignment: "center",
-        bold: true,
-        fontSize: TYPE_SCALE.documentTitle,
-        margin: [0, 0, 0, 3],
-      },
-      {
-        text: report.generatedAtLabel,
-        alignment: "center",
-        fontSize: TYPE_SCALE.body,
-        margin: [0, 0, 0, 2],
-      },
-      {
-        text: TAX_RULE_STATUS,
-        alignment: "center",
-        italics: true,
-        fontSize: TYPE_SCALE.taxStatus,
-        margin: [0, 0, 0, 5],
-      },
-      ...(report.displayName
-        ? [
-            {
-              text: `จัดทำโดย ${report.displayName}`,
-              alignment: "center" as const,
-              fontSize: TYPE_SCALE.body,
-              margin: [0, 0, 0, 5] as [number, number, number, number],
-            },
-          ]
-        : []),
-      {
-        canvas: [
-          {
-            type: "line",
-            x1: 0,
-            y1: 0,
-            x2: CONTENT_WIDTH,
-            y2: 0,
-            lineWidth: 1.5,
-            lineColor: COLORS.black,
-          },
-        ],
-        margin: [0, 0, 0, SECTION_SPACING],
-      },
-      sectionHeading(1, "ภาพรวมทางการเงิน", false),
-      overviewTable(report),
-      sectionHeading(2, "Summary Breakdown (แยกตามหมวด / แหล่งที่มา)", true),
-      ...report.breakdownSections.map(breakdownTable),
-      sectionHeading(3, "รายการรายรับ", true),
-      incomeTable(report),
-      sectionHeading(4, "รายการรายจ่าย", true),
-      expenseTable(report),
-      sectionHeading(5, "ภาษีหัก ณ ที่จ่าย", true),
-      withholdingTable(report),
-      sectionHeading(6, "ค่าลดหย่อน / ค่าลดภาษี", true),
-      allowanceTable(report),
-    ],
+    content,
   };
 }
 

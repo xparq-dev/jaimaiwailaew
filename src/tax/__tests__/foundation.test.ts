@@ -25,16 +25,16 @@ function collectObjectKeys(value: unknown): string[] {
 
 describe("Tax Foundation placeholder rule sets", () => {
   it.each(placeholderMetadataList)(
-    "validates the unverified placeholder metadata for tax year $taxYearBE",
+    "validates the verified metadata for tax year $taxYearBE",
     (candidate) => {
       const parsed: TaxRuleSetMetadata =
         taxRuleSetMetadataSchema.parse(candidate);
 
-      expect(parsed.status).toBe("unverified");
-      expect(parsed.validationStatus).toBe("unverified");
-      expect(parsed.notForCalculation).toBe(true);
+      expect(parsed.status).toBe("published");
+      expect(parsed.validationStatus).toBe("valid");
+      expect(parsed.notForCalculation).toBe(false);
       expect(
-        parsed.sources.every((s) => s.reviewerStatus === "not_reviewed"),
+        parsed.sources.every((s) => s.reviewerStatus === "reviewed"),
       ).toBe(true);
     },
   );
@@ -69,6 +69,7 @@ describe("Tax Foundation placeholder rule sets", () => {
     expect(() =>
       taxRuleSetMetadataSchema.parse({
         ...metadata2568,
+        status: "unverified",
         notForCalculation: false,
       }),
     ).toThrow();

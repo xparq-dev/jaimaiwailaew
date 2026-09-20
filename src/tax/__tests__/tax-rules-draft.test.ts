@@ -37,13 +37,17 @@ describe("Tax Rules Verification (Steps 1 & 2 Drafts)", () => {
   it("validates metadata against taxRuleSetMetadataSchema for 2568 and 2569", () => {
     const res68 = taxRuleSetMetadataSchema.safeParse(meta2568);
     expect(res68.success).toBe(true);
-    expect(meta2568.version).toBe("0.1.0-draft");
-    expect(meta2568.notForCalculation).toBe(true);
+    expect(meta2568.version).toBe("1.0.0");
+    expect(meta2568.status).toBe("published");
+    expect(meta2568.validationStatus).toBe("valid");
+    expect(meta2568.notForCalculation).toBe(false);
 
     const res69 = taxRuleSetMetadataSchema.safeParse(meta2569);
     expect(res69.success).toBe(true);
-    expect(meta2569.version).toBe("0.1.0-draft");
-    expect(meta2569.notForCalculation).toBe(true);
+    expect(meta2569.version).toBe("1.0.0");
+    expect(meta2569.status).toBe("published");
+    expect(meta2569.validationStatus).toBe("valid");
+    expect(meta2569.notForCalculation).toBe(false);
   });
 
   it("validates all rule family manifests for 2568 and 2569", () => {
@@ -65,7 +69,9 @@ describe("Tax Rules Verification (Steps 1 & 2 Drafts)", () => {
     for (const m of manifests2568) {
       const parsed = ruleFamilyManifestSchema.safeParse(m);
       expect(parsed.success).toBe(true);
-      expect(m.notForCalculation).toBe(true);
+      expect(m.notForCalculation).toBe(false);
+      expect(m.status).toBe("published");
+      expect(m.reviewerStatus).toBe("reviewed");
     }
 
     const families69 = manifests2569.map((m) => m.family);
@@ -76,7 +82,9 @@ describe("Tax Rules Verification (Steps 1 & 2 Drafts)", () => {
     for (const m of manifests2569) {
       const parsed = ruleFamilyManifestSchema.safeParse(m);
       expect(parsed.success).toBe(true);
-      expect(m.notForCalculation).toBe(true);
+      expect(m.notForCalculation).toBe(false);
+      expect(m.status).toBe("published");
+      expect(m.reviewerStatus).toBe("reviewed");
     }
   });
 
@@ -151,15 +159,15 @@ describe("Tax Rules Verification (Steps 1 & 2 Drafts)", () => {
     }
   });
 
-  it("confirms resolver still fails closed for both 2568 and 2569 during draft phase", () => {
+  it("confirms resolver returns available for both 2568 and 2569 once verified and published", () => {
     const res68 = resolveTaxRules({ taxYearBE: 2568 });
-    expect(res68.availability).toBe("unavailable_unverified_rules");
-    expect(res68.metadata?.notForCalculation).toBe(true);
-    expect(res68.featureGates.taxEstimate).toBe("unavailable_until_verified");
+    expect(res68.availability).toBe("available");
+    expect(res68.metadata?.notForCalculation).toBe(false);
+    expect(res68.featureGates.taxEstimate).toBe("available");
 
     const res69 = resolveTaxRules({ taxYearBE: 2569 });
-    expect(res69.availability).toBe("unavailable_unverified_rules");
-    expect(res69.metadata?.notForCalculation).toBe(true);
-    expect(res69.featureGates.taxEstimate).toBe("unavailable_until_verified");
+    expect(res69.availability).toBe("available");
+    expect(res69.metadata?.notForCalculation).toBe(false);
+    expect(res69.featureGates.taxEstimate).toBe("available");
   });
 });

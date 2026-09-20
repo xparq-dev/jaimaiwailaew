@@ -28,6 +28,8 @@ import { formatEntryPeriod, formatThaiDate } from "@/calculator/utils";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
 import type { MoneySatang } from "@/tax/money";
 import { safeAddMoney, toMoneySatang } from "@/tax/money";
+import type { PITCalculationResult } from "@/tax/engine/pitCalculator";
+import { calculateWorkspacePIT } from "@/tax/engine/workspacePitAdapter";
 
 export interface LocalPdfReportOptions {
   readonly generatedAt: Date;
@@ -73,6 +75,7 @@ export interface LocalPdfReportModel {
   readonly taxYearBE: number;
   readonly periodLabel: string;
   readonly totals: ReturnType<typeof computeArithmeticTotals>;
+  readonly taxEstimate?: PITCalculationResult | undefined;
   readonly incomeGroups: readonly LocalPdfEntryGroup[];
   readonly expenseGroups: readonly LocalPdfEntryGroup[];
   readonly withholdingGroups: readonly LocalPdfEntryGroup[];
@@ -227,6 +230,10 @@ export function buildLocalPdfReportModel(
     taxYearBE: workspace.taxYearBE,
     periodLabel: `${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`,
     totals: computeArithmeticTotals(workspace),
+    taxEstimate:
+      workspace.taxRuleResolutionSnapshot.availability === "available"
+        ? calculateWorkspacePIT(workspace)
+        : undefined,
     incomeGroups: groupEntryRows(incomeRows(incomeInPeriod)),
     expenseGroups: groupEntryRows(expenseRows(expensesInPeriod)),
     withholdingGroups: groupEntryRows(withholdingRows(withholdingInPeriod)),

@@ -163,6 +163,7 @@ export interface TaxRuleResolutionSnapshot {
   readonly ruleSetId: string | null;
   readonly ruleSetVersion: string | null;
   readonly availability: string;
+  readonly status?: string | undefined;
   readonly resolvedAt: string;
 }
 

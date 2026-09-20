@@ -192,6 +192,7 @@ export const taxRuleResolutionSnapshotSchema = z.strictObject({
   ruleSetId: z.union([z.string().trim().min(1), z.null()]),
   ruleSetVersion: z.union([z.string().trim().min(1), z.null()]),
   availability: z.string().trim().min(1),
+  status: z.string().trim().min(1).optional(),
   resolvedAt: timestampSchema,
 });
 

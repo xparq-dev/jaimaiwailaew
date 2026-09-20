@@ -2,20 +2,174 @@
   "schemaVersion": "1.0.0",
   "taxYearBE": 2569,
   "ruleSetId": "th-pit-2569-placeholder-v0",
-  "version": "0.0.0-unverified",
+  "version": "0.1.0-draft",
   "status": "draft",
-  "verificationStatus": "requires_professional_verification",
+  "verificationStatus": "under_professional_review",
   "calculationEnabled": false,
   "requiresVerification": true,
   "sections": {
-    "taxBrackets": [],
-    "incomeTypes": [],
-    "expenseDeductions": [],
-    "allowances": [],
-    "pnd91": [],
-    "pnd94": []
+    "taxBrackets": [
+      { "level": 1, "min": 0, "max": 150000, "ratePercent": 0, "accumulatedTax": 0, "description": "ได้รับการยกเว้นภาษี" },
+      { "level": 2, "min": 150001, "max": 300000, "ratePercent": 5, "accumulatedTax": 7500, "description": "อัตรา 5%" },
+      { "level": 3, "min": 300001, "max": 500000, "ratePercent": 10, "accumulatedTax": 27500, "description": "อัตรา 10%" },
+      { "level": 4, "min": 500001, "max": 750000, "ratePercent": 15, "accumulatedTax": 65000, "description": "อัตรา 15%" },
+      { "level": 5, "min": 750001, "max": 1000000, "ratePercent": 20, "accumulatedTax": 115000, "description": "อัตรา 20%" },
+      { "level": 6, "min": 1000001, "max": 2000000, "ratePercent": 25, "accumulatedTax": 365000, "description": "อัตรา 25%" },
+      { "level": 7, "min": 2000001, "max": 5000000, "ratePercent": 30, "accumulatedTax": 1265000, "description": "อัตรา 30%" },
+      { "level": 8, "min": 5000001, "max": null, "ratePercent": 35, "accumulatedTax": null, "description": "อัตรา 35%" }
+    ],
+    "incomeTypes": [
+      { "type": "40_1", "label": "เงินได้ตามมาตรา 40(1) เงินเดือน ค่าจ้าง โบนัส", "code": "salary" },
+      { "type": "40_2", "label": "เงินได้ตามมาตรา 40(2) ค่าจ้างทั่วไป ค่าคอมมิชชัน เบี้ยประชุม ฟรีแลนซ์", "code": "freelance_service" },
+      { "type": "40_3", "label": "เงินได้ตามมาตรา 40(3) ค่าแห่งลิขสิทธิ์ ค่ากู๊ดวิลล์ หรือสิทธิอื่น", "code": "copyright" },
+      { "type": "40_4", "label": "เงินได้ตามมาตรา 40(4) ดอกเบี้ย เงินปันผล ส่วนแบ่งกำไร", "code": "interest_dividend" },
+      { "type": "40_5", "label": "เงินได้ตามมาตรา 40(5) ค่าเช่าทรัพย์สิน", "code": "rental" },
+      { "type": "40_6", "label": "เงินได้ตามมาตรา 40(6) วิชาชีพอิสระ (การประกอบโรคศิลปะ กฎหมาย บัญชี วิศวกรรม สถาปัตยกรรม ประณีตศิลป์)", "code": "liberal_profession" },
+      { "type": "40_7", "label": "เงินได้ตามมาตรา 40(7) ค่ารับเหมาที่ผู้รับเหมาต้องจัดหาสัมภาระในส่วนสำคัญ", "code": "contractor" },
+      { "type": "40_8", "label": "เงินได้ตามมาตรา 40(8) การพาณิชย์ การขายของออนไลน์ การเกษตร การอุตสาหกรรม หรืออื่นๆ", "code": "business_commerce" }
+    ],
+    "expenseDeductions": [
+      {
+        "category": "employment_and_service",
+        "incomeTypes": ["40_1", "40_2"],
+        "deductionMethod": "flat_rate",
+        "ratePercent": 50,
+        "combinedMaxLimitBaht": 100000,
+        "legalSourceId": "rd-royal-decree-exp-629-2569"
+      },
+      {
+        "category": "copyright_and_royalties",
+        "incomeTypes": ["40_3"],
+        "deductionMethod": "flat_rate",
+        "ratePercent": 50,
+        "maxLimitBaht": 100000,
+        "legalSourceId": "rd-royal-decree-exp-629-2569"
+      },
+      {
+        "category": "liberal_profession_medical",
+        "incomeTypes": ["40_6"],
+        "subCategory": "medical",
+        "deductionMethod": "flat_rate_or_actual",
+        "ratePercent": 60,
+        "maxLimitBaht": null,
+        "legalSourceId": "rd-royal-decree-exp-629-2569"
+      },
+      {
+        "category": "liberal_profession_other",
+        "incomeTypes": ["40_6"],
+        "subCategory": "other",
+        "deductionMethod": "flat_rate_or_actual",
+        "ratePercent": 30,
+        "maxLimitBaht": null,
+        "legalSourceId": "rd-royal-decree-exp-629-2569"
+      },
+      {
+        "category": "contractor",
+        "incomeTypes": ["40_7"],
+        "deductionMethod": "flat_rate_or_actual",
+        "ratePercent": 60,
+        "maxLimitBaht": null,
+        "legalSourceId": "rd-royal-decree-exp-629-2569"
+      },
+      {
+        "category": "business_commerce",
+        "incomeTypes": ["40_8"],
+        "deductionMethod": "flat_rate_or_actual",
+        "ratePercent": 60,
+        "maxLimitBaht": null,
+        "legalSourceId": "rd-royal-decree-exp-629-2569"
+      }
+    ],
+    "allowances": [
+      {
+        "id": "personal",
+        "label": "ค่าลดหย่อนผู้มีเงินได้",
+        "amountBaht": 60000,
+        "isFixed": true,
+        "condition": "ทุกคนที่มีเงินได้พึงประเมิน",
+        "legalSourceId": "rd-allowances-guide-2569"
+      },
+      {
+        "id": "social_security",
+        "label": "เงินสมทบกองทุนประกันสังคม",
+        "maxLimitBaht": 9000,
+        "isFixed": false,
+        "condition": "ตามที่จ่ายจริง สูงสุด 9,000 บาท/ปี",
+        "legalSourceId": "rd-allowances-guide-2569"
+      },
+      {
+        "id": "provident_fund",
+        "label": "กองทุนสำรองเลี้ยงชีพ (PVD) / กบข. / สงเคราะห์ครู",
+        "maxRatePercent": 15,
+        "maxLimitBaht": 500000,
+        "isFixed": false,
+        "condition": "ตามจ่ายจริง ไม่เกิน 15% ของค่าจ้าง และไม่เกิน 500,000 บาท (อยู่ในเพดานกลุ่มเกษียณ 500,000 บาท)",
+        "legalSourceId": "rd-allowances-guide-2569"
+      },
+      {
+        "id": "rmf",
+        "label": "กองทุนรวมเพื่อการเลี้ยงชีพ (RMF)",
+        "maxRatePercent": 30,
+        "maxLimitBaht": 500000,
+        "isFixed": false,
+        "condition": "ตามจ่ายจริง ไม่เกิน 30% ของเงินได้พึงประเมิน และเมื่อรวมกลุ่มเกษียณแล้วไม่เกิน 500,000 บาท",
+        "legalSourceId": "rd-allowances-guide-2569"
+      },
+      {
+        "id": "ssf",
+        "label": "กองทุนรวมเพื่อการออม (SSF)",
+        "maxRatePercent": 30,
+        "maxLimitBaht": 200000,
+        "isFixed": false,
+        "condition": "ตามจ่ายจริง ไม่เกิน 30% ของเงินได้พึงประเมิน และไม่เกิน 200,000 บาท (เมื่อรวมกลุ่มเกษียณแล้วไม่เกิน 500,000 บาท)",
+        "legalSourceId": "rd-allowances-guide-2569"
+      },
+      {
+        "id": "thaiesg",
+        "label": "กองทุนรวมไทยเพื่อความยั่งยืน (ThaiESG)",
+        "maxRatePercent": 30,
+        "maxLimitBaht": 300000,
+        "isFixed": false,
+        "condition": "ตามจ่ายจริง ไม่เกิน 30% ของเงินได้พึงประเมิน สูงสุดไม่เกิน 300,000 บาท (วงเงินแยกต่างหากจากกลุ่มเกษียณ)",
+        "legalSourceId": "rd-allowances-guide-2569"
+      },
+      {
+        "id": "life_insurance",
+        "label": "เบี้ยประกันชีวิตทั่วไป",
+        "maxLimitBaht": 100000,
+        "isFixed": false,
+        "condition": "ตามจ่ายจริง กรมธรรม์ 10 ปีขึ้นไป ไม่เกิน 100,000 บาท",
+        "legalSourceId": "rd-allowances-guide-2569"
+      },
+      {
+        "id": "health_insurance",
+        "label": "เบี้ยประกันสุขภาพตนเอง",
+        "maxLimitBaht": 25000,
+        "isFixed": false,
+        "condition": "ตามจ่ายจริง ไม่เกิน 25,000 บาท และเมื่อรวมกับเบี้ยประกันชีวิตทั่วไปแล้วต้องไม่เกิน 100,000 บาท",
+        "legalSourceId": "rd-allowances-guide-2569"
+      }
+    ],
+    "pnd91": [
+      {
+        "rule": "exclusive_salary",
+        "condition": "ผู้มีเงินได้ตามมาตรา 40(1) ประเภทเดียวตลอดปีภาษี",
+        "expenseDeduction": "หักค่าใช้จ่าย 50% ไม่เกิน 100,000 บาท",
+        "filingPeriod": "มกราคม - มีนาคม ของปีถัดไป (หรือเมษายนกรณียื่นออนไลน์)"
+      }
+    ],
+    "pnd94": [
+      {
+        "rule": "mid_year_filing",
+        "condition": "ผู้มีเงินได้ตามมาตรา 40(5), 40(6), 40(7), หรือ 40(8) ที่ได้รับระหว่างวันที่ 1 มกราคม ถึง 30 มิถุนายน",
+        "halfYearExpense": "หักค่าใช้จ่ายตามสัดส่วนจริงหรือเหมากึ่งหนึ่ง",
+        "halfYearAllowance": "ลดหย่อนส่วนตัวกึ่งหนึ่ง (30,000 บาท)",
+        "filingPeriod": "กรกฎาคม - กันยายน ของปีภาษีนั้น"
+      }
+    ]
   },
   "notes": [
-    "Placeholder only. No tax values are present and calculation is disabled."
+    "Drafted official tax rules definition for BE 2569 based on Revenue Code, Royal Decree 629, and Act 44.",
+    "Awaiting CPA / Legal verification sign-off before activating calculationEnabled."
   ]
 }

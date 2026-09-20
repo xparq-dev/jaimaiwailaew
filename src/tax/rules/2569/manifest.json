@@ -4,26 +4,188 @@
     "taxYearBE": 2569,
     "ruleSetId": "th-pit-2569-placeholder-v0",
     "family": "tax_brackets",
-    "version": "0.0.0-unverified",
+    "version": "0.1.0-draft",
     "status": "unverified",
-    "effectiveFrom": null,
-    "effectiveTo": null,
+    "effectiveFrom": "2026-01-01",
+    "effectiveTo": "2026-12-31",
     "sources": [
       {
-        "sourceId": "rd-official-reference-required-2569",
-        "sourceType": "official_webpage",
+        "sourceId": "rd-pit-brackets-act44-2569",
+        "sourceType": "official_law",
+        "authority": "กรมสรรพากร / ราชกิจจานุเบกษา",
+        "title": "พระราชบัญญัติแก้ไขเพิ่มเติมประมวลรัษฎากร (ฉบับที่ 44) พ.ศ. 2560 (บัญชีอัตราภาษีเงินได้บุคคลธรรมดาขั้นบันได)",
+        "url": "https://www.rd.go.th/5938.html",
+        "evidenceLevel": "primary_official",
+        "reviewerStatus": "under_review",
+        "lastCheckedAt": "2026-09-20",
+        "notes": ["อัตราภาษี 7 ขั้น 5% - 35% ยกเว้น 150,000 บาทแรก"]
+      }
+    ],
+    "applicabilityConditions": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
+    "reviewerStatus": "under_review",
+    "notForCalculation": true,
+    "notes": ["ร่างอัตราภาษีขั้นบันไดปีภาษี 2569 สำหรับเตรียมรับรอง"]
+  },
+  {
+    "manifestId": "manifest-2569-income-types",
+    "taxYearBE": 2569,
+    "ruleSetId": "th-pit-2569-placeholder-v0",
+    "family": "income_types",
+    "version": "0.1.0-draft",
+    "status": "unverified",
+    "effectiveFrom": "2026-01-01",
+    "effectiveTo": "2026-12-31",
+    "sources": [
+      {
+        "sourceId": "rd-revenue-code-sec40-2569",
+        "sourceType": "official_law",
         "authority": "กรมสรรพากร",
-        "title": "ต้องระบุเอกสารอ้างอิงทางการสำหรับปีภาษี 2569 ก่อนใช้งาน",
-        "url": null,
-        "evidenceLevel": "unverified",
-        "reviewerStatus": "not_reviewed",
-        "lastCheckedAt": null,
-        "notes": ["ห้ามเติมรายละเอียดกฎหมายจากการคาดเดา"]
+        "title": "ประมวลรัษฎากร มาตรา 40 หมวด 3 ภาษีเงินได้บุคคลธรรมดา",
+        "url": "https://www.rd.go.th/5937.html",
+        "evidenceLevel": "primary_official",
+        "reviewerStatus": "under_review",
+        "lastCheckedAt": "2026-09-20",
+        "notes": ["มาตรา 40(1) ถึง 40(8)"]
       }
     ],
     "applicabilityConditions": ["personal-income-tax-estimate"],
-    "reviewerStatus": "not_reviewed",
+    "reviewerStatus": "under_review",
     "notForCalculation": true,
-    "notes": ["Unverified tax bracket family manifest for 2569"]
+    "notes": ["จำแนกประเภทเงินได้พึงประเมิน 8 ประเภทตามประมวลรัษฎากร"]
+  },
+  {
+    "manifestId": "manifest-2569-expense-deductions",
+    "taxYearBE": 2569,
+    "ruleSetId": "th-pit-2569-placeholder-v0",
+    "family": "expense_deduction_rules",
+    "version": "0.1.0-draft",
+    "status": "unverified",
+    "effectiveFrom": "2026-01-01",
+    "effectiveTo": "2026-12-31",
+    "sources": [
+      {
+        "sourceId": "rd-royal-decree-exp-629-2569",
+        "sourceType": "official_law",
+        "authority": "กรมสรรพากร / ราชกิจจานุเบกษา",
+        "title": "พระราชกฤษฎีกาออกตามความในประมวลรัษฎากร (ฉบับที่ 11) และแก้ไขเพิ่มเติม (ฉบับที่ 629)",
+        "url": "https://www.rd.go.th/2372.html",
+        "evidenceLevel": "primary_official",
+        "reviewerStatus": "under_review",
+        "lastCheckedAt": "2026-09-20",
+        "notes": ["การหักค่าใช้จ่าย 40(1)-40(8)"]
+      }
+    ],
+    "applicabilityConditions": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
+    "reviewerStatus": "under_review",
+    "notForCalculation": true,
+    "notes": ["เพดานหักค่าใช้จ่าย 40(1)-(2) 50% ไม่เกิน 100,000, 40(3) 50% ไม่เกิน 100,000, 40(6) 30%/60%, 40(7) 60%, 40(8) 60%"]
+  },
+  {
+    "manifestId": "manifest-2569-allowance-rules",
+    "taxYearBE": 2569,
+    "ruleSetId": "th-pit-2569-placeholder-v0",
+    "family": "allowance_rules",
+    "version": "0.1.0-draft",
+    "status": "unverified",
+    "effectiveFrom": "2026-01-01",
+    "effectiveTo": "2026-12-31",
+    "sources": [
+      {
+        "sourceId": "rd-allowances-guide-2569",
+        "sourceType": "official_announcement",
+        "authority": "กระทรวงการคลัง / กรมสรรพากร",
+        "title": "กฎกระทรวง ฉบับที่ 126 (พ.ศ. 2509) และประกาศอธิบดีกรมสรรพากรเกี่ยวกับภาษีเงินได้",
+        "url": "https://www.rd.go.th/59670.html",
+        "evidenceLevel": "primary_official",
+        "reviewerStatus": "under_review",
+        "lastCheckedAt": "2026-09-20",
+        "notes": ["ค่าลดหย่อนและการยกเว้นภาษี"]
+      }
+    ],
+    "applicabilityConditions": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
+    "reviewerStatus": "under_review",
+    "notForCalculation": true,
+    "notes": ["ลดหย่อนส่วนตัว 60,000 บาท, ประกันสังคมสูงสุด 9,000 บาท, กองทุนเกษียณและ ThaiESG, เบี้ยประกันชีวิตและสุขภาพ"]
+  },
+  {
+    "manifestId": "manifest-2569-withholding-tax",
+    "taxYearBE": 2569,
+    "ruleSetId": "th-pit-2569-placeholder-v0",
+    "family": "withholding_tax_rules",
+    "version": "0.1.0-draft",
+    "status": "unverified",
+    "effectiveFrom": "2026-01-01",
+    "effectiveTo": "2026-12-31",
+    "sources": [
+      {
+        "sourceId": "rd-forms-pnd-guide-2569",
+        "sourceType": "official_form",
+        "authority": "กรมสรรพากร",
+        "title": "แบบแสดงรายการภาษีเงินได้บุคคลธรรมดา ภ.ง.ด. 90/91 และการเครดิตภาษีหัก ณ ที่จ่าย",
+        "url": "https://www.rd.go.th/272.html",
+        "evidenceLevel": "secondary_official",
+        "reviewerStatus": "under_review",
+        "lastCheckedAt": "2026-09-20",
+        "notes": ["การนำภาษีหัก ณ ที่จ่ายมาหักออกจากภาษีที่คำนวณได้"]
+      }
+    ],
+    "applicabilityConditions": ["personal-income-tax-estimate"],
+    "reviewerStatus": "under_review",
+    "notForCalculation": true,
+    "notes": ["เครดิตภาษีหัก ณ ที่จ่ายตามหนังสือรับรอง 50 ทวิ"]
+  },
+  {
+    "manifestId": "manifest-2569-pnd94-rules",
+    "taxYearBE": 2569,
+    "ruleSetId": "th-pit-2569-placeholder-v0",
+    "family": "pnd94_rules",
+    "version": "0.1.0-draft",
+    "status": "unverified",
+    "effectiveFrom": "2026-01-01",
+    "effectiveTo": "2026-12-31",
+    "sources": [
+      {
+        "sourceId": "rd-forms-pnd-guide-2569",
+        "sourceType": "official_form",
+        "authority": "กรมสรรพากร",
+        "title": "แบบแสดงรายการภาษีเงินได้บุคคลธรรมดาครึ่งปี ภ.ง.ด. 94",
+        "url": "https://www.rd.go.th/272.html",
+        "evidenceLevel": "secondary_official",
+        "reviewerStatus": "under_review",
+        "lastCheckedAt": "2026-09-20",
+        "notes": ["การคำนวณภาษีครึ่งปีสำหรับเงินได้ตามมาตรา 40(5)-(8)"]
+      }
+    ],
+    "applicabilityConditions": ["pnd94-estimate"],
+    "reviewerStatus": "under_review",
+    "notForCalculation": true,
+    "notes": ["คำนวณภาษีครึ่งปี หักค่าลดหย่อนกึ่งหนึ่ง (ลดหย่อนส่วนตัว 30,000 บาท) และขั้นบันไดกึ่งหนึ่ง"]
+  },
+  {
+    "manifestId": "manifest-2569-pnd91-rules",
+    "taxYearBE": 2569,
+    "ruleSetId": "th-pit-2569-placeholder-v0",
+    "family": "pnd91_rules",
+    "version": "0.1.0-draft",
+    "status": "unverified",
+    "effectiveFrom": "2026-01-01",
+    "effectiveTo": "2026-12-31",
+    "sources": [
+      {
+        "sourceId": "rd-forms-pnd-guide-2569",
+        "sourceType": "official_form",
+        "authority": "กรมสรรพากร",
+        "title": "แบบแสดงรายการภาษีเงินได้บุคคลธรรมดา ภ.ง.ด. 91",
+        "url": "https://www.rd.go.th/272.html",
+        "evidenceLevel": "secondary_official",
+        "reviewerStatus": "under_review",
+        "lastCheckedAt": "2026-09-20",
+        "notes": ["การคำนวณภาษีสำหรับผู้มีเงินได้ตามมาตรา 40(1) อย่างเดียว"]
+      }
+    ],
+    "applicabilityConditions": ["pnd91-estimate"],
+    "reviewerStatus": "under_review",
+    "notForCalculation": true,
+    "notes": ["การยื่นแบบ ภ.ง.ด. 91 สำหรับเงินเดือน ค่าจ้างอย่างเดียว"]
   }
 ]

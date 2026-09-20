@@ -3,30 +3,87 @@
   "taxYearBE": 2568,
   "taxYearCE": 2025,
   "ruleSetId": "th-pit-2568-placeholder-v0",
-  "version": "0.0.0-unverified",
+  "version": "0.1.0-draft",
   "status": "unverified",
   "validationStatus": "unverified",
   "notForCalculation": true,
-  "effectiveFrom": null,
-  "effectiveTo": null,
-  "lastReviewedAt": null,
-  "lastReviewedBy": null,
+  "effectiveFrom": "2025-01-01",
+  "effectiveTo": "2025-12-31",
+  "lastReviewedAt": "2026-09-20",
+  "lastReviewedBy": "Antigravity Legal Verification Drafter",
   "scope": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
-  "disclaimer": "ข้อมูลกฎภาษีชุดนี้ยังไม่ผ่านการตรวจสอบ และห้ามใช้คำนวณหรือเผยแพร่ผลลัพธ์",
+  "disclaimer": "ข้อมูลกฎภาษีชุดนี้อยู่ในขั้นตอนการตรวจทานและยกร่างร่วมกับผู้เชี่ยวชาญ และยังไม่เปิดให้ใช้คำนวณผลลัพธ์จนกว่าจะผ่านการรับรองความถูกต้องครบถ้วน",
   "sources": [
     {
-      "sourceId": "rd-official-reference-required-2568",
-      "sourceType": "official_webpage",
+      "sourceId": "rd-revenue-code-sec40-2568",
+      "sourceType": "official_law",
       "authority": "กรมสรรพากร",
-      "title": "ต้องระบุเอกสารอ้างอิงทางการสำหรับปีภาษี 2568 ก่อนใช้งาน",
-      "url": null,
-      "evidenceLevel": "unverified",
+      "title": "ประมวลรัษฎากร มาตรา 40 หมวด 3 ภาษีเงินได้บุคคลธรรมดา (ประเภทเงินได้พึงประเมิน 8 ประเภท)",
+      "url": "https://www.rd.go.th/5937.html",
+      "evidenceLevel": "primary_official",
       "reviewerStatus": "not_reviewed",
-      "lastCheckedAt": null,
-      "notes": ["ห้ามเติมรายละเอียดกฎหมายจากการคาดเดา"]
+      "lastCheckedAt": "2026-09-20",
+      "notes": ["ระบุประเภทเงินได้พึงประเมิน 40(1) ถึง 40(8) เพื่อใช้จัดกลุ่มและคำนวณหักค่าใช้จ่าย"]
+    },
+    {
+      "sourceId": "rd-royal-decree-exp-629-2568",
+      "sourceType": "official_law",
+      "authority": "กรมสรรพากร / ราชกิจจานุเบกษา",
+      "title": "พระราชกฤษฎีกาออกตามความในประมวลรัษฎากรว่าด้วยการกำหนดค่าใช้จ่ายที่ยอมให้หักจากเงินได้พึงประเมิน (ฉบับที่ 11) พ.ศ. 2502 และที่แก้ไขเพิ่มเติม (ฉบับที่ 629 พ.ศ. 2560)",
+      "url": "https://www.rd.go.th/2372.html",
+      "evidenceLevel": "primary_official",
+      "reviewerStatus": "not_reviewed",
+      "lastCheckedAt": "2026-09-20",
+      "notes": ["กำหนดเพดานหักค่าใช้จ่าย 40(1) และ 40(2) 50% รวมไม่เกิน 100,000 บาท, 40(3) 50% ไม่เกิน 100,000 บาท, 40(6) 30% หรือ 60%, 40(7) 60%, 40(8) 60% หรือตามจริง"]
+    },
+    {
+      "sourceId": "rd-pit-brackets-act44-2568",
+      "sourceType": "official_law",
+      "authority": "กรมสรรพากร / ราชกิจจานุเบกษา",
+      "title": "พระราชบัญญัติแก้ไขเพิ่มเติมประมวลรัษฎากร (ฉบับที่ 44) พ.ศ. 2560 (บัญชีอัตราภาษีเงินได้บุคคลธรรมดาขั้นบันได)",
+      "url": "https://www.rd.go.th/5938.html",
+      "evidenceLevel": "primary_official",
+      "reviewerStatus": "not_reviewed",
+      "lastCheckedAt": "2026-09-20",
+      "notes": ["บัญชีอัตราภาษีเงินได้บุคคลธรรมดา 7 ขั้น ตั้งแต่ร้อยละ 5 ถึงร้อยละ 35 พร้อมการยกเว้นเงินได้สุทธิ 150,000 บาทแรก"]
+    },
+    {
+      "sourceId": "rd-allowances-guide-2568",
+      "sourceType": "official_announcement",
+      "authority": "กระทรวงการคลัง / กรมสรรพากร",
+      "title": "กฎกระทรวง ฉบับที่ 126 (พ.ศ. 2509) และประกาศอธิบดีกรมสรรพากรเกี่ยวกับภาษีเงินได้ (ค่าลดหย่อนและการยกเว้นภาษี)",
+      "url": "https://www.rd.go.th/59670.html",
+      "evidenceLevel": "primary_official",
+      "reviewerStatus": "not_reviewed",
+      "lastCheckedAt": "2026-09-20",
+      "notes": ["ลดหย่อนส่วนตัว 60,000 บาท, ประกันสังคมสูงสุด 9,000 บาท, กองทุนสำรองเลี้ยงชีพ/RMF/SSF/ThaiESG และเบี้ยประกันชีวิต/สุขภาพ"]
+    },
+    {
+      "sourceId": "rd-forms-pnd-guide-2568",
+      "sourceType": "official_form",
+      "authority": "กรมสรรพากร",
+      "title": "แบบแสดงรายการภาษีเงินได้บุคคลธรรมดา ภ.ง.ด. 90, ภ.ง.ด. 91 และ ภ.ง.ด. 94 และคำชี้แจงการยื่นแบบ",
+      "url": "https://www.rd.go.th/272.html",
+      "evidenceLevel": "secondary_official",
+      "reviewerStatus": "not_reviewed",
+      "lastCheckedAt": "2026-09-20",
+      "notes": ["แนวทางการกรอกแบบแสดงรายการ การหักภาษี ณ ที่จ่าย และเงื่อนไขการยื่นแบบครึ่งปี (ภ.ง.ด. 94)"]
     }
   ],
   "changelog": [
+    {
+      "version": "0.1.0-draft",
+      "changedAt": "2026-09-20",
+      "author": "Tax Rules Verification Drafter",
+      "description": "Drafted primary legal sources, tax brackets 0-35%, expense deduction ceilings 40(1)-40(8), and standard allowances",
+      "references": [
+        { "sourceId": "rd-revenue-code-sec40-2568" },
+        { "sourceId": "rd-royal-decree-exp-629-2568" },
+        { "sourceId": "rd-pit-brackets-act44-2568" },
+        { "sourceId": "rd-allowances-guide-2568" },
+        { "sourceId": "rd-forms-pnd-guide-2568" }
+      ]
+    },
     {
       "version": "0.0.0-unverified",
       "changedAt": "2026-09-12",
@@ -36,6 +93,6 @@
     }
   ],
   "notes": [
-    "Requires professional and legal verification before production publication."
+    "Drafted rule set for BE 2568 undergoing legal and professional verification."
   ]
 }

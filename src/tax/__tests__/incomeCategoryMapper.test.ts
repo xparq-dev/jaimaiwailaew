@@ -21,7 +21,9 @@ describe("Income Category to Section 40 Mapper", () => {
   });
 
   it("maps professional_service to 40_6_other (Liberal profession - non-medical)", () => {
-    expect(mapIncomeCategoryToIncomeType("professional_service")).toBe("40_6_other");
+    expect(mapIncomeCategoryToIncomeType("professional_service")).toBe(
+      "40_6_other",
+    );
   });
 
   it("maps employment incomes to 40_1", () => {
@@ -154,7 +156,9 @@ describe("Workspace PIT Adapter", () => {
     expect(result.grossTaxSatang).toBe(toMoneySatang(500_00));
     // Withholding = 12,000 -> Refund = 500 - 12,000 = -11,500
     expect(result.withholdingTaxPaidSatang).toBe(toMoneySatang(12_000_00));
-    expect(result.taxDueOrRefundSatang).toBe(toMoneySatang(-11_500_00, { allowNegative: true }));
+    expect(result.taxDueOrRefundSatang).toBe(
+      toMoneySatang(-11_500_00, { allowNegative: true }),
+    );
     expect(result.outcome).toBe("refund");
   });
 });

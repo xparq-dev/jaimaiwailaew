@@ -33,9 +33,9 @@ describe("Tax Foundation placeholder rule sets", () => {
       expect(parsed.status).toBe("published");
       expect(parsed.validationStatus).toBe("valid");
       expect(parsed.notForCalculation).toBe(false);
-      expect(
-        parsed.sources.every((s) => s.reviewerStatus === "reviewed"),
-      ).toBe(true);
+      expect(parsed.sources.every((s) => s.reviewerStatus === "reviewed")).toBe(
+        true,
+      );
     },
   );
 

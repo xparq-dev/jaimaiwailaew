@@ -184,13 +184,19 @@ function taxEstimateSection(
   const rows: readonly (readonly [string, string])[] = [
     ["เงินได้พึงประเมินรวม", formatAmount(estimate.grossIncomeSatang)],
     ["หัก ค่าใช้จ่ายตามกฎหมาย", formatAmount(estimate.expenseDeductionSatang)],
-    ["เงินได้หลังหักค่าใช้จ่าย", formatAmount(estimate.incomeAfterExpensesSatang)],
+    [
+      "เงินได้หลังหักค่าใช้จ่าย",
+      formatAmount(estimate.incomeAfterExpensesSatang),
+    ],
     ["หัก ค่าลดหย่อนรวม", formatAmount(estimate.totalAllowancesSatang)],
     [
       "เงินได้สุทธิเพื่อคำนวณภาษี (Net Taxable Income)",
       formatAmount(estimate.netTaxableIncomeSatang),
     ],
-    ["ภาษีคำนวณตามขั้นบันได (Gross Tax)", formatAmount(estimate.grossTaxSatang)],
+    [
+      "ภาษีคำนวณตามขั้นบันได (Gross Tax)",
+      formatAmount(estimate.grossTaxSatang),
+    ],
     [
       "หัก ภาษีหัก ณ ที่จ่ายที่ชำระไว้",
       formatAmount(estimate.withholdingTaxPaidSatang),

@@ -6,9 +6,7 @@
     "rdCalculationNote": "เงินได้สุทธิ = 480,000 - 100,000 (เหมา) - 60,000 (ส่วนตัว) - 9,000 (ประกันสังคม) - 24,000 (ประกันชีวิต) = 287,000 บาท → ขั้นแรก 150,000 @ 0% = 0, ขั้นสอง 137,000 @ 5% = 6,850",
     "input": {
       "taxYearBE": 2568,
-      "incomes": [
-        { "type": "40_1", "grossIncomeBaht": 480000 }
-      ],
+      "incomes": [{ "type": "40_1", "grossIncomeBaht": 480000 }],
       "allowances": {
         "personalBaht": 60000,
         "socialSecurityBaht": 9000,
@@ -42,9 +40,7 @@
     "rdCalculationNote2": "เงินได้สุทธิ = 300,000 - 100,000 - 60,000 - 9,000 = 131,000 → ต่ำกว่า 150,000 → ภาษี 0 บาท",
     "input": {
       "taxYearBE": 2568,
-      "incomes": [
-        { "type": "40_2", "grossIncomeBaht": 300000 }
-      ],
+      "incomes": [{ "type": "40_2", "grossIncomeBaht": 300000 }],
       "allowances": {
         "personalBaht": 60000,
         "socialSecurityBaht": 9000,
@@ -76,9 +72,7 @@
     "rdCalculationNote": "เงินได้สุทธิ = 800,000 - 240,000 (30%) - 60,000 - 9,000 = 491,000 → ขั้น1: 150,000@0%=0, ขั้น2: 150,000@5%=7,500, ขั้น3: 191,000@10%=19,100 → รวม 26,600 บาท",
     "input": {
       "taxYearBE": 2568,
-      "incomes": [
-        { "type": "40_6_other", "grossIncomeBaht": 800000 }
-      ],
+      "incomes": [{ "type": "40_6_other", "grossIncomeBaht": 800000 }],
       "allowances": {
         "personalBaht": 60000,
         "socialSecurityBaht": 9000,
@@ -110,9 +104,7 @@
     "rdCalculationNote": "เงินได้สุทธิ = 1,200,000 - 720,000 (60%) - 60,000 - 9,000 = 411,000 → ขั้น1: 150,000@0%=0, ขั้น2: 150,000@5%=7,500, ขั้น3: 111,000@10%=11,100 → ภาษี 18,600 - หัก ณ ที่จ่าย 36,000 = คืนภาษี (17,400) บาท",
     "input": {
       "taxYearBE": 2568,
-      "incomes": [
-        { "type": "40_7", "grossIncomeBaht": 1200000 }
-      ],
+      "incomes": [{ "type": "40_7", "grossIncomeBaht": 1200000 }],
       "allowances": {
         "personalBaht": 60000,
         "socialSecurityBaht": 9000,
@@ -144,9 +136,7 @@
     "rdCalculationNote": "เงินได้สุทธิ = 2,000,000 - 1,200,000 (60%) - 60,000 - 200,000 (SSF) = 540,000 → ขั้น1: 150,000@0%=0, ขั้น2: 150,000@5%=7,500, ขั้น3: 200,000@10%=20,000, ขั้น4: 40,000@15%=6,000 → รวม 33,500 บาท",
     "input": {
       "taxYearBE": 2568,
-      "incomes": [
-        { "type": "40_8", "grossIncomeBaht": 2000000 }
-      ],
+      "incomes": [{ "type": "40_8", "grossIncomeBaht": 2000000 }],
       "allowances": {
         "personalBaht": 60000,
         "socialSecurityBaht": 0,
@@ -214,9 +204,7 @@
     "rdCalculationNote": "ค่าใช้จ่าย 40(8): 15,000,000*60%=9,000,000. เงินได้สุทธิ = 15,000,000 - 9,000,000 - 60,000 - 500,000 = 5,440,000 → ขั้น1:150,000@0%=0, ขั้น2:150,000@5%=7,500, ขั้น3:200,000@10%=20,000, ขั้น4:250,000@15%=37,500, ขั้น5:250,000@20%=50,000, ขั้น6:1,000,000@25%=250,000, ขั้น7:3,000,000@30%=900,000, ขั้น8:440,000@35%=154,000 → รวม 1,419,000 บาท",
     "input": {
       "taxYearBE": 2568,
-      "incomes": [
-        { "type": "40_8", "grossIncomeBaht": 15000000 }
-      ],
+      "incomes": [{ "type": "40_8", "grossIncomeBaht": 15000000 }],
       "allowances": {
         "personalBaht": 60000,
         "socialSecurityBaht": 0,
@@ -233,9 +221,7 @@
     "inputNote": "retirementGroupBaht รวมถึง PVD/RMF/SSF ที่ถึงเพดาน 500,000 บาท — ใช้ ssfBaht = 200,000 + pvdBaht = 300,000 ในการทดสอบ",
     "input_corrected": {
       "taxYearBE": 2568,
-      "incomes": [
-        { "type": "40_8", "grossIncomeBaht": 15000000 }
-      ],
+      "incomes": [{ "type": "40_8", "grossIncomeBaht": 15000000 }],
       "allowances": {
         "personalBaht": 60000,
         "socialSecurityBaht": 0,

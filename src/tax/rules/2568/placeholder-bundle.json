@@ -9,24 +9,112 @@
   "requiresVerification": false,
   "sections": {
     "taxBrackets": [
-      { "level": 1, "min": 0, "max": 150000, "ratePercent": 0, "accumulatedTax": 0, "description": "ได้รับการยกเว้นภาษี" },
-      { "level": 2, "min": 150001, "max": 300000, "ratePercent": 5, "accumulatedTax": 7500, "description": "อัตรา 5%" },
-      { "level": 3, "min": 300001, "max": 500000, "ratePercent": 10, "accumulatedTax": 27500, "description": "อัตรา 10%" },
-      { "level": 4, "min": 500001, "max": 750000, "ratePercent": 15, "accumulatedTax": 65000, "description": "อัตรา 15%" },
-      { "level": 5, "min": 750001, "max": 1000000, "ratePercent": 20, "accumulatedTax": 115000, "description": "อัตรา 20%" },
-      { "level": 6, "min": 1000001, "max": 2000000, "ratePercent": 25, "accumulatedTax": 365000, "description": "อัตรา 25%" },
-      { "level": 7, "min": 2000001, "max": 5000000, "ratePercent": 30, "accumulatedTax": 1265000, "description": "อัตรา 30%" },
-      { "level": 8, "min": 5000001, "max": null, "ratePercent": 35, "accumulatedTax": null, "description": "อัตรา 35%" }
+      {
+        "level": 1,
+        "min": 0,
+        "max": 150000,
+        "ratePercent": 0,
+        "accumulatedTax": 0,
+        "description": "ได้รับการยกเว้นภาษี"
+      },
+      {
+        "level": 2,
+        "min": 150001,
+        "max": 300000,
+        "ratePercent": 5,
+        "accumulatedTax": 7500,
+        "description": "อัตรา 5%"
+      },
+      {
+        "level": 3,
+        "min": 300001,
+        "max": 500000,
+        "ratePercent": 10,
+        "accumulatedTax": 27500,
+        "description": "อัตรา 10%"
+      },
+      {
+        "level": 4,
+        "min": 500001,
+        "max": 750000,
+        "ratePercent": 15,
+        "accumulatedTax": 65000,
+        "description": "อัตรา 15%"
+      },
+      {
+        "level": 5,
+        "min": 750001,
+        "max": 1000000,
+        "ratePercent": 20,
+        "accumulatedTax": 115000,
+        "description": "อัตรา 20%"
+      },
+      {
+        "level": 6,
+        "min": 1000001,
+        "max": 2000000,
+        "ratePercent": 25,
+        "accumulatedTax": 365000,
+        "description": "อัตรา 25%"
+      },
+      {
+        "level": 7,
+        "min": 2000001,
+        "max": 5000000,
+        "ratePercent": 30,
+        "accumulatedTax": 1265000,
+        "description": "อัตรา 30%"
+      },
+      {
+        "level": 8,
+        "min": 5000001,
+        "max": null,
+        "ratePercent": 35,
+        "accumulatedTax": null,
+        "description": "อัตรา 35%"
+      }
     ],
     "incomeTypes": [
-      { "type": "40_1", "label": "เงินได้ตามมาตรา 40(1) เงินเดือน ค่าจ้าง โบนัส", "code": "salary" },
-      { "type": "40_2", "label": "เงินได้ตามมาตรา 40(2) ค่าจ้างทั่วไป ค่าคอมมิชชัน เบี้ยประชุม ฟรีแลนซ์", "code": "freelance_service" },
-      { "type": "40_3", "label": "เงินได้ตามมาตรา 40(3) ค่าแห่งลิขสิทธิ์ ค่ากู๊ดวิลล์ หรือสิทธิอื่น", "code": "copyright" },
-      { "type": "40_4", "label": "เงินได้ตามมาตรา 40(4) ดอกเบี้ย เงินปันผล ส่วนแบ่งกำไร", "code": "interest_dividend" },
-      { "type": "40_5", "label": "เงินได้ตามมาตรา 40(5) ค่าเช่าทรัพย์สิน", "code": "rental" },
-      { "type": "40_6", "label": "เงินได้ตามมาตรา 40(6) วิชาชีพอิสระ (การประกอบโรคศิลปะ กฎหมาย บัญชี วิศวกรรม สถาปัตยกรรม ประณีตศิลป์)", "code": "liberal_profession" },
-      { "type": "40_7", "label": "เงินได้ตามมาตรา 40(7) ค่ารับเหมาที่ผู้รับเหมาต้องจัดหาสัมภาระในส่วนสำคัญ", "code": "contractor" },
-      { "type": "40_8", "label": "เงินได้ตามมาตรา 40(8) การพาณิชย์ การขายของออนไลน์ การเกษตร การอุตสาหกรรม หรืออื่นๆ", "code": "business_commerce" }
+      {
+        "type": "40_1",
+        "label": "เงินได้ตามมาตรา 40(1) เงินเดือน ค่าจ้าง โบนัส",
+        "code": "salary"
+      },
+      {
+        "type": "40_2",
+        "label": "เงินได้ตามมาตรา 40(2) ค่าจ้างทั่วไป ค่าคอมมิชชัน เบี้ยประชุม ฟรีแลนซ์",
+        "code": "freelance_service"
+      },
+      {
+        "type": "40_3",
+        "label": "เงินได้ตามมาตรา 40(3) ค่าแห่งลิขสิทธิ์ ค่ากู๊ดวิลล์ หรือสิทธิอื่น",
+        "code": "copyright"
+      },
+      {
+        "type": "40_4",
+        "label": "เงินได้ตามมาตรา 40(4) ดอกเบี้ย เงินปันผล ส่วนแบ่งกำไร",
+        "code": "interest_dividend"
+      },
+      {
+        "type": "40_5",
+        "label": "เงินได้ตามมาตรา 40(5) ค่าเช่าทรัพย์สิน",
+        "code": "rental"
+      },
+      {
+        "type": "40_6",
+        "label": "เงินได้ตามมาตรา 40(6) วิชาชีพอิสระ (การประกอบโรคศิลปะ กฎหมาย บัญชี วิศวกรรม สถาปัตยกรรม ประณีตศิลป์)",
+        "code": "liberal_profession"
+      },
+      {
+        "type": "40_7",
+        "label": "เงินได้ตามมาตรา 40(7) ค่ารับเหมาที่ผู้รับเหมาต้องจัดหาสัมภาระในส่วนสำคัญ",
+        "code": "contractor"
+      },
+      {
+        "type": "40_8",
+        "label": "เงินได้ตามมาตรา 40(8) การพาณิชย์ การขายของออนไลน์ การเกษตร การอุตสาหกรรม หรืออื่นๆ",
+        "code": "business_commerce"
+      }
     ],
     "expenseDeductions": [
       {

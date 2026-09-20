@@ -22,46 +22,50 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
         <div className="flex items-center gap-2.5">
           <CheckCircle2
             aria-hidden="true"
-            className="text-emerald-600 dark:text-emerald-400 size-5 shrink-0"
+            className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400"
           />
           <h2 className="text-lg font-bold" id="tax-estimate-title">
             ประมาณการภาษีเงินได้บุคคลธรรมดา
           </h2>
         </div>
-        <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
+        <span className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
           กฎภาษีปี {workspace.taxYearBE} ผ่านการตรวจสอบแล้ว (v1.0.0)
         </span>
       </div>
 
       <p className="text-muted-foreground mt-2 text-sm leading-6">
-        คำนวณจากรายได้ ค่าใช้จ่ายตามสัดส่วนกฎหมาย ค่าลดหย่อน
-        และภาษีหัก ณ ที่จ่ายตามรอบระยะเวลาที่เลือก
+        คำนวณจากรายได้ ค่าใช้จ่ายตามสัดส่วนกฎหมาย ค่าลดหย่อน และภาษีหัก ณ
+        ที่จ่ายตามรอบระยะเวลาที่เลือก
       </p>
 
       {/* Outcome Highlight Banner */}
       <div className="mt-5">
         {result.outcome === "refund" ? (
-          <div className="border-emerald-500/30 bg-emerald-500/10 rounded-2xl border p-5">
-            <p className="text-emerald-800 dark:text-emerald-200 text-sm font-medium">
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
+            <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
               ประมาณการภาษีที่ขอคืนได้ (Refund)
             </p>
-            <p className="text-emerald-700 dark:text-emerald-300 mt-2 text-3xl font-extrabold tracking-tight">
-              {formatThaiBaht(toMoneySatang(Math.abs(result.taxDueOrRefundSatang)))}
+            <p className="mt-2 text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300">
+              {formatThaiBaht(
+                toMoneySatang(Math.abs(result.taxDueOrRefundSatang)),
+              )}
             </p>
-            <p className="text-emerald-800/80 dark:text-emerald-200/80 mt-1 text-xs leading-5">
-              คุณได้ชำระภาษีหัก ณ ที่จ่ายไว้มากกว่าภาษีที่คำนวณได้ตามอัตราก้าวหน้า
+            <p className="mt-1 text-xs leading-5 text-emerald-800/80 dark:text-emerald-200/80">
+              คุณได้ชำระภาษีหัก ณ
+              ที่จ่ายไว้มากกว่าภาษีที่คำนวณได้ตามอัตราก้าวหน้า
             </p>
           </div>
         ) : result.outcome === "pay" ? (
-          <div className="border-amber-500/30 bg-amber-500/10 rounded-2xl border p-5">
-            <p className="text-amber-800 dark:text-amber-200 text-sm font-medium">
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
               ประมาณการภาษีที่ต้องชำระเพิ่ม (Tax Due)
             </p>
-            <p className="text-amber-700 dark:text-amber-300 mt-2 text-3xl font-extrabold tracking-tight">
+            <p className="mt-2 text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300">
               {formatThaiBaht(result.taxDueOrRefundSatang)}
             </p>
-            <p className="text-amber-800/80 dark:text-amber-200/80 mt-1 text-xs leading-5">
-              ภาษีที่คำนวณได้ตามอัตราก้าวหน้าสูงกว่าภาษีหัก ณ ที่จ่ายที่บันทึกไว้
+            <p className="mt-1 text-xs leading-5 text-amber-800/80 dark:text-amber-200/80">
+              ภาษีที่คำนวณได้ตามอัตราก้าวหน้าสูงกว่าภาษีหัก ณ
+              ที่จ่ายที่บันทึกไว้
             </p>
           </div>
         ) : (
@@ -73,7 +77,8 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
               0.00 บาท
             </p>
             <p className="text-muted-foreground mt-1 text-xs leading-5">
-              เงินได้สุทธิอยู่ในเกณฑ์ได้รับการยกเว้นภาษี หรือยอดหัก ณ ที่จ่ายเท่ากับภาษีที่ต้องชำระ
+              เงินได้สุทธิอยู่ในเกณฑ์ได้รับการยกเว้นภาษี หรือยอดหัก ณ
+              ที่จ่ายเท่ากับภาษีที่ต้องชำระ
             </p>
           </div>
         )}
@@ -83,17 +88,23 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
       <dl className="border-border mt-5 divide-y divide-dashed border-t text-sm">
         <div className="flex justify-between py-3">
           <dt className="text-muted-foreground">เงินได้พึงประเมินรวม</dt>
-          <dd className="font-semibold">{formatThaiBaht(result.grossIncomeSatang)}</dd>
+          <dd className="font-semibold">
+            {formatThaiBaht(result.grossIncomeSatang)}
+          </dd>
         </div>
         <div className="flex justify-between py-3">
-          <dt className="text-muted-foreground">หัก ค่าใช้จ่ายตามกฎหมาย (เหมา/จริง)</dt>
+          <dt className="text-muted-foreground">
+            หัก ค่าใช้จ่ายตามกฎหมาย (เหมา/จริง)
+          </dt>
           <dd className="text-muted-foreground">
             - {formatThaiBaht(result.expenseDeductionSatang)}
           </dd>
         </div>
         <div className="flex justify-between py-3">
           <dt className="text-muted-foreground">เงินได้หลังหักค่าใช้จ่าย</dt>
-          <dd className="font-medium">{formatThaiBaht(result.incomeAfterExpensesSatang)}</dd>
+          <dd className="font-medium">
+            {formatThaiBaht(result.incomeAfterExpensesSatang)}
+          </dd>
         </div>
         <div className="flex justify-between py-3">
           <dt className="text-muted-foreground">หัก ค่าลดหย่อนรวม</dt>
@@ -103,14 +114,22 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
         </div>
         <div className="flex justify-between py-3 font-semibold">
           <dt>เงินได้สุทธิเพื่อคำนวณภาษี (Net Taxable Income)</dt>
-          <dd className="text-primary text-base">{formatThaiBaht(result.netTaxableIncomeSatang)}</dd>
+          <dd className="text-primary text-base">
+            {formatThaiBaht(result.netTaxableIncomeSatang)}
+          </dd>
         </div>
         <div className="flex justify-between py-3">
-          <dt className="text-muted-foreground">ภาษีคำนวณตามอัตราขั้นบันได (Gross Tax)</dt>
-          <dd className="font-medium">{formatThaiBaht(result.grossTaxSatang)}</dd>
+          <dt className="text-muted-foreground">
+            ภาษีคำนวณตามอัตราขั้นบันได (Gross Tax)
+          </dt>
+          <dd className="font-medium">
+            {formatThaiBaht(result.grossTaxSatang)}
+          </dd>
         </div>
         <div className="flex justify-between py-3">
-          <dt className="text-muted-foreground">หัก ภาษีหัก ณ ที่จ่ายที่ชำระไว้</dt>
+          <dt className="text-muted-foreground">
+            หัก ภาษีหัก ณ ที่จ่ายที่ชำระไว้
+          </dt>
           <dd className="text-muted-foreground">
             - {formatThaiBaht(result.withholdingTaxPaidSatang)}
           </dd>
@@ -119,17 +138,20 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
 
       {/* Brackets applied details */}
       {result.bracketApplications.length > 0 ? (
-        <div className="border-border mt-4 rounded-xl border bg-muted/30 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="border-border bg-muted/30 mt-4 rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             การคำนวณภาษีตามขั้นบันได (Tax Brackets)
           </p>
           <ul className="mt-2 space-y-1.5 text-xs">
             {result.bracketApplications.map((b) => (
               <li key={b.level} className="flex justify-between">
                 <span>
-                  ขั้นที่ {b.level} (อัตรา {b.ratePercent}%) เงินได้สุทธิ {formatThaiBaht(b.taxableInBracketSatang)}
+                  ขั้นที่ {b.level} (อัตรา {b.ratePercent}%) เงินได้สุทธิ{" "}
+                  {formatThaiBaht(b.taxableInBracketSatang)}
                 </span>
-                <span className="font-mono">{formatThaiBaht(b.taxInBracketSatang)}</span>
+                <span className="font-mono">
+                  {formatThaiBaht(b.taxInBracketSatang)}
+                </span>
               </li>
             ))}
           </ul>
@@ -137,12 +159,17 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
       ) : null}
 
       {/* Legal Disclaimers */}
-      <div className="mt-5 rounded-xl border border-border bg-muted/20 p-4 text-xs leading-5 text-muted-foreground">
+      <div className="border-border bg-muted/20 text-muted-foreground mt-5 rounded-xl border p-4 text-xs leading-5">
         <div className="flex items-start gap-2">
-          <Info aria-hidden="true" className="size-4 shrink-0 mt-0.5 text-muted-foreground" />
+          <Info
+            aria-hidden="true"
+            className="text-muted-foreground mt-0.5 size-4 shrink-0"
+          />
           <div className="space-y-1">
-            <p className="font-semibold text-foreground">ข้อกำหนดและข้อจำกัดความรับผิดชอบ:</p>
-            <ol className="list-decimal pl-4 space-y-0.5">
+            <p className="text-foreground font-semibold">
+              ข้อกำหนดและข้อจำกัดความรับผิดชอบ:
+            </p>
+            <ol className="list-decimal space-y-0.5 pl-4">
               <li>เอกสารนี้สร้างขึ้นเพื่อการจัดระเบียบข้อมูลส่วนตัวเท่านั้น</li>
               <li>การคำนวณภาษีเป็นเพียงประมาณการเบื้องต้น</li>
               <li>โปรดปรึกษาผู้เชี่ยวชาญหรือกรมสรรพากรก่อนยื่นภาษีจริง</li>

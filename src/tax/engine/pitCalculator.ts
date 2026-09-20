@@ -124,14 +124,32 @@ const TAX_BRACKETS: readonly {
   capacityBaht: number | null;
   ratePercent: number;
 }[] = [
-  { level: 1, min: 0,       max: 150000,  capacityBaht: 150000,  ratePercent: 0 },
-  { level: 2, min: 150001,  max: 300000,  capacityBaht: 150000,  ratePercent: 5 },
-  { level: 3, min: 300001,  max: 500000,  capacityBaht: 200000,  ratePercent: 10 },
-  { level: 4, min: 500001,  max: 750000,  capacityBaht: 250000,  ratePercent: 15 },
-  { level: 5, min: 750001,  max: 1000000, capacityBaht: 250000,  ratePercent: 20 },
-  { level: 6, min: 1000001, max: 2000000, capacityBaht: 1000000, ratePercent: 25 },
-  { level: 7, min: 2000001, max: 5000000, capacityBaht: 3000000, ratePercent: 30 },
-  { level: 8, min: 5000001, max: null,    capacityBaht: null,    ratePercent: 35 },
+  { level: 1, min: 0, max: 150000, capacityBaht: 150000, ratePercent: 0 },
+  { level: 2, min: 150001, max: 300000, capacityBaht: 150000, ratePercent: 5 },
+  { level: 3, min: 300001, max: 500000, capacityBaht: 200000, ratePercent: 10 },
+  { level: 4, min: 500001, max: 750000, capacityBaht: 250000, ratePercent: 15 },
+  {
+    level: 5,
+    min: 750001,
+    max: 1000000,
+    capacityBaht: 250000,
+    ratePercent: 20,
+  },
+  {
+    level: 6,
+    min: 1000001,
+    max: 2000000,
+    capacityBaht: 1000000,
+    ratePercent: 25,
+  },
+  {
+    level: 7,
+    min: 2000001,
+    max: 5000000,
+    capacityBaht: 3000000,
+    ratePercent: 30,
+  },
+  { level: 8, min: 5000001, max: null, capacityBaht: null, ratePercent: 35 },
 ] as const;
 
 // Expense deduction caps in baht per Revenue Code and Royal Decree 629
@@ -171,10 +189,7 @@ function calcAllowancesSatang(a: AllowanceInput): MoneySatang {
   // Retirement group: PVD + RMF + SSF combined ≤ 500,000
   const retirementGroupCap = 500000;
   const pvdApplied = clampBaht(a.providentFundBaht, retirementGroupCap);
-  const rmfApplied = clampBaht(
-    a.rmfBaht,
-    retirementGroupCap - pvdApplied,
-  );
+  const rmfApplied = clampBaht(a.rmfBaht, retirementGroupCap - pvdApplied);
   const ssfApplied = clampBaht(
     Math.min(a.ssfBaht, 200000),
     retirementGroupCap - pvdApplied - rmfApplied,
@@ -329,8 +344,9 @@ export function calculatePIT(input: PITCalculationInput): PITCalculationResult {
   const netTaxableIncomeSatang = toMoneySatang(Math.max(0, rawNetSatang));
 
   // Step 5: Apply brackets
-  const { grossTaxSatang, bracketApplications } =
-    calcGrossTaxFromBrackets(netTaxableIncomeSatang);
+  const { grossTaxSatang, bracketApplications } = calcGrossTaxFromBrackets(
+    netTaxableIncomeSatang,
+  );
 
   // Step 6: Withholding
   const withholdingTaxPaidSatang = bahtToSatang(input.withholdingTaxPaidBaht);

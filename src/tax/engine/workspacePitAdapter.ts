@@ -1,4 +1,7 @@
-import { computeArithmeticTotals, filterEntriesByPeriod } from "@/calculator/arithmetic";
+import {
+  computeArithmeticTotals,
+  filterEntriesByPeriod,
+} from "@/calculator/arithmetic";
 import type { CalculatorWorkspace } from "@/calculator/types";
 import { satangToBaht } from "@/tax/money";
 

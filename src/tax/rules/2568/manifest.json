@@ -21,7 +21,11 @@
         "notes": ["อัตราภาษี 7 ขั้น 5% - 35% ยกเว้น 150,000 บาทแรก"]
       }
     ],
-    "applicabilityConditions": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
+    "applicabilityConditions": [
+      "personal-income-tax-estimate",
+      "pnd91-estimate",
+      "pnd94-estimate"
+    ],
     "reviewerStatus": "reviewed",
     "notForCalculation": false,
     "notes": ["อัตราภาษีเงินได้บุคคลธรรมดาแบบขั้นบันได 8 ระดับ (0% - 35%)"]
@@ -75,10 +79,16 @@
         "notes": ["การหักค่าใช้จ่าย 40(1)-40(8)"]
       }
     ],
-    "applicabilityConditions": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
+    "applicabilityConditions": [
+      "personal-income-tax-estimate",
+      "pnd91-estimate",
+      "pnd94-estimate"
+    ],
     "reviewerStatus": "reviewed",
     "notForCalculation": false,
-    "notes": ["เพดานหักค่าใช้จ่าย 40(1)-(2) 50% ไม่เกิน 100,000, 40(3) 50% ไม่เกิน 100,000, 40(6) 30%/60%, 40(7) 60%, 40(8) 60%"]
+    "notes": [
+      "เพดานหักค่าใช้จ่าย 40(1)-(2) 50% ไม่เกิน 100,000, 40(3) 50% ไม่เกิน 100,000, 40(6) 30%/60%, 40(7) 60%, 40(8) 60%"
+    ]
   },
   {
     "manifestId": "manifest-2568-allowance-rules",
@@ -102,10 +112,16 @@
         "notes": ["ค่าลดหย่อนและการยกเว้นภาษี"]
       }
     ],
-    "applicabilityConditions": ["personal-income-tax-estimate", "pnd91-estimate", "pnd94-estimate"],
+    "applicabilityConditions": [
+      "personal-income-tax-estimate",
+      "pnd91-estimate",
+      "pnd94-estimate"
+    ],
     "reviewerStatus": "reviewed",
     "notForCalculation": false,
-    "notes": ["ลดหย่อนส่วนตัว 60,000 บาท, ประกันสังคมสูงสุด 9,000 บาท, กองทุนเกษียณและ ThaiESG, เบี้ยประกันชีวิตและสุขภาพ"]
+    "notes": [
+      "ลดหย่อนส่วนตัว 60,000 บาท, ประกันสังคมสูงสุด 9,000 บาท, กองทุนเกษียณและ ThaiESG, เบี้ยประกันชีวิตและสุขภาพ"
+    ]
   },
   {
     "manifestId": "manifest-2568-withholding-tax",
@@ -159,7 +175,9 @@
     "applicabilityConditions": ["pnd94-estimate"],
     "reviewerStatus": "reviewed",
     "notForCalculation": false,
-    "notes": ["คำนวณภาษีครึ่งปี หักค่าลดหย่อนกึ่งหนึ่ง (ลดหย่อนส่วนตัว 30,000 บาท) และขั้นบันไดกึ่งหนึ่ง"]
+    "notes": [
+      "คำนวณภาษีครึ่งปี หักค่าลดหย่อนกึ่งหนึ่ง (ลดหย่อนส่วนตัว 30,000 บาท) และขั้นบันไดกึ่งหนึ่ง"
+    ]
   },
   {
     "manifestId": "manifest-2568-pnd91-rules",

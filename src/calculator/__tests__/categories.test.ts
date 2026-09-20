@@ -14,7 +14,7 @@ describe("income source suggestions", () => {
         getIncomeCategoryLabel(categoryCode),
       );
       expect(getIncomeSourceSuggestions(categoryCode).length).toBeGreaterThan(
-        0,
+        1,
       );
     }
   });

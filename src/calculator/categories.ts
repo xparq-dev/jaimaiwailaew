@@ -10,6 +10,7 @@ export interface CategoryOption<T extends string = string> {
   readonly code: T;
   readonly label: string;
   readonly hint?: string | undefined;
+  readonly group?: string | undefined;
 }
 
 export const PERSONA_OPTIONS: readonly CategoryOption<CalculatorPersona>[] = [
@@ -42,19 +43,123 @@ export const PERSONA_OPTIONS: readonly CategoryOption<CalculatorPersona>[] = [
 
 export const INCOME_CATEGORY_OPTIONS: readonly CategoryOption<IncomeCategoryCode>[] =
   [
-    { code: "salary", label: "เงินเดือน / ค่าจ้างประจำ" },
-    { code: "bonus", label: "โบนัส / เงินพิเศษ" },
-    { code: "online_sales", label: "ขายสินค้า / ขายออนไลน์" },
-    { code: "freelance_service", label: "รับจ้าง / งานอิสระ / บริการ" },
-    { code: "rental", label: "รายได้จากค่าเช่า" },
-    { code: "other", label: "รายได้อื่น ๆ" },
+    {
+      code: "salary",
+      label: "เงินเดือน / ค่าจ้างประจำ",
+      group: "งานประจำและค่าตอบแทน",
+    },
+    {
+      code: "bonus",
+      label: "โบนัส / เงินพิเศษ",
+      group: "งานประจำและค่าตอบแทน",
+    },
+    {
+      code: "overtime",
+      label: "ค่าล่วงเวลา / เบี้ยเลี้ยง",
+      group: "งานประจำและค่าตอบแทน",
+    },
+    {
+      code: "commission",
+      label: "ค่าคอมมิชชั่น / ค่านายหน้า",
+      group: "งานประจำและค่าตอบแทน",
+    },
+    {
+      code: "online_sales",
+      label: "ขายสินค้า / ขายออนไลน์",
+      group: "การขายและธุรกิจ",
+    },
+    {
+      code: "store_sales",
+      label: "ขายสินค้า / หน้าร้าน / ตลาดนัด",
+      group: "การขายและธุรกิจ",
+    },
+    {
+      code: "business_income",
+      label: "ธุรกิจ / กิจการส่วนตัว",
+      group: "การขายและธุรกิจ",
+    },
+    {
+      code: "freelance_service",
+      label: "รับจ้าง / งานอิสระ / บริการ",
+      group: "งานบริการและสื่อ",
+    },
+    {
+      code: "professional_service",
+      label: "วิชาชีพอิสระ / ที่ปรึกษา",
+      group: "งานบริการและสื่อ",
+    },
+    {
+      code: "creator_affiliate",
+      label: "คอนเทนต์ / โฆษณา / Affiliate",
+      group: "งานบริการและสื่อ",
+    },
+    {
+      code: "rental",
+      label: "ค่าเช่า / ให้เช่าทรัพย์สิน",
+      group: "ทรัพย์สินและการลงทุน",
+    },
+    {
+      code: "interest",
+      label: "ดอกเบี้ย / ผลตอบแทนเงินฝาก",
+      group: "ทรัพย์สินและการลงทุน",
+    },
+    {
+      code: "dividend",
+      label: "เงินปันผล / ส่วนแบ่งกำไร",
+      group: "ทรัพย์สินและการลงทุน",
+    },
+    {
+      code: "investment",
+      label: "ลงทุน / ซื้อขายสินทรัพย์",
+      group: "ทรัพย์สินและการลงทุน",
+    },
+    {
+      code: "royalty",
+      label: "ลิขสิทธิ์ / ค่าสิทธิ",
+      group: "ทรัพย์สินและการลงทุน",
+    },
+    {
+      code: "agriculture",
+      label: "เกษตร / ปศุสัตว์ / ประมง",
+      group: "เกษตร เกษียณ และอื่น ๆ",
+    },
+    {
+      code: "pension",
+      label: "บำนาญ / เงินเกษียณ",
+      group: "เกษตร เกษียณ และอื่น ๆ",
+    },
+    {
+      code: "prize_grant",
+      label: "เงินรางวัล / เงินสนับสนุน",
+      group: "เกษตร เกษียณ และอื่น ๆ",
+    },
+    {
+      code: "other",
+      label: "รายได้อื่น ๆ",
+      group: "เกษตร เกษียณ และอื่น ๆ",
+    },
   ];
+
+export const INCOME_CATEGORY_GROUPS = [
+  "งานประจำและค่าตอบแทน",
+  "การขายและธุรกิจ",
+  "งานบริการและสื่อ",
+  "ทรัพย์สินและการลงทุน",
+  "เกษตร เกษียณ และอื่น ๆ",
+] as const;
 
 export const INCOME_SOURCE_SUGGESTIONS: Readonly<
   Record<IncomeCategoryCode, readonly string[]>
 > = {
   salary: ["เงินเดือน / ค่าจ้างประจำ", "นายจ้าง / บริษัท"],
   bonus: ["โบนัส / เงินพิเศษ", "นายจ้าง / บริษัท"],
+  overtime: ["ค่าล่วงเวลา / เบี้ยเลี้ยง", "นายจ้าง / บริษัท"],
+  commission: [
+    "ค่าคอมมิชชั่น / ค่านายหน้า",
+    "นายจ้าง / บริษัท",
+    "ลูกค้าโดยตรง",
+    "แพลตฟอร์มตัวแทนขาย",
+  ],
   online_sales: [
     "ขายสินค้า / ขายออนไลน์",
     "Shopee",
@@ -63,14 +168,79 @@ export const INCOME_SOURCE_SUGGESTIONS: Readonly<
     "Facebook / Instagram",
     "เว็บไซต์ / หน้าร้าน",
   ],
+  store_sales: [
+    "ขายสินค้า / หน้าร้าน / ตลาดนัด",
+    "หน้าร้าน",
+    "ตลาดนัด / งานอีเวนต์",
+    "ลูกค้าโดยตรง",
+  ],
+  business_income: [
+    "ธุรกิจ / กิจการส่วนตัว",
+    "กิจการของตนเอง",
+    "ลูกค้าธุรกิจ",
+    "หน้าร้าน / สาขา",
+  ],
   freelance_service: [
     "รับจ้าง / งานอิสระ / บริการ",
     "ลูกค้าโดยตรง",
     "บริษัท / ผู้ว่าจ้าง",
     "แพลตฟอร์มฟรีแลนซ์",
   ],
-  rental: ["รายได้จากค่าเช่า", "ผู้เช่า", "แพลตฟอร์มให้เช่า"],
-  other: ["รายได้อื่น ๆ", "ดอกเบี้ย", "เงินปันผล"],
+  professional_service: [
+    "วิชาชีพอิสระ / ที่ปรึกษา",
+    "ลูกค้าโดยตรง",
+    "บริษัท / ผู้ว่าจ้าง",
+    "สำนักงาน / คลินิก",
+  ],
+  creator_affiliate: [
+    "คอนเทนต์ / โฆษณา / Affiliate",
+    "YouTube",
+    "TikTok",
+    "Facebook / Instagram",
+    "แพลตฟอร์ม Affiliate",
+    "ผู้สนับสนุน / สปอนเซอร์",
+  ],
+  rental: ["ค่าเช่า / ให้เช่าทรัพย์สิน", "ผู้เช่า", "แพลตฟอร์มให้เช่า"],
+  interest: ["ดอกเบี้ย / ผลตอบแทนเงินฝาก", "ธนาคาร", "สหกรณ์", "ผู้ออกตราสาร"],
+  dividend: [
+    "เงินปันผล / ส่วนแบ่งกำไร",
+    "บริษัท",
+    "กองทุน",
+    "ห้างหุ้นส่วน / กิจการ",
+  ],
+  investment: [
+    "ลงทุน / ซื้อขายสินทรัพย์",
+    "บริษัทหลักทรัพย์",
+    "แพลตฟอร์มลงทุน",
+    "ตลาดหลักทรัพย์ / กองทุน",
+    "สินทรัพย์ดิจิทัล",
+    "ผู้ซื้อสินทรัพย์",
+  ],
+  royalty: [
+    "ลิขสิทธิ์ / ค่าสิทธิ",
+    "ผู้รับอนุญาตใช้สิทธิ",
+    "สำนักพิมพ์ / ค่าย",
+    "แพลตฟอร์มดิจิทัล",
+  ],
+  agriculture: [
+    "เกษตร / ปศุสัตว์ / ประมง",
+    "ผู้รับซื้อ",
+    "ตลาด / สหกรณ์",
+    "โรงงาน / ล้ง",
+  ],
+  pension: [
+    "บำนาญ / เงินเกษียณ",
+    "กองทุนบำเหน็จบำนาญ",
+    "นายจ้างเดิม",
+    "หน่วยงานรัฐ",
+  ],
+  prize_grant: [
+    "เงินรางวัล / เงินสนับสนุน",
+    "ผู้จัดกิจกรรม",
+    "หน่วยงานรัฐ",
+    "องค์กร / มูลนิธิ",
+  ],
+  other: ["รายได้อื่น ๆ", "บุคคล", "องค์กร / หน่วยงาน"],
 };
 
 export const EXPENSE_CATEGORY_OPTIONS: readonly CategoryOption<ExpenseCategoryCode>[] =

@@ -25,7 +25,7 @@ const SAFE_STATIC_PATHS = new Set([
 
 // Never cache API routes, export/download endpoints, generated documents, uploads, or sensitive paths
 const NEVER_CACHE_PATH =
-  /(?:^\/api(?:\/|$)|(?:^|\/)(?:export|download|receipt|document|upload)(?:\/|$)|\.(?:pdf|csv|xlsx?)(?:$|\/))/i;
+  /(?:^\/api(?:\/|$)|(?:^|\/)(?:export|download|receipt|document|upload)(?:\/|$)|\.(?:pdf|csv|xlsx?|zip)(?:$|\/))/i;
 
 function isSafeStaticRequest(request, url) {
   if (

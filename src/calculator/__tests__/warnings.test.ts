@@ -196,7 +196,7 @@ describe("Calculator Warnings, Assumptions, and Completeness", () => {
       "ขายออนไลน์ / ธุรกิจ",
     );
 
-    expect(INCOME_CATEGORY_OPTIONS.length).toBe(6);
+    expect(INCOME_CATEGORY_OPTIONS.length).toBe(19);
     expect(getIncomeCategoryLabel("online_sales")).toBe(
       "ขายสินค้า / ขายออนไลน์",
     );
@@ -205,7 +205,13 @@ describe("Calculator Warnings, Assumptions, and Completeness", () => {
     expect(getIncomeCategoryLabel("freelance_service")).toBe(
       "รับจ้าง / งานอิสระ / บริการ",
     );
-    expect(getIncomeCategoryLabel("rental")).toBe("รายได้จากค่าเช่า");
+    expect(getIncomeCategoryLabel("rental")).toBe("ค่าเช่า / ให้เช่าทรัพย์สิน");
+    expect(getIncomeCategoryLabel("creator_affiliate")).toBe(
+      "คอนเทนต์ / โฆษณา / Affiliate",
+    );
+    expect(getIncomeCategoryLabel("agriculture")).toBe(
+      "เกษตร / ปศุสัตว์ / ประมง",
+    );
     expect(getIncomeCategoryLabel("other")).toBe("รายได้อื่น ๆ");
 
     expect(EXPENSE_CATEGORY_OPTIONS.length).toBeGreaterThanOrEqual(8);

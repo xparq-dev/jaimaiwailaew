@@ -14,6 +14,7 @@ import { useCalculatorStore } from "@/calculator/store";
 import {
   getDefaultIncomeSourceSuggestion,
   getIncomeCategoryLabel,
+  INCOME_CATEGORY_GROUPS,
   INCOME_CATEGORY_OPTIONS,
 } from "@/calculator/categories";
 import {
@@ -352,10 +353,16 @@ export function IncomeSectionPage() {
                     },
                   })}
                 >
-                  {INCOME_CATEGORY_OPTIONS.map((option) => (
-                    <option key={option.code} value={option.code}>
-                      {option.label}
-                    </option>
+                  {INCOME_CATEGORY_GROUPS.map((group) => (
+                    <optgroup key={group} label={group}>
+                      {INCOME_CATEGORY_OPTIONS.filter(
+                        (option) => option.group === group,
+                      ).map((option) => (
+                        <option key={option.code} value={option.code}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </SelectInput>
               </FormField>

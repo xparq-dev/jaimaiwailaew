@@ -8,6 +8,7 @@ import type { LocalPdfArtifact } from "@/pdf/download-local-pdf";
 import { buildLocalPdfReportModel } from "@/pdf/local-pdf-report";
 
 import { Button } from "../ui/button";
+import { TabularExportButtons } from "./tabular-export-buttons";
 
 const DEFAULT_REPORT_TITLE = "รายงานสรุปข้อมูลรายได้และค่าใช้จ่าย";
 
@@ -134,6 +135,7 @@ export function PdfExportPanel({
             <FileSearch aria-hidden="true" className="size-4" />
             {status === "preparing" ? "กำลังสร้างตัวอย่าง…" : "ดูตัวอย่าง PDF"}
           </Button>
+          <TabularExportButtons workspace={workspace} />
           <p aria-live="polite" className="text-muted-foreground text-sm">
             {status === "preview-ready"
               ? "สร้างตัวอย่าง PDF เรียบร้อยแล้ว"
@@ -150,6 +152,11 @@ export function PdfExportPanel({
         เอกสารประกอบด้วยข้อมูลที่ใช้ตรวจสอบรายการและยอดรวมเท่านั้น
         ไม่รวมหมายเหตุส่วนตัว ข้อมูลระบบภายใน หรือผลคำนวณภาษี
         และไม่ใช่แบบยื่นภาษีอย่างเป็นทางการ
+      </p>
+      <p className="text-muted-foreground mt-2 text-xs leading-5">
+        ไฟล์ Excel แยกข้อมูลเป็นหลาย Sheet ส่วน CSV จะดาวน์โหลดเป็น ZIP
+        ที่มีไฟล์ CSV แยกตามประเภท ข้อมูลทั้งหมดสร้างจาก Local Storage
+        ภายในอุปกรณ์นี้โดยไม่ส่งออกเครือข่าย
       </p>
 
       <dialog

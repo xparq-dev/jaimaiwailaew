@@ -9,7 +9,7 @@
 
 ## สถานะโครงการ
 
-> สถานะ: Summary Breakdown และ Income Month Grouping merge เข้า main แล้วผ่าน PR #7; Phase 1C Local-only PDF Export กำลังพัฒนาบน branch `feat/local-pdf-export` โดยกฎภาษียังคงเป็น unverified placeholder และบล็อกการคำนวณจริงตาม fail-closed policy
+> สถานะ: Phase 1C Local-only PDF Export merge เข้า main แล้วผ่าน PR #9; Phase 1D Local-only Excel/CSV Export กำลังพัฒนาบน branch `feat/local-excel-csv-export` โดยกฎภาษียังคงเป็น unverified placeholder และบล็อกการคำนวณจริงตาม fail-closed policy
 
 โครงการพัฒนาผ่าน **Phase 0 — Project Foundation**, **Phase 1A — Tax Rule Engine**, **Phase 1B — Calculator UX**, **Phase 1B UX Hotfix** และ Summary Breakdown/Income Month Grouping แล้ว ขณะนี้กำลังเพิ่มรายงาน A4 แบบ local-only แต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
 
@@ -24,7 +24,7 @@
 - ข้อมูลรายการการเงินของผู้เยี่ยมชมประมวลผลภายในอุปกรณ์และไม่ส่งไป backend
 - ไม่ใส่ข้อมูลการเงินใน URL, analytics, log หรือ error tracking
 - Summary Breakdown เป็น arithmetic aggregation ใน browser; Detail Dialog ใช้ ephemeral state และไม่ส่งข้อมูลออกเครือข่าย
-- PDF ต้องสร้างฝั่ง browser และ service worker ต้องไม่ cache PDF หรือข้อมูลที่ผู้ใช้กรอก
+- PDF, Excel และ CSV ต้องสร้างฝั่ง browser และ service worker ต้องไม่ cache ไฟล์ export หรือข้อมูลที่ผู้ใช้กรอก
 - กฎภาษีต้องแยกจาก UI, มี version และผ่าน schema validation
 - ค่ากฎหมายที่ยังไม่ได้ตรวจสอบต้องระบุ `unverified` และห้ามนำไปใช้เป็นค่าจริง
 
@@ -37,7 +37,7 @@
 - Vitest สำหรับ unit tests และ Playwright สำหรับ essential end-to-end flows
 - ESLint, Prettier และ GitHub Actions
 
-Phase 1C ใช้ pdfmake ฝั่งเบราว์เซอร์และฟอนต์ Sarabun ที่ฝังในแอปเพื่อดาวน์โหลด PDF โดยตรง ไม่มี runtime font CDN; TanStack Table และ Recharts ยังไม่ถูกเพิ่มเพราะยังไม่มี flow ที่ต้องใช้
+Phase 1C ใช้ pdfmake ฝั่งเบราว์เซอร์และฟอนต์ Sarabun ที่ฝังในแอปเพื่อดาวน์โหลด PDF โดยตรง ไม่มี runtime font CDN ส่วน Phase 1D สร้าง OOXML `.xlsx` และ ZIP ของไฟล์ `.csv` ด้วย `fflate` ภายใน browser โดยไม่ใช้ API หรือ upload; TanStack Table และ Recharts ยังไม่ถูกเพิ่มเพราะยังไม่มี flow ที่ต้องใช้
 
 ## เริ่มพัฒนา
 

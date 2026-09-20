@@ -1,6 +1,6 @@
 # นโยบายการจัดเก็บข้อมูลภายในอุปกรณ์ (Calculator Local Data Policy)
 
-อัปเดตล่าสุด: 2026-09-13 (Phase 1C Local-only PDF Export)
+อัปเดตล่าสุด: 2026-09-20 (Phase 1D Local-only Excel/CSV Export)
 
 เอกสารนี้ระบุนโยบายและสถาปัตยกรรมความปลอดภัยและการปกป้องความเป็นส่วนตัวของข้อมูลการเงินในส่วนเครื่องคำนวณของ **Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว)**
 
@@ -69,8 +69,14 @@
    - ใช้รูปแบบเอกสารสีอ่อนและฟอนต์ Sarabun ที่ฝังในแอป ไม่มี font CDN/runtime request สำหรับการ export
    - รายงานแสดงเฉพาะข้อมูลที่ใช้ตรวจสอบรายการและยอดรวม โดยไม่ส่งออกหมายเหตุส่วนตัว รหัสระบบ หรือสถานะภายในภาษาอังกฤษ
    - รายงานแสดงยอดรวมเชิงคณิตศาสตร์ รายการต้นทาง สรุปตามกลุ่ม และข้อความภาษาไทยว่าการคำนวณภาษียังไม่เปิดใช้งาน
-   - ไม่มี tax estimate, tax due, refund, tax rate, Excel หรือ CSV
-10. **Workspace และประเภทผู้ใช้งาน:** โหมดไม่สมัครสมาชิกเก็บ Workspace ได้ 1 รายการใน localStorage เดิม
+   - ไม่มี tax estimate, tax due, refund หรือ tax rate
+10. **Local-only Excel/CSV Export:** สร้างเมื่อผู้ใช้กดปุ่มจาก Workspace ที่อ่านอยู่ใน memory เท่านั้น
+   - แสดง Preview ของ Summary, Income, Expense, Withholding Tax, Deductions และ Breakdown ก่อน ผู้ใช้ต้องกดดาวน์โหลดใน Dialog อีกครั้ง
+   - Excel เป็น OOXML `.xlsx` หลาย Sheet; CSV เป็น ZIP ที่มีไฟล์ `.csv` แยก Summary, Income, Expense, Withholding Tax, Deductions และ Breakdown
+   - ไม่ส่งออก ID ภายใน, หมายเหตุส่วนตัว, certificate reference, rule metadata, URL, path, build/version หรือผลคำนวณภาษี
+   - ข้อความที่อาจถูกโปรแกรมตารางคำนวณตีความเป็นสูตรถูกทำให้เป็นข้อความก่อนบันทึกไฟล์
+   - ไม่มี API request, upload, Auth, Cloud, analytics หรือ background sync ในขั้นตอนสร้างและดาวน์โหลด
+11. **Workspace และประเภทผู้ใช้งาน:** โหมดไม่สมัครสมาชิกเก็บ Workspace ได้ 1 รายการใน localStorage เดิม
    - หน้าเริ่มต้นอ่านเฉพาะ state ในอุปกรณ์เพื่อแสดง Workspace เดิมและลิงก์กลับเข้าใช้งาน
    - การเริ่ม Workspace ใหม่ต้องผ่านคำเตือนและ confirmation เดิมก่อนแทนที่ข้อมูล
    - การแก้ไขประเภทผู้ใช้งานเปลี่ยนเฉพาะ `persona` และ `updatedAt`; ไม่ลบหรือย้ายรายการการเงิน
@@ -86,7 +92,7 @@
    - ห้ามแคช `localStorage` หรือ IndexedDB
    - ห้ามแคช state หรือ entries ของผู้ใช้
    - ห้ามแคชผลลัพธ์การคำนวณหรือโน้ต
-   - ห้ามแคชคำขอ API, การอัปโหลด หรือเอกสารที่สร้างขึ้น (PDF/CSV/Excel)
+   - ห้ามแคชคำขอ API, การอัปโหลด หรือเอกสารที่สร้างขึ้น (PDF/CSV/Excel/ZIP)
 3. **ไม่มี Background Sync:** ไม่อนุญาตให้มี background synchronization หรือ auto-upload ไปยังเซิร์ฟเวอร์
 
 ---

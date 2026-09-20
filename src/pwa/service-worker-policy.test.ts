@@ -27,6 +27,7 @@ describe("Phase 1B service-worker policy", () => {
     expect(serviceWorkerSource).toMatch(/api/);
     expect(serviceWorkerSource).toMatch(/pdf/);
     expect(serviceWorkerSource).toMatch(/xlsx/);
+    expect(serviceWorkerSource).toMatch(/zip/);
     expect(serviceWorkerSource).toMatch(/export/);
     expect(serviceWorkerSource).toMatch(/download/);
     expect(serviceWorkerSource).toMatch(/request\.method !== ["']GET["']/);

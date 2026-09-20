@@ -24,24 +24,21 @@
 - Phase 1B UX Hotfix: **เสร็จสมบูรณ์และ merge เข้า main แล้วผ่าน PR #6**
 - Summary Breakdown + Income Month Grouping: **merge เข้า main แล้วผ่าน PR #7**
 - Phase 1C Local-only PDF Export: **merge เข้า main แล้วผ่าน PR #9**
-- Phase 1D Local-only Excel/CSV Export: **กำลังพัฒนาบน branch `feat/local-excel-csv-export`** (รอ Final Review, CI, Vercel Preview และ Owner อนุมัติ PR)
+- Phase 1D Local-only Excel/CSV Export: **เสร็จสมบูรณ์และ merge เข้า main แล้วผ่าน PR #10**
+- Tax Rules Verification (2568/2569): **เสร็จสมบูรณ์ ขั้นตอนที่ 1–4 บน branch `feat/tax-rules-verification-2568-2569`** (รวบรวมแหล่งอ้างอิง, โครงสร้างกฎภาษี, Golden Test Suite 36/36 tests, ปลดล็อก Resolver v1.0.0, Tax Estimate Card บน UI, และอัปเดต PDF/Excel/CSV Export)
 - Search indexing: ปิดด้วย `noindex`
-- Tax rule data: มีเฉพาะ placeholder ที่ยังไม่ผ่านการตรวจสอบ (`unverified`, `notForCalculation: true`)
-- Tax calculation execution: บล็อกตาม fail-closed policy (แสดงเฉพาะผลรวมเลขคณิต)
+- Tax rule data: ปลดล็อกและเผยแพร่แล้ว (`1.0.0`, `status: published`, `validationStatus: valid`, `notForCalculation: false`)
+- Tax calculation execution: ปลดล็อก Resolver แสดงผลประมาณการภาษีบนหน้าสรุปผล และรวมในรายงานส่งออก PDF/Excel/CSV
 - User accounts และ cloud persistence: ไม่มีและอยู่นอกขอบเขต MVP 1
-- PDF Export: เปิดใช้งานบน main แบบ local-only; Excel/CSV กำลังพัฒนาแบบ local-only
-- Next gate: ตรวจ Vercel Preview ของ commit ล่าสุดก่อนเปิด PR
 
 | รายการ | สถานะ | หลักฐานหรือหมายเหตุ |
 | --- | --- | --- |
 | GitHub repository | ผ่าน | <https://github.com/xparq-dev/jaimaiwailaew> |
 | Vercel Production | ผ่าน | <https://jaimaiwailaew.vercel.app> |
-| Git branch | ผ่าน | Branch `feat/local-excel-csv-export` สร้างจาก main หลัง merge PR #9 |
+| Git branch | ผ่าน | Branch `feat/tax-rules-verification-2568-2569` สร้างจาก main หลัง merge PR #10 |
 | Runtime | ผ่าน | Node.js 22.x (`^22.12.0`) |
-| UX Hotfix (Privacy & Frequency) | ผ่าน | Compact indicator, monthly/one-time entry, v1→v2 migration, 70 unit tests & E2E tests ผ่าน 100% |
-| Summary Breakdown | ผ่าน | merge เข้า main แล้วผ่าน PR #7 |
-| Local-only PDF Export | ผ่าน | A4 preview-before-download, embedded Thai font, formal tables, header/footer, watermark, no upload และไม่มี tax estimate |
-| Local-only Excel/CSV Export | กำลังพัฒนา | Preview ก่อนดาวน์โหลด, XLSX หลาย Sheet และ ZIP ของ CSV แยกประเภท, Summary Breakdown, no upload และไม่มี tax calculation |
+| Local-only Excel/CSV Export | ผ่าน | merge เข้า main แล้วผ่าน PR #10 |
+| Tax Rules Official Sources & Draft | ดำเนินการ | sources.json, manifest.json, placeholder-bundle.json และ docs/06_TaxRulesDraft_2568_2569.md |
 | Secret & Privacy hygiene | ผ่าน | ไม่พบ secret, ข้อมูลการเงินเก็บเฉพาะในเครื่องผู้ใช้ ไม่ส่งออกเครือข่าย |
 
 ## รายการที่ยังไม่ปิด (External / Legal Gates)
@@ -50,8 +47,9 @@
 - [ ] บันทึก Lighthouse audit อย่างเป็นทางการสำหรับ mobile/desktop
 - [ ] ให้ผู้เชี่ยวชาญภาษีหรือผู้ทำบัญชียืนยันแหล่งข้อมูล กฎ และ test cases ปี 2568/2569 ก่อนเปิดผลคำนวณจริง
 
-## Gate ก่อนเปิด PR Phase 1D
+## Gate สำหรับ Tax Rules Verification (ขั้นตอนที่ 1 & 2)
 
-1. Local validation, GitHub Actions และ Vercel Preview ต้องผ่าน
-2. Owner ตรวจการสร้าง Excel/CSV บน Vercel Preview
-3. ห้ามเริ่ม Phase 1E, Auth หรือ Cloud ระหว่างงานนี้
+1. Local validation (lint, typecheck, unit tests, build) ต้องผ่าน 100%
+2. กฎหมายและอัตราภาษีครอบคลุมครบถ้วน: ขั้นบันได 0-35%, หักค่าใช้จ่าย 40(1)-40(8), และค่าลดหย่อนพื้นฐาน
+3. ระบบยังคง fail-closed (`notForCalculation: true`) จนกว่าจะเริ่มขั้นตอนที่ 3 & 4
+

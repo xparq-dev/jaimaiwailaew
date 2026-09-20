@@ -55,7 +55,7 @@ describe("professional PDF document", () => {
     expect(serialized).toContain("ผู้ใช้ตัวอย่าง");
     expect(serialized).toContain("13 กันยายน 2569 14:55 น. (Asia/Bangkok)");
     expect(serialized).toContain(
-      "Tax Rules 2568/2569: unverified / not for calculation",
+      "Tax Rules 2568/2569: verified / published (v1.0.0)",
     );
     expect(serialized).toContain('"fontSize":18');
     expect(serialized).toContain('"fontSize":14');
@@ -64,11 +64,12 @@ describe("professional PDF document", () => {
 
     const sectionTitles = [
       "1. ภาพรวมทางการเงิน",
-      "2. Summary Breakdown (แยกตามหมวด / แหล่งที่มา)",
-      "3. รายการรายรับ",
-      "4. รายการรายจ่าย",
-      "5. ภาษีหัก ณ ที่จ่าย",
-      "6. ค่าลดหย่อน / ค่าลดภาษี",
+      "2. ประมาณการภาษีเงินได้บุคคลธรรมดา (เบื้องต้น)",
+      "3. Summary Breakdown (แยกตามหมวด / แหล่งที่มา)",
+      "4. รายการรายรับ",
+      "5. รายการรายจ่าย",
+      "6. ภาษีหัก ณ ที่จ่าย",
+      "7. ค่าลดหย่อน / ค่าลดภาษี",
     ];
     const sectionPositions = sectionTitles.map((title) =>
       serialized.indexOf(title),

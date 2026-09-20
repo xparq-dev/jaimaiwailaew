@@ -54,14 +54,14 @@ describe("Calculator Workspace and Schema Validation", () => {
     expect(parseResult.success).toBe(true);
   });
 
-  it("resolves tax rule snapshot as unverified availability fail-closed", () => {
+  it("resolves tax rule snapshot as available for verified rule sets", () => {
     const snapshot2569 = createTaxRuleResolutionSnapshot(2569);
     expect(snapshot2569.taxYearBE).toBe(2569);
-    expect(snapshot2569.availability).toBe("unavailable_unverified_rules");
+    expect(snapshot2569.availability).toBe("available");
 
     const snapshot2568 = createTaxRuleResolutionSnapshot(2568);
     expect(snapshot2568.taxYearBE).toBe(2568);
-    expect(snapshot2568.availability).toBe("unavailable_unverified_rules");
+    expect(snapshot2568.availability).toBe("available");
   });
 
   it("schema validates one_time entry with occurredOn and occurredMonth null", () => {

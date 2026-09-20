@@ -33,6 +33,7 @@ export function createTaxRuleResolutionSnapshot(taxYearBE: 2568 | 2569) {
     ruleSetId: resolution.metadata?.ruleSetId ?? null,
     ruleSetVersion: resolution.metadata?.version ?? null,
     availability: resolution.availability,
+    status: resolution.metadata?.status ?? "unverified",
     resolvedAt: nowIsoTimestamp(),
   };
 }
@@ -57,6 +58,10 @@ export function createCalculatorWorkspace(
     expenseEntries: [],
     withholdingEntries: [],
     allowanceDraftEntries: [],
+    socialSecuritySettings:
+      input.persona === "salaried_employee"
+        ? { mode: "auto_m33" }
+        : { mode: "none" },
     taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(input.taxYearBE),
     localOnly: true,
   };
@@ -135,6 +140,7 @@ export function touchWorkspace(
       | "expenseEntries"
       | "withholdingEntries"
       | "allowanceDraftEntries"
+      | "socialSecuritySettings"
       | "periodStart"
       | "periodEnd"
       | "calculationMode"

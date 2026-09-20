@@ -12,6 +12,8 @@ import {
   type AllowanceDraftEntryFormValues,
 } from "@/calculator/schemas";
 import { useCalculatorStore } from "@/calculator/store";
+import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
+import type { SocialSecurityCalculationMode } from "@/calculator/types";
 import { Button } from "@/components/ui/button";
 import { formatThaiBaht } from "@/tax/money";
 
@@ -41,10 +43,18 @@ export function AllowanceSectionPage() {
   const deleteAllowanceDraftEntry = useCalculatorStore(
     (state) => state.deleteAllowanceDraftEntry,
   );
+  const updateSocialSecuritySettings = useCalculatorStore(
+    (state) => state.updateSocialSecuritySettings,
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [socialSecurityModeDraft, setSocialSecurityModeDraft] =
+    useState<SocialSecurityCalculationMode | null>(null);
+  const [manualSocialSecurityAmountDraft, setManualSocialSecurityAmountDraft] =
+    useState<string | null>(null);
+  const [socialSecurityError, setSocialSecurityError] = useState("");
 
   const entries = useMemo(() => {
     if (!workspace) {
@@ -79,6 +89,17 @@ export function AllowanceSectionPage() {
     return null;
   }
 
+  const socialSecurity = calculateWorkspaceSocialSecurity(workspace);
+  const socialSecurityMode =
+    socialSecurityModeDraft ?? workspace.socialSecuritySettings.mode;
+  const manualSocialSecurityAmount =
+    manualSocialSecurityAmountDraft ??
+    (workspace.socialSecuritySettings.mode === "manual"
+      ? (
+          workspace.socialSecuritySettings.manualContributionSatang / 100
+        ).toFixed(2)
+      : "");
+
   return (
     <CalculatorLayout
       actions={
@@ -103,11 +124,135 @@ export function AllowanceSectionPage() {
 
       {/* Prominent Disclaimer */}
       <div className="border-warning/30 bg-warning-soft text-warning-strong rounded-2xl border p-4 text-sm leading-6">
-        <strong>ข้อสำคัญ:</strong>{" "}
-        รายการค่าลดหย่อนในหน้านี้เป็นเพียงการจัดระเบียบข้อมูลแบบร่างตามที่ท่านระบุเอง
-        ไม่ใช่คำวินิจฉัยหรือการอนุมัติสิทธิทางภาษี
-        และไม่มีการนำไปคำนวณลดหย่อนภาษีจริงใน Phase นี้
+        <strong>ข้อสำคัญ:</strong> ระบบนำค่าลดหย่อนบางประเภทไปใช้ประมาณการภาษี
+        แต่ไม่ใช่คำวินิจฉัยหรือการอนุมัติสิทธิทางภาษี
+        โปรดตรวจสอบยอดจริงและหลักฐานก่อนยื่นภาษี
       </div>
+
+      <section className="border-border bg-card rounded-2xl border p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">เงินสมทบประกันสังคม</h2>
+            <p className="text-muted-foreground mt-1 text-sm leading-6">
+              รายรับต้องกรอกเป็นยอดก่อนหัก
+              ระบบจะนำเงินสมทบส่วนนี้ไปเป็นค่าลดหย่อนแยกต่างหาก
+            </p>
+          </div>
+          <p className="text-primary text-lg font-bold">
+            {formatThaiBaht(socialSecurity.contributionSatang)}
+          </p>
+        </div>
+
+        <form
+          className="mt-4 space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const error = updateSocialSecuritySettings({
+              mode: socialSecurityMode,
+              manualAmount:
+                socialSecurityMode === "manual"
+                  ? manualSocialSecurityAmount
+                  : undefined,
+            });
+            setSocialSecurityError(error ?? "");
+            if (!error) {
+              setSocialSecurityModeDraft(null);
+              setManualSocialSecurityAmountDraft(null);
+            }
+            setAnnouncement(
+              error ?? "บันทึกการตั้งค่าประกันสังคมเรียบร้อยแล้ว",
+            );
+          }}
+        >
+          <fieldset className="grid gap-3 sm:grid-cols-3">
+            <legend className="sr-only">วิธีคำนวณประกันสังคม</legend>
+            {[
+              {
+                value: "none" as const,
+                label: "ไม่ใช้สิทธิ",
+                description:
+                  "ไม่เป็นผู้ประกันตน หรือยังไม่ต้องการนำยอดนี้มาคำนวณ",
+              },
+              {
+                value: "auto_m33" as const,
+                label: "ม.33 อัตโนมัติ",
+                description: "คำนวณ 5% จากเงินเดือนรายเดือนตามเพดานของปีภาษี",
+              },
+              {
+                value: "manual" as const,
+                label: "กรอกยอดจริงเอง",
+                description: "เหมาะกับผู้ที่มีสลิปหรือยอดสมทบสะสมจริง",
+              },
+            ].map((option) => (
+              <label
+                className={`cursor-pointer rounded-xl border p-4 text-sm transition ${
+                  socialSecurityMode === option.value
+                    ? "border-primary bg-primary/5 ring-primary/20 ring-1"
+                    : "border-border bg-background hover:bg-muted/50"
+                }`}
+                key={option.value}
+              >
+                <span className="flex items-center gap-2 font-semibold">
+                  <input
+                    checked={socialSecurityMode === option.value}
+                    name="social-security-mode"
+                    onChange={() => setSocialSecurityModeDraft(option.value)}
+                    type="radio"
+                    value={option.value}
+                  />
+                  {option.label}
+                </span>
+                <span className="text-muted-foreground mt-2 block leading-5">
+                  {option.description}
+                </span>
+              </label>
+            ))}
+          </fieldset>
+
+          {socialSecurityMode === "manual" ? (
+            <FormField
+              hint={`กรอกยอดที่จ่ายจริงในช่วงเวลาที่เลือก สูงสุด ${socialSecurity.annualContributionCeilingBaht.toLocaleString("th-TH")} บาทต่อปี`}
+              id="social-security-manual-amount"
+              label="ยอดเงินสมทบที่จ่ายจริง (บาท)"
+            >
+              <TextInput
+                id="social-security-manual-amount"
+                inputMode="decimal"
+                onChange={(event) =>
+                  setManualSocialSecurityAmountDraft(event.target.value)
+                }
+                placeholder="เช่น 10500.00"
+                value={manualSocialSecurityAmount}
+              />
+            </FormField>
+          ) : null}
+
+          {socialSecurityMode === "auto_m33" ? (
+            <div className="border-border bg-muted/30 rounded-xl border p-4 text-sm leading-6">
+              <p>
+                พบเงินเดือนแบบรายเดือน {socialSecurity.salaryMonthsIncluded}{" "}
+                เดือน ระบบจะนับเฉพาะรายการหมวด “เงินเดือน / ค่าจ้างประจำ”
+                ที่ระบุเดือน
+              </p>
+              {socialSecurity.hasOneTimeSalaryEntries ? (
+                <p className="text-warning-strong mt-1">
+                  มีรายการเงินเดือนแบบครั้งเดียว
+                  ระบบไม่สามารถอนุมานจำนวนเดือนได้
+                  โปรดเปลี่ยนเป็นรายการรายเดือนหรือเลือกกรอกยอดจริงเอง
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {socialSecurityError ? (
+            <p className="text-danger text-sm" role="alert">
+              {socialSecurityError}
+            </p>
+          ) : null}
+
+          <Button type="submit">บันทึกการตั้งค่าประกันสังคม</Button>
+        </form>
+      </section>
 
       <div className="hidden lg:block">
         <Button

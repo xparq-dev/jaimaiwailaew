@@ -83,7 +83,12 @@ describe("TabularExportButtons", () => {
     expect(excelPreview).toBeVisible();
     expect(excelPreview).toHaveTextContent("รายรับรวม");
     expect(excelPreview).toHaveTextContent(
-      "Tax Rules 2568/2569: unverified / not for calculation",
+      "Tax Rules 2568/2569: verified / published (v1.0.0)",
+    );
+    await user.click(screen.getByRole("tab", { name: "Tax Estimate" }));
+    expect(excelPreview).toHaveTextContent("ภาษีที่ต้องชำระเพิ่ม / (ขอคืน)");
+    expect(excelPreview).toHaveTextContent(
+      "การคำนวณภาษีเป็นเพียงประมาณการเบื้องต้น",
     );
     await user.click(screen.getByRole("button", { name: "ดาวน์โหลด Excel" }));
     expect(downloadLocalArtifactMock).toHaveBeenCalledWith(excelArtifact);

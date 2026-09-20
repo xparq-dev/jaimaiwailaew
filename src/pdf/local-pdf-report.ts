@@ -16,6 +16,7 @@ import {
   getExpenseStatusLabel,
   getIncomeCategoryLabel,
 } from "@/calculator/categories";
+import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
 import type {
   AllowanceDraftEntry,
   CalculatorWorkspace,
@@ -28,6 +29,8 @@ import { formatEntryPeriod, formatThaiDate } from "@/calculator/utils";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
 import type { MoneySatang } from "@/tax/money";
 import { safeAddMoney, toMoneySatang } from "@/tax/money";
+import type { PITCalculationResult } from "@/tax/engine/pitCalculator";
+import { calculateWorkspacePIT } from "@/tax/engine/workspacePitAdapter";
 
 export interface LocalPdfReportOptions {
   readonly generatedAt: Date;
@@ -73,6 +76,8 @@ export interface LocalPdfReportModel {
   readonly taxYearBE: number;
   readonly periodLabel: string;
   readonly totals: ReturnType<typeof computeArithmeticTotals>;
+  readonly socialSecurityContributionSatang: MoneySatang;
+  readonly taxEstimate?: PITCalculationResult | undefined;
   readonly incomeGroups: readonly LocalPdfEntryGroup[];
   readonly expenseGroups: readonly LocalPdfEntryGroup[];
   readonly withholdingGroups: readonly LocalPdfEntryGroup[];
@@ -214,6 +219,7 @@ export function buildLocalPdfReportModel(
     workspace.periodStart,
     workspace.periodEnd,
   );
+  const socialSecurity = calculateWorkspaceSocialSecurity(workspace);
 
   return {
     title:
@@ -227,10 +233,26 @@ export function buildLocalPdfReportModel(
     taxYearBE: workspace.taxYearBE,
     periodLabel: `${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`,
     totals: computeArithmeticTotals(workspace),
+    socialSecurityContributionSatang: socialSecurity.contributionSatang,
+    taxEstimate:
+      workspace.taxRuleResolutionSnapshot.availability === "available"
+        ? calculateWorkspacePIT(workspace)
+        : undefined,
     incomeGroups: groupEntryRows(incomeRows(incomeInPeriod)),
     expenseGroups: groupEntryRows(expenseRows(expensesInPeriod)),
     withholdingGroups: groupEntryRows(withholdingRows(withholdingInPeriod)),
-    allowanceRows: allowanceRows(workspace.allowanceDraftEntries),
+    allowanceRows: [
+      ...(socialSecurity.contributionSatang > 0
+        ? [
+            {
+              id: "social-security",
+              label: "เงินสมทบประกันสังคม",
+              amountSatang: socialSecurity.contributionSatang,
+            },
+          ]
+        : []),
+      ...allowanceRows(workspace.allowanceDraftEntries),
+    ],
     breakdownSections: [
       {
         key: "income-source",

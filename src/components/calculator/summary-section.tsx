@@ -12,17 +12,19 @@ import {
   getPersonaLabel,
 } from "@/calculator/categories";
 import { useCalculatorStore } from "@/calculator/store";
+import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
 import {
   buildCalculatorAssumptions,
   buildCalculatorWarnings,
   computeCompleteness,
 } from "@/calculator/warnings";
-import { formatThaiBaht } from "@/tax/money";
+import { formatThaiBaht, safeSubtractMoney } from "@/tax/money";
 import { formatThaiDate } from "@/calculator/utils";
 import { Button } from "@/components/ui/button";
 
 import { CalculatorLayout } from "./calculator-layout";
 import { ClearDataDialog } from "./clear-data-dialog";
+import { TaxEstimateCard } from "./tax-estimate-card";
 import { TaxEstimateUnavailableCard } from "./tax-estimate-unavailable-card";
 import { SummaryBreakdown } from "./summary-breakdown";
 import { PdfExportPanel } from "./pdf-export-panel";
@@ -37,6 +39,7 @@ export function SummarySectionPage() {
   }
 
   const totals = computeArithmeticTotals(workspace);
+  const socialSecurity = calculateWorkspaceSocialSecurity(workspace);
   const monthlyRows = computeMonthlyBreakdown(workspace);
   const warnings = buildCalculatorWarnings(workspace);
   const assumptions = buildCalculatorAssumptions();
@@ -85,13 +88,33 @@ export function SummarySectionPage() {
           label="ค่าลดหย่อนที่บันทึกแบบร่าง"
           value={formatThaiBaht(totals.totalDeclaredAllowanceSatang)}
         />
+        <SummaryCard
+          hint="เงินสมทบที่ระบบนำไปใช้ลดหย่อนภาษี ไม่ใช่การหักรายรับซ้ำ"
+          label="ประกันสังคมที่ใช้คำนวณ"
+          value={formatThaiBaht(socialSecurity.contributionSatang)}
+        />
+        <SummaryCard
+          hint="ยอดประมาณการก่อนภาษีหัก ณ ที่จ่ายและรายการหักอื่น"
+          label="รายรับหลังหักประกันสังคม"
+          value={formatThaiBaht(
+            safeSubtractMoney(
+              totals.totalIncomeSatang,
+              socialSecurity.contributionSatang,
+              { allowNegative: false },
+            ),
+          )}
+        />
       </section>
 
       <SummaryBreakdown workspace={workspace} />
 
       <PdfExportPanel workspace={workspace} />
 
-      <TaxEstimateUnavailableCard />
+      {workspace.taxRuleResolutionSnapshot.availability === "available" ? (
+        <TaxEstimateCard workspace={workspace} />
+      ) : (
+        <TaxEstimateUnavailableCard />
+      )}
 
       <section className="border-border bg-card rounded-2xl border p-5">
         <h2 className="font-semibold">ความครบถ้วนของข้อมูล</h2>

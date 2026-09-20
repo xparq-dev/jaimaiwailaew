@@ -76,6 +76,23 @@ export const ALLOWANCE_DRAFT_CATEGORY_CODES = [
 export type AllowanceDraftCategoryCode =
   (typeof ALLOWANCE_DRAFT_CATEGORY_CODES)[number];
 
+export const SOCIAL_SECURITY_CALCULATION_MODES = [
+  "none",
+  "auto_m33",
+  "manual",
+] as const;
+
+export type SocialSecurityCalculationMode =
+  (typeof SOCIAL_SECURITY_CALCULATION_MODES)[number];
+
+export type SocialSecuritySettings =
+  | { readonly mode: "none" }
+  | { readonly mode: "auto_m33" }
+  | {
+      readonly mode: "manual";
+      readonly manualContributionSatang: MoneySatang;
+    };
+
 export interface BaseIncomeEntry {
   readonly id: string;
   readonly categoryCode: IncomeCategoryCode;
@@ -163,6 +180,7 @@ export interface TaxRuleResolutionSnapshot {
   readonly ruleSetId: string | null;
   readonly ruleSetVersion: string | null;
   readonly availability: string;
+  readonly status?: string | undefined;
   readonly resolvedAt: string;
 }
 
@@ -181,6 +199,7 @@ export interface CalculatorWorkspace {
   readonly expenseEntries: readonly ExpenseEntry[];
   readonly withholdingEntries: readonly WithholdingEntry[];
   readonly allowanceDraftEntries: readonly AllowanceDraftEntry[];
+  readonly socialSecuritySettings: SocialSecuritySettings;
   readonly taxRuleResolutionSnapshot: TaxRuleResolutionSnapshot;
   readonly localOnly: true;
 }

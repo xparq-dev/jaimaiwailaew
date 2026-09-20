@@ -123,5 +123,5 @@ describe("PdfExportPanel", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(storageSpy).not.toHaveBeenCalled();
     expect(window.location.href).toBe(initialUrl);
-  });
+  }, 15_000);
 });

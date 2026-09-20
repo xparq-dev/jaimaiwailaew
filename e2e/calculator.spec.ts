@@ -1,6 +1,9 @@
 import { expect, test, type Download } from "@playwright/test";
 import { unzipSync } from "fflate";
 
+const EXPECTED_TAX_RULE_STATUS =
+  "Tax Rules 2568/2569: verified / published (v1.0.0)";
+
 async function readDownloadBytes(download: Download): Promise<Buffer> {
   const stream = await download.createReadStream();
   const chunks: Buffer[] = [];
@@ -443,6 +446,12 @@ test.describe("Calculator UX (Local-only)", () => {
       page.getByRole("heading", { level: 1, name: "ค่าลดหย่อน (แบบร่าง)" }),
     ).toBeVisible();
 
+    await page.getByRole("radio", { name: /ม\.33 อัตโนมัติ/ }).check();
+    await page
+      .getByRole("button", { name: "บันทึกการตั้งค่าประกันสังคม" })
+      .click();
+    await expect(page.getByText("875.00 ฿", { exact: true })).toBeVisible();
+
     if (isMobile) {
       await page
         .getByRole("button", { name: "เพิ่มรายการค่าลดหย่อนแบบร่าง" })
@@ -472,6 +481,12 @@ test.describe("Calculator UX (Local-only)", () => {
         .getByRole("article")
         .filter({ hasText: "รายรับรวม" })
         .getByText("100,000.00 ฿"),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("article")
+        .filter({ hasText: "ประกันสังคมที่ใช้คำนวณ" })
+        .getByText("875.00 ฿", { exact: true }),
     ).toBeVisible();
 
     // Total expense: 15,000 + 5,000 = 20,000
@@ -618,9 +633,19 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(excelPreviewDialog).toBeVisible();
     await expect(excelPreviewDialog.getByText("รายรับรวม")).toBeVisible();
     await expect(
-      excelPreviewDialog.getByText(
-        "Tax Rules 2568/2569: unverified / not for calculation",
-      ),
+      excelPreviewDialog.getByText(EXPECTED_TAX_RULE_STATUS),
+    ).toBeVisible();
+    await excelPreviewDialog.getByRole("tab", { name: "Deductions" }).click();
+    await expect(
+      excelPreviewDialog.getByText("เงินสมทบประกันสังคม"),
+    ).toBeVisible();
+    await expect(
+      excelPreviewDialog.getByText("875.00", { exact: true }),
+    ).toBeVisible();
+    await excelPreviewDialog.getByRole("tab", { name: "Tax Estimate" }).click();
+    await expect(excelPreviewDialog.getByText("ภาษีที่ขอคืนได้")).toBeVisible();
+    await expect(
+      excelPreviewDialog.getByText(/การคำนวณภาษีเป็นเพียงประมาณการเบื้องต้น/),
     ).toBeVisible();
     await excelPreviewDialog.getByRole("tab", { name: "Breakdown" }).click();
     await expect(
@@ -651,13 +676,15 @@ test.describe("Calculator UX (Local-only)", () => {
       "Withholding Tax",
       "Deductions",
       "Breakdown",
+      "Tax Estimate",
     ]) {
       expect(workbookXml).toContain(`name="${sheetName}"`);
     }
     expect(worksheetXml).toContain("รายรับรวม");
-    expect(worksheetXml).toContain(
-      "Tax Rules 2568/2569: unverified / not for calculation",
-    );
+    expect(worksheetXml).toContain(EXPECTED_TAX_RULE_STATUS);
+    expect(worksheetXml).toContain("เงินสมทบประกันสังคม");
+    expect(worksheetXml).toContain("<v>875</v>");
+    expect(worksheetXml).toContain("ภาษีที่ขอคืนได้");
     expect(worksheetXml).toContain("<v>100000</v>");
     expect(worksheetXml).not.toMatch(
       /workspaceId|ruleSetId|taxDue|refund|%PDF/i,
@@ -704,15 +731,17 @@ test.describe("Calculator UX (Local-only)", () => {
       "04-Withholding-Tax.csv",
       "05-Deductions.csv",
       "06-Breakdown.csv",
+      "07-Tax-Estimate.csv",
     ]);
     const allCsv = Object.values(csvFiles)
       .map((bytes) => new TextDecoder().decode(bytes))
       .join("\n");
     expect(allCsv).toContain("รายรับ — แหล่งที่มา");
     expect(allCsv).toContain("สัดส่วน (%)");
-    expect(allCsv).toContain(
-      "Tax Rules 2568/2569: unverified / not for calculation",
-    );
+    expect(allCsv).toContain(EXPECTED_TAX_RULE_STATUS);
+    expect(allCsv).toContain("เงินสมทบประกันสังคม");
+    expect(allCsv).toContain("875");
+    expect(allCsv).toContain("ภาษีที่ขอคืนได้");
     expect(allCsv).not.toMatch(/workspaceId|ruleSetId|taxDue|refund|%PDF/i);
     expect(Object.keys(csvFiles).every((name) => name.endsWith(".csv"))).toBe(
       true,

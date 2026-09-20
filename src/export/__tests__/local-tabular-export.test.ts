@@ -202,6 +202,7 @@ describe("local XLSX export", () => {
     expect(workbook).toContain('name="Withholding Tax"');
     expect(workbook).toContain('name="Deductions"');
     expect(workbook).toContain('name="Breakdown"');
+    expect(workbook).toContain('name="Tax Estimate"');
     expect(allXml).toContain("รายรับรวม");
     expect(allXml).toContain(TABULAR_EXPORT_TAX_RULE_STATUS);
     expect(allXml).toContain(TABULAR_EXPORT_DISCLAIMER);
@@ -250,6 +251,7 @@ describe("local CSV export", () => {
       "04-Withholding-Tax.csv",
       "05-Deductions.csv",
       "06-Breakdown.csv",
+      "07-Tax-Estimate.csv",
     ]);
     expect(Array.from(summaryBytes.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
     expect(summary).toContain(TABULAR_EXPORT_TAX_RULE_STATUS);

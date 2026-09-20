@@ -12,26 +12,31 @@ describe("Tax Rule Resolver and Fail-Closed Policy", () => {
     expect(res.featureGates.taxEstimate).toBe("unavailable_until_verified");
   });
 
-  it("blocks estimate for unverified 2568 rule set", () => {
+  it("resolves and enables estimate for verified 2568 rule set", () => {
     const res = resolveTaxRules({ taxYearBE: 2568 });
-    expect(res.availability).toBe("unavailable_unverified_rules");
+    expect(res.availability).toBe("available");
     expect(res.metadata).not.toBeNull();
-    expect(res.metadata?.notForCalculation).toBe(true);
-    expect(res.featureGates.taxEstimate).toBe("unavailable_until_verified");
-    expect(res.featureGates.pnd94Estimate).toBe("unavailable_until_verified");
-    expect(res.featureGates.pnd91Estimate).toBe("unavailable_until_verified");
+    expect(res.metadata?.status).toBe("published");
+    expect(res.metadata?.validationStatus).toBe("valid");
+    expect(res.metadata?.notForCalculation).toBe(false);
+    expect(res.featureGates.taxEstimate).toBe("available");
+    expect(res.featureGates.pnd94Estimate).toBe("available");
+    expect(res.featureGates.pnd91Estimate).toBe("available");
+    expect(res.featureGates.taxRulePublication).toBe("available");
   });
 
-  it("blocks estimate for unverified 2569 rule set", () => {
+  it("resolves and enables estimate for verified 2569 rule set", () => {
     const res = resolveTaxRules({ taxYearBE: 2569 });
-    expect(res.availability).toBe("unavailable_unverified_rules");
+    expect(res.availability).toBe("available");
     expect(res.metadata).not.toBeNull();
-    expect(res.metadata?.notForCalculation).toBe(true);
-    expect(res.featureGates.taxEstimate).toBe("unavailable_until_verified");
+    expect(res.metadata?.status).toBe("published");
+    expect(res.metadata?.validationStatus).toBe("valid");
+    expect(res.metadata?.notForCalculation).toBe(false);
+    expect(res.featureGates.taxEstimate).toBe("available");
   });
 
-  it("returns correct feature gates when rules are unavailable", () => {
-    const res = resolveTaxRules({ taxYearBE: 2568 });
+  it("returns correct feature gates when tax year is unknown", () => {
+    const res = resolveTaxRules({ taxYearBE: 2570 });
     expect(res.featureGates).toEqual({
       summaryTotals: "available",
       taxEstimate: "unavailable_until_verified",

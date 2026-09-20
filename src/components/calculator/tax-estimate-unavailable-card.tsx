@@ -55,7 +55,9 @@ export function TaxEstimateUnavailableCard() {
             </div>
             <div>
               <dt className="text-muted-foreground">Status</dt>
-              <dd className="font-mono text-sm">unverified</dd>
+              <dd className="font-mono text-sm">
+                {snapshot.status ?? "unverified"}
+              </dd>
             </div>
           </dl>
           <p className="text-warning-strong flex items-start gap-2 text-sm leading-6">

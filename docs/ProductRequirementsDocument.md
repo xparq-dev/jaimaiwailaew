@@ -202,7 +202,7 @@ Form	React Hook Form + Zod	ตรวจข้อมูลฟอร์มแล�
 State	Zustand หรือ React Context แบบจำกัด	เก็บ Draft Calculation ภายในอุปกรณ์
 ตาราง	TanStack Table	จัดการรายรับรายจ่าย, filter, sort และ export ได้ดี
 PDF	@react-pdf/renderer หรือ jsPDF	สร้าง PDF ฝั่ง client โดยไม่ส่งข้อมูลไป server
-Excel ในอนาคต	SheetJS / xlsx	สร้าง .xlsx แบบหลาย sheet ใน MVP 2
+Excel/CSV	OOXML + fflate ฝั่ง client	สร้าง .xlsx แบบหลาย Sheet และ ZIP ของ CSV แบบ local-only โดยไม่ upload
 Chart	Recharts	สรุปรายเดือน, รายรับ-รายจ่าย, สัดส่วนหมวดหมู่
 PWA	next-pwa หรือ Workbox Service Worker ที่ตั้งค่าเอง	Cache หน้าเว็บและรองรับ offline-first
 Analytics	เริ่มจาก Privacy-friendly analytics หรือ Cloudflare Web Analytics	ลดการเก็บ PII และภาระ cookie

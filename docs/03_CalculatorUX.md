@@ -1,6 +1,6 @@
 # Phase 1B — Calculator UX (Local-only)
 
-> สถานะ: Phase 1B, Summary Breakdown และ Income Month Grouping merge เข้า main แล้วผ่าน PR #7; Phase 1C Local-only PDF Export กำลังพัฒนาบน branch `feat/local-pdf-export`
+> สถานะ: Phase 1C Local-only PDF Export merge เข้า main แล้วผ่าน PR #9; Phase 1D Local-only Excel/CSV Export กำลังพัฒนาบน branch `feat/local-excel-csv-export`
 
 สร้างและปรับปรุง UI เครื่องคำนวณของ Jai Mai Wai Laew สำหรับ MVP 1 โดยใช้ Local-only state และห้ามส่งข้อมูลรายการการเงินไป backend
 
@@ -15,7 +15,7 @@
 - `/calculator/expenses`: ตารางและรายการการ์ดบนมือถือสำหรับ เพิ่ม/แก้ไข/ลบ รายจ่าย (พร้อมสถานะ likely related, needs review) รองรับทั้งแบบระบุวันและรายเดือน
 - `/calculator/withholding-tax`: ตารางและรายการการ์ดสำหรับบันทึกภาษีหัก ณ ที่จ่ายตามเอกสารอ้างอิงภาษีหัก ณ ที่จ่ายที่มี รองรับทั้งแบบระบุวันและรายเดือน
 - `/calculator/allowances`: แบบฟอร์มค่าลดหย่อนแบบร่าง พร้อมคำเตือนชัดเจนว่าไม่ใช่การอนุมัติสิทธิทางภาษี (ไม่มี entry frequency เพราะเป็นแบบร่างรวม)
-- `/calculator/summary`: Summary cards แสดงยอดรวมเลขคณิต, Summary Breakdown ตามแหล่งที่มา/หมวดบันทึก/สถานะการจัดกลุ่ม, Detail Dialog ของรายการต้นทาง, ตารางแจกแจงรายเดือน, รายการคำเตือน/สมมติฐาน, Tax Estimate Unavailable Card และ Local-only A4 PDF ที่เปิด Preview ก่อนดาวน์โหลด
+- `/calculator/summary`: Summary cards แสดงยอดรวมเลขคณิต, Summary Breakdown ตามแหล่งที่มา/หมวดบันทึก/สถานะการจัดกลุ่ม, Detail Dialog ของรายการต้นทาง, ตารางแจกแจงรายเดือน, รายการคำเตือน/สมมติฐาน, Tax Estimate Unavailable Card, Local-only A4 PDF ที่เปิด Preview ก่อนดาวน์โหลด และปุ่มส่งออก Excel/CSV
 - **Compact Privacy Indicator:** ปรับจากแบนเนอร์/การ์ดขนาดใหญ่เป็น inline status control กะทัดรัดใต้ heading แสดง “ข้อมูลบันทึกในอุปกรณ์นี้” พร้อมเวลาบันทึกล่าสุด มีปุ่มกดเปิด Dialog ดูรายละเอียดความเป็นส่วนตัว พร้อมปุ่มล้างข้อมูล และลิงก์ไปยังหน้านโยบายความเป็นส่วนตัว
 - **Entry Frequency (ความถี่ของรายการ):** รองรับทั้ง `one_time` (ระบุวัน / รายการครั้งเดียว) และ `monthly` (ระบุเดือน / รายการรายเดือน) ในฟอร์มรายรับ, รายจ่าย และภาษีหัก ณ ที่จ่าย เพื่อให้ผู้ใช้เงินเดือนหรือค่าใช้จ่ายรายเดือนกรอกได้โดยไม่ต้องระบุวัน
 - **Income Month Groups:** หน้า `รายรับ` จัดรายการในช่วงที่เลือกเป็นกลุ่มตามเดือนล่าสุดก่อน ภายในแยก `รายการรายเดือน` และ `รายการระบุวัน` พร้อมยอดรวมของแต่ละกลุ่ม ส่วนรายการนอกช่วงแสดงแยกและไม่รวมในยอด Summary โดยไม่เปลี่ยนข้อมูลต้นทาง
@@ -53,9 +53,9 @@
 - ห้าม persist selected Summary Breakdown หรือ Detail Dialog state ลง localStorage
 - มี accessibility labels, aria-live, aria-expanded, dialog focus management และ keyboard navigation รองรับครบถ้วน
 - ห้ามแสดงคำว่า “ภาษีที่ต้องจ่ายแน่นอน” หรือตัวเลขภาษีใด ๆ; แสดงเฉพาะ “ยังไม่พร้อมคำนวณภาษีประมาณการ” เนื่องจากกฎภาษียัง unverified
-- ไม่มี Cloud sync และไม่มี Excel/CSV export; PDF Phase 1C สร้างด้วย client-side PDF renderer และฟอนต์ไทยที่ฝังในแอปจากข้อมูลในอุปกรณ์ เปิด Preview ด้วย `blob:` URL ชั่วคราว และไม่ upload
+- ไม่มี Cloud sync; PDF, Excel และ CSV สร้างจากข้อมูลในอุปกรณ์เมื่อผู้ใช้กดเท่านั้นและไม่ upload โดย Excel เป็น OOXML หลาย Sheet ส่วน CSV เป็น ZIP ที่มีไฟล์แยกตามประเภท
 
-## Gate ของ Phase 1C:
+## Gate ของ Phase 1D:
 1. Local tests, CI และ Vercel Preview ต้องผ่าน
-2. Owner ต้องตรวจ PDF จาก Vercel Preview ก่อนอนุมัติเปิด PR
-3. ห้ามเริ่ม Phase 1D, Excel/CSV, Auth หรือ Cloud ระหว่างงานนี้
+2. Owner ต้องตรวจ Excel/CSV จาก Vercel Preview ก่อนอนุมัติเปิด PR
+3. ห้ามเริ่ม Phase 1E, Auth หรือ Cloud ระหว่างงานนี้

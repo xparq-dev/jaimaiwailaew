@@ -1,4 +1,16 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Download } from "@playwright/test";
+import { unzipSync } from "fflate";
+
+async function readDownloadBytes(download: Download): Promise<Buffer> {
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+
+  return Buffer.concat(chunks);
+}
 
 test.describe("Calculator UX (Local-only)", () => {
   test("complete flow: wizard -> entries CRUD with frequencies -> summary -> persistence -> clear data", async ({
@@ -584,9 +596,84 @@ test.describe("Calculator UX (Local-only)", () => {
       .click();
     await expect(pdfPreviewDialog).toBeHidden();
 
-    // Dark mode does not alter the previewed document or block downloading.
+    // 6c. Excel export is generated locally with editable numeric cells and all required sheets.
+    const requestCountBeforeExcel = requestedUrls.length;
+    const excelDownloadPromise = page.waitForEvent("download");
+    await pdfPanel.getByRole("button", { name: "ส่งออก Excel" }).click();
+    const excelDownload = await excelDownloadPromise;
+    expect(excelDownload.suggestedFilename()).toMatch(
+      /^รายงานข้อมูลรายรับรายจ่าย-2569-\d{8}-\d{4}\.xlsx$/,
+    );
+    const excelBytes = await readDownloadBytes(excelDownload);
+    expect(Array.from(excelBytes.subarray(0, 2))).toEqual([0x50, 0x4b]);
+    const workbookFiles = unzipSync(new Uint8Array(excelBytes));
+    const workbookXml = new TextDecoder().decode(
+      workbookFiles["xl/workbook.xml"],
+    );
+    const worksheetXml = Object.entries(workbookFiles)
+      .filter(([name]) => name.startsWith("xl/worksheets/"))
+      .map(([, bytes]) => new TextDecoder().decode(bytes))
+      .join("\n");
+    for (const sheetName of [
+      "Summary",
+      "Income",
+      "Expense",
+      "Withholding Tax",
+      "Deductions",
+      "Breakdown",
+    ]) {
+      expect(workbookXml).toContain(`name="${sheetName}"`);
+    }
+    expect(worksheetXml).toContain("รายรับรวม");
+    expect(worksheetXml).toContain(
+      "Tax Rules 2568/2569: unverified / not for calculation",
+    );
+    expect(worksheetXml).toContain("<v>100000</v>");
+    expect(worksheetXml).not.toMatch(
+      /workspaceId|ruleSetId|taxDue|refund|%PDF/i,
+    );
+    for (const requestUrl of requestedUrls.slice(requestCountBeforeExcel)) {
+      expect(requestUrl).not.toContain("100000");
+      expect(requestUrl).not.toContain("Shopee");
+    }
+
+    // Dark mode does not block CSV or PDF downloads.
     await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
+    const requestCountBeforeCsv = requestedUrls.length;
+    const csvDownloadPromise = page.waitForEvent("download");
+    await pdfPanel.getByRole("button", { name: "ส่งออก CSV" }).click();
+    const csvDownload = await csvDownloadPromise;
+    expect(csvDownload.suggestedFilename()).toMatch(
+      /^รายงานข้อมูลรายรับรายจ่าย-2569-\d{8}-\d{4}-csv\.zip$/,
+    );
+    const csvBytes = await readDownloadBytes(csvDownload);
+    const csvFiles = unzipSync(new Uint8Array(csvBytes));
+    expect(Object.keys(csvFiles)).toEqual([
+      "01-Summary.csv",
+      "02-Income.csv",
+      "03-Expense.csv",
+      "04-Withholding-Tax.csv",
+      "05-Deductions.csv",
+      "06-Breakdown.csv",
+    ]);
+    const allCsv = Object.values(csvFiles)
+      .map((bytes) => new TextDecoder().decode(bytes))
+      .join("\n");
+    expect(allCsv).toContain("รายรับ — แหล่งที่มา");
+    expect(allCsv).toContain("สัดส่วน (%)");
+    expect(allCsv).toContain(
+      "Tax Rules 2568/2569: unverified / not for calculation",
+    );
+    expect(allCsv).not.toMatch(/workspaceId|ruleSetId|taxDue|refund|%PDF/i);
+    expect(Object.keys(csvFiles).every((name) => name.endsWith(".csv"))).toBe(
+      true,
+    );
+    for (const requestUrl of requestedUrls.slice(requestCountBeforeCsv)) {
+      expect(requestUrl).not.toContain("100000");
+      expect(requestUrl).not.toContain("Shopee");
+    }
+
     const requestCountBeforeDarkPdf = requestedUrls.length;
     await pdfPanel.getByRole("button", { name: "ดูตัวอย่าง PDF" }).click();
     await expect(pdfPreviewDialog).toBeVisible();

@@ -14,12 +14,8 @@ function configuredOrigin(value: string | undefined) {
 const externalConnections = [
   configuredOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL),
   configuredOrigin(process.env.NEXT_PUBLIC_CLOUD_SYNC_API_URL),
-  ...(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    ? [
-        "https://firebaseinstallations.googleapis.com",
-        "https://fcmregistrations.googleapis.com",
-      ]
-    : []),
+  "https://firebaseinstallations.googleapis.com",
+  "https://fcmregistrations.googleapis.com",
 ].filter((origin): origin is string => Boolean(origin));
 
 const contentSecurityPolicy = [

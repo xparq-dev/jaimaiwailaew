@@ -88,7 +88,7 @@ export function SettingsPanel() {
     try {
       if (nextEnabled) {
         if (!isFirebaseConfigured) {
-          throw new Error("ยังไม่ได้ตั้งค่า Firebase FCM");
+          throw new Error("ยังไม่ได้ตั้งค่า Push Notification");
         }
         if (!isCloudSyncConfigured) {
           throw new Error("ยังไม่ได้ตั้งค่า Cloud Sync API");
@@ -198,7 +198,7 @@ export function SettingsPanel() {
 
         {!isFirebaseConfigured ? (
           <p className="text-warning-strong mt-4 text-sm" role="status">
-            ระบบยังไม่ได้ตั้งค่า Firebase FCM
+            ยังไม่ได้ตั้งค่า Push Notification
           </p>
         ) : null}
 
@@ -213,7 +213,16 @@ export function SettingsPanel() {
           />
         </label>
         {notificationMessage ? (
-          <p className="text-muted-foreground mt-4 text-sm" role="status">
+          <p
+            className={`mt-4 text-sm ${
+              notificationMessage.includes("สำเร็จ") ||
+              notificationMessage.includes("เปิด") ||
+              notificationMessage.includes("ปิด")
+                ? "text-muted-foreground"
+                : "text-danger"
+            }`}
+            role="status"
+          >
             {notificationMessage}
           </p>
         ) : null}

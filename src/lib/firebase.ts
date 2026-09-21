@@ -1,32 +1,189 @@
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
+export interface FirebasePublicConfig {
+  apiKey?: string | undefined;
+  authDomain?: string | undefined;
+  projectId?: string | undefined;
+  storageBucket?: string | undefined;
+  messagingSenderId?: string | undefined;
+  appId?: string | undefined;
+  vapidKey?: string | undefined;
+}
 
-const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+const firebaseConfig: FirebasePublicConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.trim(),
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?.trim(),
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim(),
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim(),
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID?.trim(),
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID?.trim(),
+  vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.trim(),
+};
 
 export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey &&
   firebaseConfig.projectId &&
   firebaseConfig.messagingSenderId &&
   firebaseConfig.appId &&
-  vapidKey,
+  firebaseConfig.vapidKey,
 );
+
+export type FcmErrorKind =
+  | "configuration_required"
+  | "permission_denied"
+  | "push_service_unavailable"
+  | "network_or_csp_error"
+  | "service_worker_error"
+  | "unsupported_browser"
+  | "unknown";
+
+export class FcmRegistrationError extends Error {
+  readonly kind: FcmErrorKind;
+
+  constructor(kind: FcmErrorKind, message: string) {
+    super(message);
+    this.name = "FcmRegistrationError";
+    this.kind = kind;
+  }
+}
+
+export function sanitizeAndClassifyError(error: unknown): FcmRegistrationError {
+  if (error instanceof FcmRegistrationError) {
+    return error;
+  }
+
+  const rawMessage = error instanceof Error ? error.message : String(error);
+
+  if (
+    rawMessage.includes("push service error") ||
+    rawMessage.includes("AbortError") ||
+    rawMessage.includes("messaging/token-subscribe-failed")
+  ) {
+    return new FcmRegistrationError(
+      "push_service_unavailable",
+      "ไม่สามารถลงทะเบียนกับ Push Service ได้ กรุณาตรวจสอบ VAPID Key และการเปิดใช้งาน Firebase Cloud Messaging API ใน Google Cloud Console",
+    );
+  }
+
+  if (
+    rawMessage.includes("Failed to fetch") ||
+    rawMessage.includes("NetworkError") ||
+    rawMessage.includes("CSP") ||
+    rawMessage.includes("Content Security Policy") ||
+    rawMessage.includes("fcmregistrations.googleapis.com") ||
+    rawMessage.includes("firebaseinstallations.googleapis.com")
+  ) {
+    return new FcmRegistrationError(
+      "network_or_csp_error",
+      "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์แจ้งเตือนได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือนโยบายความปลอดภัยของเครือข่าย",
+    );
+  }
+
+  if (
+    rawMessage.includes("permission") ||
+    rawMessage.includes("denied") ||
+    rawMessage.includes("blocked")
+  ) {
+    return new FcmRegistrationError(
+      "permission_denied",
+      "ผู้ใช้ยังไม่ได้อนุญาตการแจ้งเตือน กรุณาเปิดสิทธิ์ Notification ในการตั้งค่าเบราว์เซอร์",
+    );
+  }
+
+  if (rawMessage.includes("Service Worker") || rawMessage.includes("sw.js")) {
+    return new FcmRegistrationError(
+      "service_worker_error",
+      "Service Worker สำหรับการแจ้งเตือนยังไม่พร้อมใช้งาน กรุณาลองใหม่อีกครั้ง",
+    );
+  }
+
+  return new FcmRegistrationError(
+    "unknown",
+    "เกิดข้อผิดพลาดในการลงทะเบียนการแจ้งเตือน กรุณาลองใหม่อีกครั้ง",
+  );
+}
+
+export async function getActiveServiceWorkerRegistration(
+  timeoutMs = 10000,
+): Promise<ServiceWorkerRegistration> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    throw new FcmRegistrationError(
+      "unsupported_browser",
+      "เบราว์เซอร์หรืออุปกรณ์นี้ไม่รองรับ Service Worker",
+    );
+  }
+
+  let registration = await navigator.serviceWorker.getRegistration("/");
+  if (!registration) {
+    registration = await navigator.serviceWorker.register("/sw.js", {
+      scope: "/",
+    });
+  }
+
+  if (registration.active?.state === "activated") {
+    return registration;
+  }
+
+  return new Promise<ServiceWorkerRegistration>((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        if (registration?.active) {
+          resolve(registration);
+        } else {
+          reject(
+            new FcmRegistrationError(
+              "service_worker_error",
+              "Service Worker ไม่สามารถ activate ได้ภายในเวลาที่กำหนด",
+            ),
+          );
+        }
+      }
+    }, timeoutMs);
+
+    const checkState = () => {
+      if (!settled && registration?.active?.state === "activated") {
+        settled = true;
+        clearTimeout(timer);
+        resolve(registration);
+      }
+    };
+
+    const worker =
+      registration.installing || registration.waiting || registration.active;
+    if (worker) {
+      worker.addEventListener("statechange", checkState);
+    }
+
+    navigator.serviceWorker.ready
+      .then((readyReg) => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(readyReg);
+        }
+      })
+      .catch(() => undefined);
+  });
+}
 
 async function getFirebaseMessaging() {
   if (!isFirebaseConfigured) {
-    throw new Error("ยังไม่ได้ตั้งค่า Firebase FCM");
+    throw new FcmRegistrationError(
+      "configuration_required",
+      "ยังไม่ได้ตั้งค่า Push Notification",
+    );
   }
 
   const [{ getApp, getApps, initializeApp }, messagingModule] =
     await Promise.all([import("firebase/app"), import("firebase/messaging")]);
+
   if (!(await messagingModule.isSupported())) {
-    throw new Error("เบราว์เซอร์นี้ไม่รองรับ Push Notification");
+    throw new FcmRegistrationError(
+      "unsupported_browser",
+      "เบราว์เซอร์นี้ไม่รองรับ Push Notification",
+    );
   }
+
   const app =
     getApps().length > 0
       ? getApp()
@@ -42,50 +199,87 @@ async function getFirebaseMessaging() {
           messagingSenderId: firebaseConfig.messagingSenderId!,
           appId: firebaseConfig.appId!,
         });
+
   return {
     messaging: messagingModule.getMessaging(app),
     messagingModule,
   };
 }
 
-export async function requestFcmToken() {
-  if (typeof Notification === "undefined") {
-    throw new Error("อุปกรณ์นี้ไม่รองรับ Notification");
-  }
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    throw new Error("ผู้ใช้ยังไม่ได้อนุญาต Notification");
-  }
-  if (!("serviceWorker" in navigator)) {
-    throw new Error("อุปกรณ์นี้ไม่รองรับ Service Worker");
+export async function requestFcmToken(): Promise<string> {
+  if (!isFirebaseConfigured) {
+    throw new FcmRegistrationError(
+      "configuration_required",
+      "ยังไม่ได้ตั้งค่า Push Notification",
+    );
   }
 
-  const registration = await navigator.serviceWorker.ready;
-  const { messaging, messagingModule } = await getFirebaseMessaging();
-  const token = await messagingModule.getToken(messaging, {
-    serviceWorkerRegistration: registration,
-    vapidKey: vapidKey!,
-  });
-  if (!token) throw new Error("Firebase ไม่ได้ส่ง registration token กลับมา");
-  return token;
+  if (typeof Notification === "undefined") {
+    throw new FcmRegistrationError(
+      "unsupported_browser",
+      "อุปกรณ์นี้ไม่รองรับการแจ้งเตือน (Notification)",
+    );
+  }
+
+  let permission = Notification.permission;
+  if (permission === "default") {
+    permission = await Notification.requestPermission();
+  }
+  if (permission !== "granted") {
+    throw new FcmRegistrationError(
+      "permission_denied",
+      "ผู้ใช้ยังไม่ได้อนุญาตการแจ้งเตือน กรุณาเปิดสิทธิ์ Notification ในการตั้งค่าเบราว์เซอร์",
+    );
+  }
+
+  try {
+    const activeRegistration = await getActiveServiceWorkerRegistration();
+    const { messaging, messagingModule } = await getFirebaseMessaging();
+
+    const token = await messagingModule.getToken(messaging, {
+      serviceWorkerRegistration: activeRegistration,
+      vapidKey: firebaseConfig.vapidKey!,
+    });
+
+    if (!token) {
+      throw new FcmRegistrationError(
+        "unknown",
+        "ไม่สามารถรับ FCM Registration Token จากเซิร์ฟเวอร์ได้",
+      );
+    }
+    return token;
+  } catch (error) {
+    throw sanitizeAndClassifyError(error);
+  }
 }
 
-export async function deleteFcmToken() {
+export async function deleteFcmToken(): Promise<void> {
   if (!isFirebaseConfigured) return;
-  const { messaging, messagingModule } = await getFirebaseMessaging();
-  await messagingModule.deleteToken(messaging);
+  try {
+    const { messaging, messagingModule } = await getFirebaseMessaging();
+    await messagingModule.deleteToken(messaging);
+  } catch {
+    // Best effort cleanup without throwing
+  }
 }
 
 export async function subscribeToForegroundMessages(
   listener: (payload: { title: string; body: string }) => void,
 ) {
   if (!isFirebaseConfigured) return () => undefined;
-  const { messaging, messagingModule } = await getFirebaseMessaging();
-  return messagingModule.onMessage(messaging, (payload) => {
-    listener({
-      title:
-        payload.notification?.title ?? payload.data?.title ?? "จ่ายไม่ไหวแล้ว",
-      body: payload.notification?.body ?? payload.data?.body ?? "มีข้อมูลใหม่",
+  try {
+    const { messaging, messagingModule } = await getFirebaseMessaging();
+    return messagingModule.onMessage(messaging, (payload) => {
+      listener({
+        title:
+          payload.notification?.title ??
+          payload.data?.title ??
+          "จ่ายไม่ไหวแล้ว",
+        body:
+          payload.notification?.body ?? payload.data?.body ?? "มีข้อมูลใหม่",
+      });
     });
-  });
+  } catch {
+    return () => undefined;
+  }
 }

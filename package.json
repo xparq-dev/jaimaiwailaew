@@ -20,8 +20,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "pdf:fonts": "node scripts/build-pdf-font-vfs.mjs",
-    "worker:dev": "wrangler dev --config workers/wrangler.jsonc",
-    "worker:deploy": "wrangler deploy --config workers/wrangler.jsonc",
+    "worker:dev": "wrangler dev --config workers/wrangler.jsonc --env preview",
+    "worker:deploy": "wrangler deploy --config workers/wrangler.jsonc --env preview",
+    "worker:deploy:preview": "wrangler deploy --config workers/wrangler.jsonc --env preview",
+    "worker:deploy:production": "wrangler deploy --config workers/wrangler.jsonc --env production",
     "worker:typecheck": "tsc --noEmit -p workers/tsconfig.json",
     "prepare": "node scripts/setup-husky.mjs"
   },

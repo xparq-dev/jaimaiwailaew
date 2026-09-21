@@ -3,14 +3,45 @@
   "name": "jaimaiwailaew-sync-api",
   "main": "index.ts",
   "compatibility_date": "2026-09-20",
-  "r2_buckets": [
-    {
-      "binding": "DATA_BUCKET",
-      "bucket_name": "jaimaiwailaew-data",
-      "preview_bucket_name": "jaimaiwailaew-data-preview",
+  "env": {
+    "preview": {
+      "r2_buckets": [
+        {
+          "binding": "DATA_BUCKET",
+          "bucket_name": "jaimaiwailaew-data-preview",
+          "preview_bucket_name": "jaimaiwailaew-data-preview",
+        },
+      ],
+      "vars": {
+        "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app,http://localhost:3000,https://jaimaiwailaew-*-dev-xparq-s-projects.vercel.app,https://jaimaiwailaew-51ez1e6ev-dev-xparq-s-projects.vercel.app",
+      },
+      "secrets": {
+        "required": [
+          "SUPABASE_URL",
+          "FIREBASE_PROJECT_ID",
+          "FIREBASE_CLIENT_EMAIL",
+          "FIREBASE_PRIVATE_KEY",
+        ],
+      },
     },
-  ],
-  "vars": {
-    "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app",
+    "production": {
+      "r2_buckets": [
+        {
+          "binding": "DATA_BUCKET",
+          "bucket_name": "jaimaiwailaew-data",
+        },
+      ],
+      "vars": {
+        "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app",
+      },
+      "secrets": {
+        "required": [
+          "SUPABASE_URL",
+          "FIREBASE_PROJECT_ID",
+          "FIREBASE_CLIENT_EMAIL",
+          "FIREBASE_PRIVATE_KEY",
+        ],
+      },
+    },
   },
 }

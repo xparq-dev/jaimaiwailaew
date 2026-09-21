@@ -95,6 +95,28 @@ function notificationKey(userId: string) {
   return `users/${encodeKeySegment(userId)}/notification-subscriptions.json`;
 }
 
+function matchesOriginPattern(origin: string, pattern: string) {
+  if (!pattern.includes("*")) return pattern === origin;
+
+  const patternMatch = pattern.match(/^(https?):\/\/([^/?#]+)$/);
+  if (!patternMatch) return false;
+
+  try {
+    const originUrl = new URL(origin);
+    if (originUrl.origin !== origin) return false;
+    if (originUrl.protocol !== `${patternMatch[1]}:`) return false;
+
+    const hostPattern = patternMatch[2] ?? "";
+    const escapedHostPattern = hostPattern
+      .split("*")
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("[a-z0-9-]+");
+    return new RegExp(`^${escapedHostPattern}$`, "i").test(originUrl.host);
+  } catch {
+    return false;
+  }
+}
+
 function allowedOrigin(request: Request, env: WorkerEnvironment) {
   const origin = request.headers.get("Origin");
   if (!origin) return null;
@@ -102,24 +124,18 @@ function allowedOrigin(request: Request, env: WorkerEnvironment) {
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  const allowed = configured.some((pattern) => {
-    if (pattern.startsWith("*.")) {
-      try {
-        return new URL(origin).hostname.endsWith(pattern.slice(1));
-      } catch {
-        return false;
-      }
-    }
-    return pattern === origin;
-  });
+  const allowed = configured.some((pattern) =>
+    matchesOriginPattern(origin, pattern),
+  );
   return allowed ? origin : false;
 }
 
-function corsHeaders(origin: string | null) {
+function corsHeaders(origin: string | null, preflight = false) {
   return {
     ...(origin ? { "Access-Control-Allow-Origin": origin } : {}),
     "Access-Control-Allow-Headers": "Authorization, Content-Type",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    ...(preflight ? { "Access-Control-Max-Age": "600" } : {}),
     "Cache-Control": "no-store",
     Vary: "Origin",
   };
@@ -317,7 +333,7 @@ export function createWorkerHandler({
       if (request.method === "OPTIONS") {
         return new Response(null, {
           status: 204,
-          headers: corsHeaders(origin),
+          headers: corsHeaders(origin, true),
         });
       }
 

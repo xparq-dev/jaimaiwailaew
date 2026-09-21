@@ -2,7 +2,9 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
+  clearMismatchedPushSubscription,
   FcmRegistrationError,
+  isValidVapidPublicKey,
   sanitizeAndClassifyError,
   requestFcmToken,
 } from "@/lib/firebase";
@@ -36,7 +38,9 @@ describe("Firebase Web Push & Notification Security", () => {
 
       expect(classified).toBeInstanceOf(FcmRegistrationError);
       expect(classified.kind).toBe("push_service_unavailable");
-      expect(classified.message).toContain("ไม่สามารถลงทะเบียนกับ Push Service ได้");
+      expect(classified.message).toContain(
+        "ไม่สามารถลงทะเบียนกับ Push Service ได้",
+      );
       expect(classified.message).toContain("VAPID Key");
       expect(classified.message).toContain("Firebase Cloud Messaging API");
       expect(classified.message).not.toContain("secret_abc123");
@@ -50,12 +54,16 @@ describe("Firebase Web Push & Notification Security", () => {
       const classified = sanitizeAndClassifyError(rawError);
 
       expect(classified.kind).toBe("network_or_csp_error");
-      expect(classified.message).toContain("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์แจ้งเตือนได้");
+      expect(classified.message).toContain(
+        "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์แจ้งเตือนได้",
+      );
       expect(classified.message).not.toContain("my-app");
     });
 
     it("classifies permission denial clearly", () => {
-      const rawError = new Error("Messaging: The notification permission was not granted and blocked.");
+      const rawError = new Error(
+        "Messaging: The notification permission was not granted and blocked.",
+      );
       const classified = sanitizeAndClassifyError(rawError);
 
       expect(classified.kind).toBe("permission_denied");
@@ -63,13 +71,78 @@ describe("Firebase Web Push & Notification Security", () => {
     });
 
     it("handles unknown errors generically without exposing stack traces or tokens", () => {
-      const rawError = new Error("Internal Firebase error with secret token=999xyz");
+      const rawError = new Error(
+        "Internal Firebase error with secret token=999xyz",
+      );
       const classified = sanitizeAndClassifyError(rawError);
 
       expect(classified.kind).toBe("unknown");
-      expect(classified.message).toContain("เกิดข้อผิดพลาดในการลงทะเบียนการแจ้งเตือน");
+      expect(classified.message).toContain(
+        "เกิดข้อผิดพลาดในการลงทะเบียนการแจ้งเตือน",
+      );
       expect(classified.message).not.toContain("secret");
       expect(classified.message).not.toContain("999xyz");
+    });
+  });
+
+  describe("VAPID and stale PushSubscription recovery", () => {
+    function encodeVapidKey(fill: number) {
+      const bytes = Uint8Array.from({ length: 65 }, (_, index) =>
+        index === 0 ? 4 : fill,
+      );
+      return btoa(String.fromCharCode(...bytes))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    }
+
+    const currentVapidKey = encodeVapidKey(1);
+
+    function decode(value: string) {
+      const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+      return Uint8Array.from(atob(normalized), (character) =>
+        character.charCodeAt(0),
+      ).buffer;
+    }
+
+    it("accepts a valid uncompressed P-256 VAPID public key", () => {
+      expect(isValidVapidPublicKey(currentVapidKey)).toBe(true);
+      expect(isValidVapidPublicKey("not-a-vapid-key")).toBe(false);
+    });
+
+    it("keeps a PushSubscription that already uses the current VAPID key", async () => {
+      const unsubscribe = vi.fn();
+      const registration = {
+        pushManager: {
+          getSubscription: vi.fn().mockResolvedValue({
+            options: { applicationServerKey: decode(currentVapidKey) },
+            unsubscribe,
+          }),
+        },
+      } as unknown as ServiceWorkerRegistration;
+
+      await expect(
+        clearMismatchedPushSubscription(registration, currentVapidKey),
+      ).resolves.toBe(false);
+      expect(unsubscribe).not.toHaveBeenCalled();
+    });
+
+    it("unsubscribes a PushSubscription created with another VAPID key", async () => {
+      const otherKey = encodeVapidKey(2);
+      const unsubscribe = vi.fn().mockResolvedValue(true);
+      const registration = {
+        pushManager: {
+          getSubscription: vi.fn().mockResolvedValue({
+            options: { applicationServerKey: decode(otherKey) },
+            unsubscribe,
+          }),
+        },
+      } as unknown as ServiceWorkerRegistration;
+
+      await expect(
+        clearMismatchedPushSubscription(registration, currentVapidKey),
+      ).resolves.toBe(true);
+      expect(unsubscribe).toHaveBeenCalledOnce();
     });
   });
 
@@ -84,7 +157,9 @@ describe("Firebase Web Push & Notification Security", () => {
       expect(getStoredFcmToken(userId)).toBe(tokenValue);
 
       // Persistent localStorage must NOT have the token
-      expect(localStorage.getItem(`jaimaiwailaew:notifications:token:${userId}`)).toBeNull();
+      expect(
+        localStorage.getItem(`jaimaiwailaew:notifications:token:${userId}`),
+      ).toBeNull();
 
       // Check all keys in localStorage to ensure zero token or VAPID key leakage
       for (let i = 0; i < localStorage.length; i++) {
@@ -117,8 +192,12 @@ describe("Firebase Web Push & Notification Security", () => {
       expect(isNotificationEnabled(userId)).toBe(true);
 
       // Verify booleans are safely stored
-      expect(localStorage.getItem(`jaimaiwailaew:cloud-sync:enabled:${userId}`)).toBe("true");
-      expect(localStorage.getItem(`jaimaiwailaew:notifications:enabled:${userId}`)).toBe("true");
+      expect(
+        localStorage.getItem(`jaimaiwailaew:cloud-sync:enabled:${userId}`),
+      ).toBe("true");
+      expect(
+        localStorage.getItem(`jaimaiwailaew:notifications:enabled:${userId}`),
+      ).toBe("true");
     });
   });
 
@@ -143,10 +222,14 @@ describe("Firebase Web Push & Notification Security", () => {
       expect(call).toBeDefined();
       const [url, options] = call!;
 
-      expect(url).toBe("https://sync.example.com/api/notifications/subscriptions");
+      expect(url).toBe(
+        "https://sync.example.com/api/notifications/subscriptions",
+      );
       expect(options.method).toBe("POST");
       expect(options.headers.Authorization).toBe("Bearer jwt-auth-token-xyz");
-      expect(JSON.parse(options.body)).toEqual({ token: "fcm-device-token-abc" });
+      expect(JSON.parse(options.body)).toEqual({
+        token: "fcm-device-token-abc",
+      });
     });
   });
 
@@ -155,8 +238,8 @@ describe("Firebase Web Push & Notification Security", () => {
       const forbiddenPatterns = [
         ["-----BEGIN", "RSA", "PRIVATE KEY-----"].join(" "),
         ["-----BEGIN", "PRIVATE KEY-----"].join(" "),
-        ["\"type\"", "\"service_account\""].join(": "),
-        "\"private_key_id\"",
+        ['"type"', '"service_account"'].join(": "),
+        '"private_key_id"',
       ];
 
       function checkDir(dir: string) {
@@ -197,7 +280,10 @@ describe("Firebase Web Push & Notification Security", () => {
       checkDir(join(process.cwd(), "src"));
       checkDir(join(process.cwd(), "public"));
 
-      const envExample = readFileSync(join(process.cwd(), ".env.example"), "utf-8");
+      const envExample = readFileSync(
+        join(process.cwd(), ".env.example"),
+        "utf-8",
+      );
       for (const pattern of forbiddenPatterns) {
         expect(envExample.includes(pattern)).toBe(false);
       }

@@ -28,9 +28,8 @@ export default function PrivacyPage() {
             <p>
               Supabase ใช้ยืนยันตัวตนด้วยอีเมล Google หรือ GitHub, Cloudflare
               Worker ตรวจสิทธิ์ก่อนอ่านหรือเขียนสำเนา Workspace แบบ JSON ใน R2
-              และ Firebase Cloud Messaging ใช้ส่ง Push Notification
-              เฉพาะเมื่อผู้ใช้อนุญาต ผู้ให้บริการโฮสติ้งอาจมี access log
-              ตามการทำงานปกติ
+              เฉพาะเมื่อผู้ใช้เปิด Cloud Sync ผู้ให้บริการโฮสติ้งอาจมี access
+              log ตามการทำงานปกติ
             </p>
           ),
         },
@@ -39,8 +38,7 @@ export default function PrivacyPage() {
           content: (
             <p>
               การซิงก์ใช้หลัก Last-Write-Wins จากเวลาที่แก้ไข Workspace ล่าสุด
-              ผู้ใช้ปิด Cloud Sync และ Push Notification แยกกันได้ทุกเมื่อ
-              การปิด Sync หยุดการส่งข้อมูลใหม่
+              ผู้ใช้ปิด Cloud Sync ได้ทุกเมื่อ การปิด Sync หยุดการส่งข้อมูลใหม่
               แต่ยังไม่ใช่คำสั่งลบสำเนาที่มีอยู่ใน R2
               จึงต้องจัดทำขั้นตอนลบบัญชีและข้อมูลก่อนเปิดบริการจริง
             </p>

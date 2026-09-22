@@ -79,21 +79,21 @@ production CSP, การลงทะเบียน service worker และ of
 
 ## Environment variables
 
-| Variable                                  | ประเภท                | วัตถุประสงค์                                                                                   |
-| ----------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`                    | Public                | canonical URL; `.env.example` ใช้ `http://localhost:3000` และ production ใช้โดเมน Vercel       |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`          | Public, optional      | placeholder สำหรับ Turnstile ในอนาคต                                                           |
-| `TURNSTILE_SECRET_KEY`                    | Server-only, optional | ต้องตั้งในระบบ deploy เท่านั้นเมื่อมี integration จริง                                         |
-| `NEXT_PUBLIC_SUPABASE_URL`                | Public                | URL ของ Supabase Project สำหรับการยืนยันตัวตน (OAuth)                                           |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`    | Public                | Supabase publishable key สำหรับ client                                                         |
-| `NEXT_PUBLIC_CLOUD_SYNC_API_URL`          | Public                | URL ของ Cloudflare Worker สำหรับ Cloud Sync API                                                |
-| `NEXT_PUBLIC_FIREBASE_API_KEY`            | Public                | Firebase Web API Key                                                                           |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`        | Public                | Firebase Auth Domain                                                                           |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`         | Public                | Firebase Project ID                                                                            |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`     | Public                | Firebase Storage Bucket                                                                        |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`| Public                | Firebase Cloud Messaging Sender ID                                                             |
-| `NEXT_PUBLIC_FIREBASE_APP_ID`             | Public                | Firebase Web App ID                                                                            |
-| `NEXT_PUBLIC_FIREBASE_VAPID_KEY`          | Public                | Web Push certificate (VAPID key pair public key) จาก Firebase                                  |
+| Variable                                   | ประเภท                | วัตถุประสงค์                                                                             |
+| ------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                     | Public                | canonical URL; `.env.example` ใช้ `http://localhost:3000` และ production ใช้โดเมน Vercel |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`           | Public, optional      | placeholder สำหรับ Turnstile ในอนาคต                                                     |
+| `TURNSTILE_SECRET_KEY`                     | Server-only, optional | ต้องตั้งในระบบ deploy เท่านั้นเมื่อมี integration จริง                                   |
+| `NEXT_PUBLIC_SUPABASE_URL`                 | Public                | URL ของ Supabase Project สำหรับการยืนยันตัวตน (OAuth)                                    |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`     | Public                | Supabase publishable key สำหรับ client                                                   |
+| `NEXT_PUBLIC_CLOUD_SYNC_API_URL`           | Public                | URL ของ Cloudflare Worker สำหรับ Cloud Sync API                                          |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`             | Public                | Firebase Web API Key                                                                     |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`         | Public                | Firebase Auth Domain                                                                     |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`          | Public                | Firebase Project ID                                                                      |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`      | Public                | Firebase Storage Bucket                                                                  |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Public                | Firebase Cloud Messaging Sender ID                                                       |
+| `NEXT_PUBLIC_FIREBASE_APP_ID`              | Public                | Firebase Web App ID                                                                      |
+| `NEXT_PUBLIC_FIREBASE_VAPID_KEY`           | Public                | Web Push certificate (VAPID key pair public key) จาก Firebase                            |
 
 ตัวแปรที่ขึ้นต้นด้วย `NEXT_PUBLIC_` จะอยู่ใน client bundle จึงห้ามใส่ secret, private key หรือ service account key ลงในตัวแปรเหล่านี้
 
@@ -108,7 +108,6 @@ production CSP, การลงทะเบียน service worker และ of
    - **ไม่มีข้อมูลทางการเงิน รายได้ หรือรายการลดหย่อนใดๆ ใน payload ของ Notification**
    - FCM Token จัดเก็บแบบ in-memory ชั่วคราวเฉพาะ session และไม่มีการบันทึกลง Persistent Local Storage
    - ระบบยืนยันตัวตนปัจจุบันรองรับ Supabase Google และ GitHub OAuth (ส่วน Email/Password Auth ยังไม่เปิดใช้งาน)
-
 
 ## PWA และ caching strategy
 

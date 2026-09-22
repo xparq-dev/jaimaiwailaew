@@ -264,11 +264,7 @@ describe("Cloudflare Worker API", () => {
 
     it("GET 404 (entries for missing workspace) carries CORS headers", async () => {
       const response = await handler.fetch(
-        request(
-          "/api/workspaces/nonexistent/entries",
-          undefined,
-          origin,
-        ),
+        request("/api/workspaces/nonexistent/entries", undefined, origin),
         environment(),
       );
 

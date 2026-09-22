@@ -2,13 +2,29 @@ import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
+function configuredOrigin(value: string | undefined) {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+const externalConnections = [
+  configuredOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  configuredOrigin(process.env.NEXT_PUBLIC_CLOUD_SYNC_API_URL),
+  "https://firebaseinstallations.googleapis.com",
+  "https://fcmregistrations.googleapis.com",
+].filter((origin): origin is string => Boolean(origin));
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  `connect-src 'self'${isDevelopment ? " ws: http:" : ""}`,
+  `connect-src 'self'${externalConnections.length ? ` ${externalConnections.join(" ")}` : ""}${isDevelopment ? " ws: http:" : ""}`,
   "worker-src 'self' blob:",
   "frame-src 'self' blob:",
   "manifest-src 'self'",

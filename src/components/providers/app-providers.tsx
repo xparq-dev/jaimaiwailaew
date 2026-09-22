@@ -3,7 +3,10 @@
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 
+import { AuthProvider } from "@/auth/auth-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
+import { NotificationListener } from "@/notifications/notification-listener";
+import { CloudSyncProvider } from "@/sync/sync-provider";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -13,7 +16,14 @@ export function AppProviders({ children }: { children: ReactNode }) {
       disableTransitionOnChange
       enableSystem
     >
-      <LocaleProvider>{children}</LocaleProvider>
+      <LocaleProvider>
+        <AuthProvider>
+          <CloudSyncProvider>
+            {children}
+            <NotificationListener />
+          </CloudSyncProvider>
+        </AuthProvider>
+      </LocaleProvider>
     </ThemeProvider>
   );
 }

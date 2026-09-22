@@ -57,4 +57,13 @@ describe("Phase 1B service-worker policy", () => {
     expect(executableCode).not.toMatch(/withholdingEntries/i);
     expect(executableCode).not.toMatch(/allowanceDraftEntries/i);
   });
+
+  it("opens notification links only on the application's own origin", () => {
+    expect(serviceWorkerSource).toContain(
+      "requestedUrl.origin === self.location.origin",
+    );
+    expect(serviceWorkerSource).toContain(
+      'new URL("/calculator", self.location.origin)',
+    );
+  });
 });

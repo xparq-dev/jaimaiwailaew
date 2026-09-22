@@ -55,7 +55,7 @@ export function ProfileCard() {
         <Button asChild variant="secondary">
           <Link href="/settings">
             <Settings aria-hidden="true" className="size-4" />
-            ตั้งค่า Sync และการแจ้งเตือน
+            ตั้งค่า Cloud Sync
           </Link>
         </Button>
         <Button

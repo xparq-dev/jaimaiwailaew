@@ -32,8 +32,6 @@ function transportFixture(
           documents.find((item) => item.workspace.id === id) ?? null,
       ),
     putWorkspace: vi.fn().mockResolvedValue(undefined),
-    registerNotificationToken: vi.fn().mockResolvedValue(undefined),
-    unregisterNotificationToken: vi.fn().mockResolvedValue(undefined),
   };
 }
 

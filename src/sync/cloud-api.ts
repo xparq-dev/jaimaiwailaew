@@ -81,20 +81,6 @@ export class CloudSyncApi implements CloudSyncTransport {
       },
     );
   }
-
-  async registerNotificationToken(token: string) {
-    await this.request("/api/notifications/subscriptions", {
-      method: "POST",
-      body: JSON.stringify({ token }),
-    });
-  }
-
-  async unregisterNotificationToken(token: string) {
-    await this.request("/api/notifications/subscriptions", {
-      method: "DELETE",
-      body: JSON.stringify({ token }),
-    });
-  }
 }
 
 class BrowserMockCloudSyncApi implements CloudSyncTransport {
@@ -134,9 +120,6 @@ class BrowserMockCloudSyncApi implements CloudSyncTransport {
     );
     this.write([...documents, cloudWorkspaceDocumentSchema.parse(document)]);
   }
-
-  async registerNotificationToken() {}
-  async unregisterNotificationToken() {}
 }
 
 export function createCloudSyncTransport(

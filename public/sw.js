@@ -2,7 +2,7 @@
 
 "use strict";
 
-// Service Worker for the calculator shell and optional Phase 1E push messages.
+// Service Worker for the calculator shell.
 // Caches public static assets, app shell, and route assets needed to open the calculator offline.
 // Strictly NEVER caches user-generated data, entries, localStorage, PDF/CSV/Excel, or API responses.
 const CACHE_NAMESPACE = "jmwl-public-static";
@@ -155,58 +155,4 @@ self.addEventListener("message", (event) => {
         ),
     );
   }
-});
-
-// FCM registers its Web Push subscription against this existing service
-// worker. Handling the standard Push API event here avoids a second worker
-// taking over the application's root scope.
-self.addEventListener("push", (event) => {
-  if (!event.data) return;
-
-  let payload;
-  try {
-    payload = event.data.json();
-  } catch {
-    payload = { data: { body: event.data.text() } };
-  }
-
-  const notification = payload.notification ?? payload.data ?? {};
-  event.waitUntil(
-    self.registration.showNotification(notification.title || "จ่ายไม่ไหวแล้ว", {
-      body: notification.body || "มีการอัปเดตข้อมูลของคุณ",
-      icon: "/icons/icon.svg",
-      badge: "/icons/icon.svg",
-      data: { url: notification.url || "/calculator" },
-      tag: notification.tag || "jaimaiwailaew-sync",
-    }),
-  );
-});
-
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  let targetUrl = new URL("/calculator", self.location.origin).toString();
-  try {
-    const requestedUrl = new URL(
-      event.notification.data?.url || "/calculator",
-      self.location.origin,
-    );
-    if (requestedUrl.origin === self.location.origin) {
-      targetUrl = requestedUrl.toString();
-    }
-  } catch {
-    // Keep the same-origin calculator fallback.
-  }
-  event.waitUntil(
-    self.clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((clients) => {
-        for (const client of clients) {
-          if ("focus" in client) {
-            client.navigate(targetUrl);
-            return client.focus();
-          }
-        }
-        return self.clients.openWindow(targetUrl);
-      }),
-  );
 });

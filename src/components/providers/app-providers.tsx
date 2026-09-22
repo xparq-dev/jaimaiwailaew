@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 
 import { AuthProvider } from "@/auth/auth-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
-import { NotificationListener } from "@/notifications/notification-listener";
 import { CloudSyncProvider } from "@/sync/sync-provider";
 
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -18,10 +17,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     >
       <LocaleProvider>
         <AuthProvider>
-          <CloudSyncProvider>
-            {children}
-            <NotificationListener />
-          </CloudSyncProvider>
+          <CloudSyncProvider>{children}</CloudSyncProvider>
         </AuthProvider>
       </LocaleProvider>
     </ThemeProvider>

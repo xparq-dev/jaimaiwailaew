@@ -5,10 +5,6 @@ import {
   cloudWorkspaceDocumentSchema,
   type CloudWorkspaceDocument,
 } from "../src/sync/types";
-import {
-  sendFirebaseNotification,
-  type FirebaseWorkerEnvironment,
-} from "./firebase";
 
 const MAX_REQUEST_BYTES = 1_048_576;
 
@@ -33,14 +29,10 @@ export interface R2BucketLike {
   list(options: { prefix: string; cursor?: string }): Promise<R2ListResultLike>;
 }
 
-export interface WorkerEnvironment extends FirebaseWorkerEnvironment {
+export interface WorkerEnvironment {
   readonly DATA_BUCKET: R2BucketLike;
   readonly SUPABASE_URL: string;
   readonly ALLOWED_ORIGIN?: string;
-}
-
-interface WorkerExecutionContextLike {
-  waitUntil(promise: Promise<unknown>): void;
 }
 
 interface MutableWorkspace {
@@ -89,10 +81,6 @@ function workspacePrefix(userId: string) {
 
 function workspaceKey(userId: string, workspaceId: string) {
   return `${workspacePrefix(userId)}${encodeKeySegment(workspaceId)}.json`;
-}
-
-function notificationKey(userId: string) {
-  return `users/${encodeKeySegment(userId)}/notification-subscriptions.json`;
 }
 
 function matchesOriginPattern(origin: string, pattern: string) {
@@ -226,87 +214,6 @@ function allEntries(document: CloudWorkspaceDocument) {
   ];
 }
 
-function entryMap(document: CloudWorkspaceDocument | null) {
-  const map = new Map<string, string>();
-  if (!document) return map;
-  for (const entry of allEntries(document)) {
-    map.set(entry.id, entry.updatedAt);
-  }
-  return map;
-}
-
-function describeWorkspaceChanges(
-  before: CloudWorkspaceDocument | null,
-  after: CloudWorkspaceDocument,
-) {
-  const oldEntries = entryMap(before);
-  const newEntries = entryMap(after);
-  let added = 0;
-  let updated = 0;
-  let deleted = 0;
-  for (const [id, updatedAt] of newEntries) {
-    if (!oldEntries.has(id)) added += 1;
-    else if (oldEntries.get(id) !== updatedAt) updated += 1;
-  }
-  for (const id of oldEntries.keys()) {
-    if (!newEntries.has(id)) deleted += 1;
-  }
-  if (added > 0 || updated > 0 || deleted > 0) {
-    return "การซิงก์ข้อมูลเสร็จสมบูรณ์";
-  }
-  return null;
-}
-
-async function readNotificationTokens(bucket: R2BucketLike, userId: string) {
-  const object = await bucket.get(notificationKey(userId));
-  if (!object) return [];
-  const body = await object.json<unknown>();
-  if (!isRecord(body) || !Array.isArray(body.tokens)) return [];
-  return body.tokens.filter(
-    (token): token is string => typeof token === "string" && token.length > 0,
-  );
-}
-
-async function writeNotificationTokens(
-  bucket: R2BucketLike,
-  userId: string,
-  tokens: readonly string[],
-) {
-  await bucket.put(
-    notificationKey(userId),
-    JSON.stringify({
-      tokens: [...new Set(tokens)],
-      updatedAt: new Date().toISOString(),
-    }),
-    { httpMetadata: { contentType: "application/json" } },
-  );
-}
-
-async function notifyUser(
-  env: WorkerEnvironment,
-  userId: string,
-  body: string,
-  origin: string | null,
-) {
-  const notificationUrl = origin
-    ? new URL("/calculator/summary", origin)
-    : null;
-  const secureNotificationUrl =
-    notificationUrl?.protocol === "https:"
-      ? notificationUrl.toString()
-      : undefined;
-  const tokens = await readNotificationTokens(env.DATA_BUCKET, userId);
-  await Promise.all(
-    tokens.map((token) =>
-      sendFirebaseNotification(env, token, {
-        title: "จ่ายไม่ไหวแล้ว",
-        body,
-        ...(secureNotificationUrl ? { url: secureNotificationUrl } : {}),
-      }),
-    ),
-  );
-}
-
 function requireRecordWithId(value: unknown) {
   return isRecord(value) && typeof value.id === "string" && value.id.length > 0;
 }
@@ -328,11 +235,7 @@ export function createWorkerHandler({
   verifyToken = verifySupabaseToken,
 }: { readonly verifyToken?: VerifyToken } = {}) {
   return {
-    async fetch(
-      request: Request,
-      env: WorkerEnvironment,
-      context?: WorkerExecutionContextLike,
-    ): Promise<Response> {
+    async fetch(request: Request, env: WorkerEnvironment): Promise<Response> {
       const originResult = allowedOrigin(request, env);
       if (originResult === false) {
         return jsonResponse({ error: "origin_not_allowed" }, 403, null);
@@ -392,23 +295,7 @@ export function createWorkerHandler({
             if (!isCloudDocument(value) || value.workspace.id !== workspaceId) {
               return jsonResponse({ error: "invalid_workspace" }, 400, origin);
             }
-            const previous = await readWorkspace(
-              env.DATA_BUCKET,
-              userId,
-              workspaceId,
-            );
             await writeWorkspace(env.DATA_BUCKET, userId, value);
-            const notification = describeWorkspaceChanges(previous, value);
-            if (notification) {
-              const promise = notifyUser(
-                env,
-                userId,
-                notification,
-                origin,
-              ).catch(() => undefined);
-              if (context) context.waitUntil(promise);
-              else await promise;
-            }
             return jsonResponse({ ok: true }, 200, origin);
           }
           if (request.method === "DELETE") {
@@ -454,12 +341,6 @@ export function createWorkerHandler({
               userId,
               mutable as unknown as CloudWorkspaceDocument,
             );
-            await notifyUser(
-              env,
-              userId,
-              "การซิงก์ข้อมูลเสร็จสมบูรณ์",
-              origin,
-            ).catch(() => undefined);
             return jsonResponse({ ok: true }, 201, origin);
           }
         }
@@ -513,12 +394,6 @@ export function createWorkerHandler({
             userId,
             mutable as unknown as CloudWorkspaceDocument,
           );
-          await notifyUser(
-            env,
-            userId,
-            "การซิงก์ข้อมูลเสร็จสมบูรณ์",
-            origin,
-          ).catch(() => undefined);
           return jsonResponse({ ok: true }, 200, origin);
         }
 
@@ -668,33 +543,6 @@ export function createWorkerHandler({
             env.DATA_BUCKET,
             userId,
             mutable as unknown as CloudWorkspaceDocument,
-          );
-          return jsonResponse({ ok: true }, 200, origin);
-        }
-
-        if (pathname === "/api/notifications/subscriptions") {
-          if (request.method !== "POST" && request.method !== "DELETE") {
-            return jsonResponse({ error: "method_not_allowed" }, 405, origin);
-          }
-          const body = await parseJsonBody(request);
-          if (
-            !isRecord(body) ||
-            typeof body.token !== "string" ||
-            body.token.length > 4096
-          ) {
-            return jsonResponse(
-              { error: "invalid_notification_token" },
-              400,
-              origin,
-            );
-          }
-          const tokens = await readNotificationTokens(env.DATA_BUCKET, userId);
-          await writeNotificationTokens(
-            env.DATA_BUCKET,
-            userId,
-            request.method === "DELETE"
-              ? tokens.filter((token) => token !== body.token)
-              : [...tokens, body.token],
           );
           return jsonResponse({ ok: true }, 200, origin);
         }

@@ -212,7 +212,7 @@ describe("Cloudflare Worker API", () => {
     );
   });
 
-  it("enforces the origin allowlist and notification endpoint methods", async () => {
+  it("enforces the origin allowlist", async () => {
     const env = environment();
     const blocked = await handler.fetch(
       new Request("https://sync.example/api/users/user-a/workspaces", {
@@ -225,15 +225,6 @@ describe("Cloudflare Worker API", () => {
     );
     expect(blocked.status).toBe(403);
     expect(blocked.headers.has("Access-Control-Allow-Origin")).toBe(false);
-
-    const wrongMethod = await handler.fetch(
-      request("/api/notifications/subscriptions"),
-      env,
-    );
-    expect(wrongMethod.status).toBe(405);
-    expect(wrongMethod.headers.get("Access-Control-Allow-Origin")).toBe(
-      "https://jaimaiwailaew.vercel.app",
-    );
   });
 
   // ── Requirement 5: every response status carries CORS headers ────────────

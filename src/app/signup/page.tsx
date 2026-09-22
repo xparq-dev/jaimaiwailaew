@@ -5,7 +5,7 @@ export default function SignupPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        description="สมัครสมาชิกด้วยอีเมล หรือใช้บัญชี Google/GitHub และเลือกเปิด Cloud Sync ภายหลังได้"
+        description="สร้างบัญชีด้วย Google หรือ GitHub และเลือกเปิด Cloud Sync ภายหลังได้"
         eyebrow="Phase 1E · Supabase Auth"
         title="สร้างบัญชี"
       />

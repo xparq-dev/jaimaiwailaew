@@ -4,6 +4,12 @@ export interface FirebaseWorkerEnvironment {
   readonly FIREBASE_PRIVATE_KEY?: string;
 }
 
+export interface FirebaseNotification {
+  readonly title: string;
+  readonly body: string;
+  readonly url?: string;
+}
+
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
 
 function base64Url(value: Uint8Array | string) {
@@ -85,10 +91,48 @@ async function getFirebaseAccessToken(env: FirebaseWorkerEnvironment) {
   return body.access_token;
 }
 
+function secureHttpsUrl(value: string | undefined) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+export function buildFirebaseMessage(
+  token: string,
+  notification: FirebaseNotification,
+) {
+  const secureLink = secureHttpsUrl(notification.url);
+  return {
+    message: {
+      token,
+      notification: {
+        title: notification.title,
+        body: notification.body,
+      },
+      data: {
+        title: notification.title,
+        body: notification.body,
+        url: secureLink ?? "/calculator",
+      },
+      ...(secureLink
+        ? {
+            webpush: {
+              fcm_options: { link: secureLink },
+            },
+          }
+        : {}),
+    },
+  };
+}
+
 export async function sendFirebaseNotification(
   env: FirebaseWorkerEnvironment,
   token: string,
-  notification: { title: string; body: string; url?: string },
+  notification: FirebaseNotification,
 ) {
   const accessToken = await getFirebaseAccessToken(env);
   if (!accessToken || !env.FIREBASE_PROJECT_ID) return false;
@@ -101,26 +145,13 @@ export async function sendFirebaseNotification(
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        message: {
-          token,
-          notification: {
-            title: notification.title,
-            body: notification.body,
-          },
-          data: {
-            title: notification.title,
-            body: notification.body,
-            url: notification.url ?? "/calculator",
-          },
-          webpush: {
-            fcm_options: {
-              link: notification.url ?? "/calculator",
-            },
-          },
-        },
-      }),
+      body: JSON.stringify(buildFirebaseMessage(token, notification)),
     },
   );
+  if (!response.ok) {
+    console.error(
+      JSON.stringify({ event: "fcm_send_failed", status: response.status }),
+    );
+  }
   return response.ok;
 }

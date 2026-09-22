@@ -81,8 +81,34 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
     )
     .toBe(true);
 
+  const cloudSyncSection = page
+    .getByRole("heading", { name: "Cloud Sync" })
+    .locator("xpath=ancestor::section");
+  await page.context().setOffline(true);
+  await expect(cloudSyncSection.locator("strong")).toHaveText(
+    /\u0e2d\u0e2d\u0e1f\u0e44\u0e25\u0e19\u0e4c/,
+  );
+  await page.context().setOffline(false);
+  await expect(
+    page.locator("#main-content").getByText("ซิงก์แล้ว", { exact: true }),
+  ).toBeVisible();
+
+  const calculatorStorageBeforeLogout = await page.evaluate(() =>
+    localStorage.getItem("jaimaiwailaew:calculator:v2"),
+  );
+  expect(calculatorStorageBeforeLogout).toContain("e2e-cloud-workspace");
+
   await page.goto("/profile");
   await page.getByRole("button", { name: "ออกจากระบบ" }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("link", { name: "เข้าสู่ระบบ" })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        localStorage
+          .getItem("jaimaiwailaew:calculator:v2")
+          ?.includes("e2e-cloud-workspace"),
+      ),
+    )
+    .toBe(true);
 });

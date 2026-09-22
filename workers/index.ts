@@ -251,9 +251,9 @@ function describeWorkspaceChanges(
   for (const id of oldEntries.keys()) {
     if (!newEntries.has(id)) deleted += 1;
   }
-  if (added > 0) return `เพิ่มรายการใหม่ ${added} รายการ`;
-  if (updated > 0) return `อัปเดตรายการ ${updated} รายการ`;
-  if (deleted > 0) return `ลบรายการ ${deleted} รายการ`;
+  if (added > 0 || updated > 0 || deleted > 0) {
+    return "การซิงก์ข้อมูลเสร็จสมบูรณ์";
+  }
   return null;
 }
 
@@ -286,14 +286,22 @@ async function notifyUser(
   env: WorkerEnvironment,
   userId: string,
   body: string,
+  origin: string | null,
 ) {
+  const notificationUrl = origin
+    ? new URL("/calculator/summary", origin)
+    : null;
+  const secureNotificationUrl =
+    notificationUrl?.protocol === "https:"
+      ? notificationUrl.toString()
+      : undefined;
   const tokens = await readNotificationTokens(env.DATA_BUCKET, userId);
   await Promise.all(
     tokens.map((token) =>
       sendFirebaseNotification(env, token, {
-        title: "ซิงก์ข้อมูลแล้ว",
+        title: "จ่ายไม่ไหวแล้ว",
         body,
-        url: "/calculator/summary",
+        ...(secureNotificationUrl ? { url: secureNotificationUrl } : {}),
       }),
     ),
   );
@@ -392,9 +400,12 @@ export function createWorkerHandler({
             await writeWorkspace(env.DATA_BUCKET, userId, value);
             const notification = describeWorkspaceChanges(previous, value);
             if (notification) {
-              const promise = notifyUser(env, userId, notification).catch(
-                () => undefined,
-              );
+              const promise = notifyUser(
+                env,
+                userId,
+                notification,
+                origin,
+              ).catch(() => undefined);
               if (context) context.waitUntil(promise);
               else await promise;
             }
@@ -443,9 +454,12 @@ export function createWorkerHandler({
               userId,
               mutable as unknown as CloudWorkspaceDocument,
             );
-            await notifyUser(env, userId, "เพิ่มรายการใหม่ 1 รายการ").catch(
-              () => undefined,
-            );
+            await notifyUser(
+              env,
+              userId,
+              "การซิงก์ข้อมูลเสร็จสมบูรณ์",
+              origin,
+            ).catch(() => undefined);
             return jsonResponse({ ok: true }, 201, origin);
           }
         }
@@ -502,9 +516,8 @@ export function createWorkerHandler({
           await notifyUser(
             env,
             userId,
-            request.method === "DELETE"
-              ? "ลบรายการ 1 รายการ"
-              : "อัปเดตรายการ 1 รายการ",
+            "การซิงก์ข้อมูลเสร็จสมบูรณ์",
+            origin,
           ).catch(() => undefined);
           return jsonResponse({ ok: true }, 200, origin);
         }

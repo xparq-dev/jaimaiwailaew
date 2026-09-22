@@ -18,6 +18,7 @@ import {
   setNotificationEnabled,
 } from "@/sync/preferences";
 import { CloudSyncApi } from "@/sync/cloud-api";
+import { buildFirebaseMessage } from "../../../workers/firebase";
 
 describe("Firebase Web Push & Notification Security", () => {
   beforeEach(() => {
@@ -230,6 +231,36 @@ describe("Firebase Web Push & Notification Security", () => {
       expect(JSON.parse(options.body)).toEqual({
         token: "fcm-device-token-abc",
       });
+    });
+  });
+
+  describe("FCM delivery payload privacy", () => {
+    it("uses a full HTTPS same-site link and a generic notification body", () => {
+      const payload = buildFirebaseMessage("device-token", {
+        title: "จ่ายไม่ไหวแล้ว",
+        body: "การซิงก์ข้อมูลเสร็จสมบูรณ์",
+        url: "https://jaimaiwailaew.vercel.app/calculator/summary",
+      });
+
+      expect(payload.message.webpush?.fcm_options.link).toBe(
+        "https://jaimaiwailaew.vercel.app/calculator/summary",
+      );
+      expect(payload.message.data.url).not.toMatch(/[?#]/);
+      expect(JSON.stringify(payload)).not.toMatch(
+        /amount|category|note|income|expense|รายรับ|รายจ่าย|จำนวนเงิน/i,
+      );
+    });
+
+    it("does not emit fcm_options.link for relative or insecure URLs", () => {
+      for (const url of ["/calculator/summary", "http://localhost:3000/"]) {
+        const payload = buildFirebaseMessage("device-token", {
+          title: "จ่ายไม่ไหวแล้ว",
+          body: "การซิงก์ข้อมูลเสร็จสมบูรณ์",
+          url,
+        });
+        expect(payload.message.webpush).toBeUndefined();
+        expect(payload.message.data.url).toBe("/calculator");
+      }
     });
   });
 

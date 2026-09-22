@@ -184,7 +184,18 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url || "/calculator";
+  let targetUrl = new URL("/calculator", self.location.origin).toString();
+  try {
+    const requestedUrl = new URL(
+      event.notification.data?.url || "/calculator",
+      self.location.origin,
+    );
+    if (requestedUrl.origin === self.location.origin) {
+      targetUrl = requestedUrl.toString();
+    }
+  } catch {
+    // Keep the same-origin calculator fallback.
+  }
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })

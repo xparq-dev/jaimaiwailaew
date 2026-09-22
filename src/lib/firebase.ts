@@ -112,7 +112,7 @@ export function sanitizeAndClassifyError(error: unknown): FcmRegistrationError {
   ) {
     return new FcmRegistrationError(
       "push_service_unavailable",
-      "ไม่สามารถลงทะเบียนกับ Push Service ได้ กรุณาตรวจสอบ VAPID Key และการเปิดใช้งาน Firebase Cloud Messaging API ใน Google Cloud Console",
+      "Push Service ของเบราว์เซอร์ปฏิเสธการลงทะเบียนหลังซ่อมอัตโนมัติ กรุณารีสตาร์ทเบราว์เซอร์หรือลอง Chrome Guest/Profile ใหม่ (รหัส: PUSH_SERVICE_UNAVAILABLE)",
     );
   }
 
@@ -168,6 +168,7 @@ export async function getActiveServiceWorkerRegistration(
   if (!registration) {
     registration = await navigator.serviceWorker.register("/sw.js", {
       scope: "/",
+      updateViaCache: "none",
     });
   }
 
@@ -219,6 +220,57 @@ export async function getActiveServiceWorkerRegistration(
   });
 }
 
+export async function recreatePushServiceWorkerRegistration(
+  registration: ServiceWorkerRegistration,
+) {
+  const subscription = await registration.pushManager
+    .getSubscription()
+    .catch(() => null);
+  await subscription?.unsubscribe().catch(() => false);
+  await registration.unregister().catch(() => false);
+
+  const replacement = await navigator.serviceWorker.register("/sw.js", {
+    scope: "/",
+    updateViaCache: "none",
+  });
+
+  if (replacement.active?.state === "activated") {
+    return replacement;
+  }
+
+  return new Promise<ServiceWorkerRegistration>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(
+        new FcmRegistrationError(
+          "service_worker_error",
+          "Service Worker ใหม่ไม่สามารถ activate ได้ภายในเวลาที่กำหนด",
+        ),
+      );
+    }, 10000);
+    const worker =
+      replacement.installing || replacement.waiting || replacement.active;
+
+    const finish = () => {
+      if (replacement.active?.state !== "activated") return;
+      clearTimeout(timer);
+      resolve(replacement);
+    };
+
+    if (!worker) {
+      clearTimeout(timer);
+      reject(
+        new FcmRegistrationError(
+          "service_worker_error",
+          "ไม่พบ Service Worker ใหม่สำหรับลงทะเบียน Push Notification",
+        ),
+      );
+      return;
+    }
+    worker.addEventListener("statechange", finish);
+    finish();
+  });
+}
+
 async function getFirebaseMessaging() {
   if (!isFirebaseConfigured) {
     throw new FcmRegistrationError(
@@ -254,6 +306,7 @@ async function getFirebaseMessaging() {
         });
 
   return {
+    app,
     messaging: messagingModule.getMessaging(app),
     messagingModule,
   };
@@ -294,7 +347,7 @@ export async function requestFcmToken(): Promise<string> {
 
   try {
     const activeRegistration = await getActiveServiceWorkerRegistration();
-    const { messaging, messagingModule } = await getFirebaseMessaging();
+    const { app, messaging, messagingModule } = await getFirebaseMessaging();
 
     await clearMismatchedPushSubscription(
       activeRegistration,
@@ -312,14 +365,21 @@ export async function requestFcmToken(): Promise<string> {
     } catch (error) {
       if (!isRecoverableSubscriptionError(error)) throw error;
 
-      // A rotated VAPID key or an interrupted browser registration can leave a
-      // stale PushSubscription behind. Clear it and retry once; never loop or
-      // persist either the VAPID key or the resulting FCM token.
+      // A rotated VAPID key, Firebase Installation, or interrupted browser
+      // registration can leave state that deleteToken alone cannot recover.
+      // Reset only Firebase/Push state, recreate the public service worker,
+      // and retry once. Never loop or persist the VAPID key/FCM token.
       await messagingModule.deleteToken(messaging).catch(() => false);
-      const staleSubscription =
-        await activeRegistration.pushManager.getSubscription();
-      await staleSubscription?.unsubscribe().catch(() => false);
-      token = await messagingModule.getToken(messaging, tokenOptions);
+      const installationsModule = await import("firebase/installations");
+      await installationsModule
+        .deleteInstallations(installationsModule.getInstallations(app))
+        .catch(() => undefined);
+      const replacementRegistration =
+        await recreatePushServiceWorkerRegistration(activeRegistration);
+      token = await messagingModule.getToken(messaging, {
+        ...tokenOptions,
+        serviceWorkerRegistration: replacementRegistration,
+      });
     }
 
     if (!token) {

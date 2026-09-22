@@ -5,6 +5,7 @@ import {
   clearMismatchedPushSubscription,
   FcmRegistrationError,
   isValidVapidPublicKey,
+  recreatePushServiceWorkerRegistration,
   sanitizeAndClassifyError,
   requestFcmToken,
 } from "@/lib/firebase";
@@ -40,10 +41,9 @@ describe("Firebase Web Push & Notification Security", () => {
       expect(classified).toBeInstanceOf(FcmRegistrationError);
       expect(classified.kind).toBe("push_service_unavailable");
       expect(classified.message).toContain(
-        "ไม่สามารถลงทะเบียนกับ Push Service ได้",
+        "Push Service ของเบราว์เซอร์ปฏิเสธการลงทะเบียน",
       );
-      expect(classified.message).toContain("VAPID Key");
-      expect(classified.message).toContain("Firebase Cloud Messaging API");
+      expect(classified.message).toContain("PUSH_SERVICE_UNAVAILABLE");
       expect(classified.message).not.toContain("secret_abc123");
       expect(classified.message).not.toContain("token=");
     });
@@ -144,6 +144,48 @@ describe("Firebase Web Push & Notification Security", () => {
         clearMismatchedPushSubscription(registration, currentVapidKey),
       ).resolves.toBe(true);
       expect(unsubscribe).toHaveBeenCalledOnce();
+    });
+
+    it("recreates the root service worker after clearing a broken push subscription", async () => {
+      const unsubscribe = vi.fn().mockResolvedValue(true);
+      const unregister = vi.fn().mockResolvedValue(true);
+      const replacement = {
+        active: { state: "activated" },
+      } as unknown as ServiceWorkerRegistration;
+      const register = vi.fn().mockResolvedValue(replacement);
+      const originalServiceWorker = Object.getOwnPropertyDescriptor(
+        navigator,
+        "serviceWorker",
+      );
+      Object.defineProperty(navigator, "serviceWorker", {
+        configurable: true,
+        value: { register },
+      });
+      const current = {
+        pushManager: {
+          getSubscription: vi.fn().mockResolvedValue({ unsubscribe }),
+        },
+        unregister,
+      } as unknown as ServiceWorkerRegistration;
+
+      await expect(
+        recreatePushServiceWorkerRegistration(current),
+      ).resolves.toBe(replacement);
+      expect(unsubscribe).toHaveBeenCalledOnce();
+      expect(unregister).toHaveBeenCalledOnce();
+      expect(register).toHaveBeenCalledWith("/sw.js", {
+        scope: "/",
+        updateViaCache: "none",
+      });
+      if (originalServiceWorker) {
+        Object.defineProperty(
+          navigator,
+          "serviceWorker",
+          originalServiceWorker,
+        );
+      } else {
+        Reflect.deleteProperty(navigator, "serviceWorker");
+      }
     });
   });
 

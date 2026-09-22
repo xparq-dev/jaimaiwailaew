@@ -42,8 +42,6 @@ export interface CloudSyncTransport {
   listWorkspaces(userId: string): Promise<readonly CloudWorkspaceDocument[]>;
   getWorkspace(workspaceId: string): Promise<CloudWorkspaceDocument | null>;
   putWorkspace(document: CloudWorkspaceDocument): Promise<void>;
-  registerNotificationToken(token: string): Promise<void>;
-  unregisterNotificationToken(token: string): Promise<void>;
 }
 
 export interface SyncResult {

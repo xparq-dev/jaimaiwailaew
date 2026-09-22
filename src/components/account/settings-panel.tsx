@@ -1,26 +1,11 @@
 "use client";
 
-import { Bell, Cloud, RefreshCw } from "lucide-react";
+import { Cloud, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
 
 import { useAuth } from "@/auth/auth-provider";
 import { Button } from "@/components/ui/button";
-import {
-  deleteFcmToken,
-  isFirebaseConfigured,
-  requestFcmToken,
-} from "@/lib/firebase";
-import {
-  createCloudSyncTransport,
-  isCloudSyncConfigured,
-} from "@/sync/cloud-api";
-import {
-  getStoredFcmToken,
-  isNotificationEnabled,
-  setNotificationEnabled,
-  setStoredFcmToken,
-} from "@/sync/preferences";
+import { isCloudSyncConfigured } from "@/sync/cloud-api";
 import { useCloudSync } from "@/sync/sync-provider";
 
 const syncLabels = {
@@ -35,7 +20,7 @@ const syncLabels = {
 } as const;
 
 export function SettingsPanel() {
-  const { status: authStatus, user, getAccessToken } = useAuth();
+  const { status: authStatus, user } = useAuth();
   const {
     enabled,
     error: syncError,
@@ -44,25 +29,6 @@ export function SettingsPanel() {
     status: syncStatus,
     syncNow,
   } = useCloudSync();
-  const [notificationOverride, setNotificationOverride] = useState<{
-    readonly userId: string;
-    readonly enabled: boolean;
-  } | null>(null);
-  const [notificationPending, setNotificationPending] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState<string | null>(
-    null,
-  );
-  const transport = useMemo(
-    () => createCloudSyncTransport(getAccessToken),
-    [getAccessToken],
-  );
-
-  const notificationsEnabled = user
-    ? notificationOverride?.userId === user.id
-      ? notificationOverride.enabled
-      : isNotificationEnabled(user.id)
-    : false;
-
   if (authStatus === "loading") {
     return <p role="status">กำลังโหลดการตั้งค่า…</p>;
   }
@@ -71,8 +37,7 @@ export function SettingsPanel() {
     return (
       <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
         <p className="text-muted-foreground leading-7">
-          Cloud Sync และ Push Notification เป็นฟีเจอร์สำหรับสมาชิก
-          กรุณาเข้าสู่ระบบก่อนตั้งค่า
+          Cloud Sync เป็นฟีเจอร์สำหรับสมาชิก กรุณาเข้าสู่ระบบก่อนตั้งค่า
         </p>
         <Button asChild className="mt-5">
           <Link href="/login">เข้าสู่ระบบ</Link>
@@ -81,46 +46,8 @@ export function SettingsPanel() {
     );
   }
 
-  async function updateNotifications(nextEnabled: boolean) {
-    if (!user) return;
-    setNotificationPending(true);
-    setNotificationMessage(null);
-    try {
-      if (nextEnabled) {
-        if (!isFirebaseConfigured) {
-          throw new Error("ยังไม่ได้ตั้งค่า Push Notification");
-        }
-        if (!isCloudSyncConfigured) {
-          throw new Error("ยังไม่ได้ตั้งค่า Cloud Sync API");
-        }
-        const token = await requestFcmToken();
-        await transport.registerNotificationToken(token);
-        setStoredFcmToken(user.id, token);
-        setNotificationEnabled(user.id, true);
-        setNotificationOverride({ userId: user.id, enabled: true });
-        setNotificationMessage("เปิด Push Notification แล้ว");
-      } else {
-        const token = getStoredFcmToken(user.id);
-        setNotificationEnabled(user.id, false);
-        setNotificationOverride({ userId: user.id, enabled: false });
-        if (token && isCloudSyncConfigured) {
-          await transport.unregisterNotificationToken(token);
-        }
-        await deleteFcmToken();
-        setStoredFcmToken(user.id, null);
-        setNotificationMessage("ปิด Push Notification แล้ว");
-      }
-    } catch (error) {
-      setNotificationMessage(
-        error instanceof Error ? error.message : "ตั้งค่าการแจ้งเตือนไม่สำเร็จ",
-      );
-    } finally {
-      setNotificationPending(false);
-    }
-  }
-
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6">
       <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
         <div className="flex items-start gap-3">
           <Cloud aria-hidden="true" className="text-primary mt-0.5 size-5" />
@@ -180,55 +107,11 @@ export function SettingsPanel() {
             aria-hidden="true"
             className={`size-4 ${syncStatus === "syncing" ? "animate-spin" : ""}`}
           />
-          ซิงก์ตอนนี้
+          {syncStatus === "error" ? "ลองอีกครั้ง" : "ซิงก์ตอนนี้"}
         </Button>
       </section>
 
-      <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
-        <div className="flex items-start gap-3">
-          <Bell aria-hidden="true" className="text-primary mt-0.5 size-5" />
-          <div>
-            <h2 className="text-lg font-bold">Push Notification</h2>
-            <p className="text-muted-foreground mt-1 text-sm leading-6">
-              แจ้งเตือนเมื่อข้อมูลถูกเพิ่ม แก้ไข ลบ หรือเมื่อซิงก์ไม่สำเร็จ
-              เบราว์เซอร์จะขออนุญาตก่อนเปิดใช้งาน
-            </p>
-          </div>
-        </div>
-
-        {!isFirebaseConfigured ? (
-          <p className="text-warning-strong mt-4 text-sm" role="status">
-            ยังไม่ได้ตั้งค่า Push Notification
-          </p>
-        ) : null}
-
-        <label className="mt-5 flex min-h-11 cursor-pointer items-center justify-between gap-4">
-          <span className="font-semibold">เปิด Push Notification</span>
-          <input
-            checked={notificationsEnabled}
-            className="size-5 accent-current"
-            disabled={notificationPending || !isFirebaseConfigured}
-            onChange={(event) => void updateNotifications(event.target.checked)}
-            type="checkbox"
-          />
-        </label>
-        {notificationMessage ? (
-          <p
-            className={`mt-4 text-sm ${
-              notificationMessage.includes("สำเร็จ") ||
-              notificationMessage.includes("เปิด") ||
-              notificationMessage.includes("ปิด")
-                ? "text-muted-foreground"
-                : "text-danger"
-            }`}
-            role="status"
-          >
-            {notificationMessage}
-          </p>
-        ) : null}
-      </section>
-
-      <aside className="border-border bg-muted/40 rounded-2xl border p-5 text-sm leading-6 lg:col-span-2">
+      <aside className="border-border bg-muted/40 rounded-2xl border p-5 text-sm leading-6">
         <strong>ความเป็นส่วนตัว:</strong> ระบบใช้ Supabase เฉพาะการยืนยันตัวตน
         และส่งข้อมูล Workspace ไปยัง R2 ผ่าน Worker เฉพาะเมื่อเปิด Cloud Sync
         เท่านั้น คุณยังใช้งานแบบ Local-only โดยไม่เข้าสู่ระบบได้เสมอ

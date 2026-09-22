@@ -17,7 +17,6 @@ import { useCalculatorStore } from "@/calculator/store";
 import { createCloudSyncTransport, isCloudSyncConfigured } from "./cloud-api";
 import {
   isCloudSyncEnabled,
-  isNotificationEnabled,
   setCloudSyncEnabled as persistCloudSyncEnabled,
 } from "./preferences";
 import { syncWorkspace } from "./syncEngine";
@@ -33,22 +32,6 @@ interface CloudSyncContextValue {
 }
 
 const CloudSyncContext = createContext<CloudSyncContextValue | null>(null);
-
-async function showSyncErrorNotification(message: string) {
-  if (
-    typeof Notification === "undefined" ||
-    Notification.permission !== "granted" ||
-    !("serviceWorker" in navigator)
-  ) {
-    return;
-  }
-  const registration = await navigator.serviceWorker.ready;
-  await registration.showNotification("ซิงก์ข้อมูลไม่สำเร็จ", {
-    body: message,
-    icon: "/icons/icon.svg",
-    tag: "cloud-sync-error",
-  });
-}
 
 export function CloudSyncProvider({
   children,
@@ -121,9 +104,6 @@ export function CloudSyncProvider({
           : "ไม่สามารถซิงก์ข้อมูลได้";
       setError(message);
       setStatus("error");
-      if (isNotificationEnabled(user.id)) {
-        await showSyncErrorNotification(message);
-      }
     } finally {
       runningRef.current = false;
     }

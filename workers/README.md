@@ -35,7 +35,8 @@ environments.
 
 ## Supabase configuration
 
-- Enable Email, Google, and GitHub providers in Supabase.
+- Enable Google and GitHub providers used by the current UI. Email/password authentication is
+  outside the completed Phase 1E scope.
 - Add production and preview `/auth/callback` URLs to the Supabase redirect
   allowlist. Configure the provider callback URL shown by Supabase in the
   Google/GitHub consoles.
@@ -48,6 +49,6 @@ npm run worker:dev
 ```
 
 Cloud Sync is opt-in. With missing configuration the web application remains
-usable in Local-only mode and shows an explicit unavailable status. Before
-production, complete the privacy/legal review and implement account/cloud-data
-deletion and an operational retention policy.
+usable in Local-only mode and shows an explicit unavailable status. Account/cloud-data deletion,
+an operational retention policy, and the remaining privacy/legal review are roadmap items that
+require separately approved scope.

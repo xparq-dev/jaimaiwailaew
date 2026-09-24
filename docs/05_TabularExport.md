@@ -1,10 +1,10 @@
 # Phase 1D — Local-only Excel/CSV Export
 
-สถานะ: กำลังพัฒนาบน branch `feat/local-excel-csv-export`; ยังไม่เปิด Pull Request
+สถานะ: Phase 1D merge เข้า `main` แล้วผ่าน PR #10 และใช้งานบน production
 
 ## ขอบเขต
 
-หน้า Summary มีปุ่ม `ส่งออก Excel` และ `ส่งออก CSV` ถัดจากการสร้าง PDF เมื่อกดปุ่ม ระบบจะสร้างข้อมูลใน memory และเปิด Preview แบบแท็บให้ตรวจทุก Sheet/ไฟล์ก่อน ผู้ใช้ต้องกดดาวน์โหลดใน Preview อีกครั้งจึงจะบันทึกไฟล์ลงอุปกรณ์ ไม่มี API route, server action, upload, Auth, Cloud หรือการคำนวณภาษี
+หน้า Summary มีปุ่ม `ส่งออก Excel` และ `ส่งออก CSV` ถัดจากการสร้าง PDF เมื่อกดปุ่ม ระบบจะสร้างข้อมูลใน memory และเปิด Preview แบบแท็บให้ตรวจทุก Sheet/ไฟล์ก่อน ผู้ใช้ต้องกดดาวน์โหลดใน Preview อีกครั้งจึงจะบันทึกไฟล์ลงอุปกรณ์ ไม่มี API route, server action หรือการ upload ไฟล์ export
 
 ## รูปแบบไฟล์
 
@@ -20,12 +20,13 @@
 - รายการรายเดือนแสดง `MM/พ.ศ.` โดยไม่สร้างวันที่สมมติ; รายการครั้งเดียวแสดง `DD/MM/พ.ศ.`
 - Summary มีรายรับรวม รายจ่ายรวม ภาษีหัก ณ ที่จ่ายรวม ค่าลดหย่อนรวม และยอดคงเหลือ
 - Breakdown ครอบคลุมรายรับตามแหล่งที่มา/หมวดหมู่ และรายจ่ายตามหมวดหมู่/สถานะ พร้อมจำนวนรายการ ยอดรวม และสัดส่วนสองตำแหน่ง
-- Summary มี Bangkok timestamp, `Tax Rules 2568/2569: unverified / not for calculation` และ disclaimer
-- ไม่ส่งออก entry/workspace/rule ID, หมายเหตุ, certificate reference, URL, path, filename, build/version/commit SHA, tax rate, tax due หรือ refund
+- Summary มี Bangkok timestamp, `Tax Rules 2568/2569: verified / published (v1.0.0)` และ disclaimer
+- ไม่ส่งออก entry/workspace/rule ID, หมายเหตุ, certificate reference, URL, path, filename, build/version/commit SHA หรือข้อมูลเทคนิค
+- แสดงผลประมาณการภาษีที่เกี่ยวข้องพร้อม disclaimer ว่าไม่ใช่แบบยื่นภาษีอย่างเป็นทางการ
 - Service Worker ไม่ cache `.xlsx`, `.csv` หรือ `.zip`
 
 ## การทดสอบ
 
 Unit tests เปิด ZIP และตรวจ OOXML/CSV จริง รวมทั้งชื่อ Sheet/ไฟล์, numeric cells, UTF-8 BOM, formula neutralization, optional sections และการไม่มีข้อมูลภายใน Component tests ยืนยันว่า Preview ต้องปรากฏก่อนดาวน์โหลดและไม่มี fetch/storage/URL mutation ส่วน Playwright ตรวจ Preview, การดาวน์โหลดจริงทั้ง desktop/mobile, light/dark mode และ network privacy
 
-Phase 1E, Auth และ Cloud ไม่อยู่ในขอบเขตงานนี้
+Auth และ Cloud Sync ไม่อยู่ในเส้นทางการสร้างไฟล์; export ยังคงทำใน browser แม้ Phase 1E จะเปิดใช้แยกต่างหาก

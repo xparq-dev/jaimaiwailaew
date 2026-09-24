@@ -1,21 +1,56 @@
-> สถานะปัจจุบัน: มี manifest, service-worker baseline, versioned public cache และ offline fallback แล้ว
-> แต่ PWA/Offline Completion ยังไม่เริ่มเป็น Phase ที่อนุมัติ และยังไม่ผ่าน acceptance บนอุปกรณ์จริง
+# Phase 1F — PWA and Offline Completion
 
-ทำ PWA และ Offline Experience สำหรับ Jai Mai Wai Laew MVP 1
+> สถานะปัจจุบัน: scope ได้รับอนุมัติและอยู่ระหว่าง implementation/acceptance บน
+> `feat/phase-1f-pwa-offline` ยังไม่ถือว่า Phase เสร็จจนกว่า CI, browser tests และ manual device
+> acceptance จะผ่านครบ
 
-เอกสารนี้เป็น proposed scope ที่พร้อมใช้กำหนด Phase ถัดไป ไม่ได้หมายความว่า Phase 1F เริ่มแล้ว
+## เป้าหมาย
 
-ต้องมี:
+ทำให้เครื่องคำนวณและการสร้าง PDF ใช้งานต่อได้หลัง first successful online visit โดยยังรักษา
+local-first default และไม่คัดลอกข้อมูลผู้ใช้เข้า Cache Storage
 
-- manifest ที่ถูกต้อง
-- install prompt ที่ไม่ intrusive
-- cache app shell, static assets, public learn content และ last-known tax rule bundle
-- calculator ที่ทำงาน offline ได้หลังเคยเข้าหน้าเว็บออนไลน์แล้ว
-- offline page fallback
-- offline banner ที่ชัดเจน
-- แสดง tax rule version และ cached timestamp
-- ปุ่มล้างข้อมูล local ของผู้ใช้
-- ห้าม cache รายการการเงิน/PDF/ข้อมูลผู้ใช้ใน service worker public cache
-- ห้ามทำเว็บ grayscale ทั้งหน้าเมื่อ offline
-- ต้องมี test/checklist สำหรับ offline flow
-- เขียน README อธิบาย caching strategy และข้อจำกัด
+## In scope
+
+- Web App Manifest พร้อม PNG icons ขนาด 192/512, Apple touch icon และ maskable icon
+- public Calculator app shell และ build assets ที่จำเป็นต่อการคำนวณด้วยกฎภาษีเวอร์ชัน `1.0.0`
+- offline banner ที่แสดงเวอร์ชันกฎและเวลาที่เตรียม cache ตาม Asia/Bangkok
+- static offline fallback สำหรับหน้าที่ไม่อยู่ใน safe navigation allow-list
+- offline PDF generation หลังระบบเตรียม public PDF runtime ขณะออนไลน์
+- การล้าง cache รุ่นเก่าเมื่อ app cache version หรือ tax-rule version เปลี่ยน
+- unit/browser/manual-device acceptance
+
+## Cache policy
+
+Service worker ใช้ allow-list และเก็บได้เฉพาะ:
+
+- static fallback, manifest และ public icons
+- exact public navigation routes ที่ระบุใน `SAFE_NAVIGATION_PATHS`
+- same-origin `/_next/static/` build assets ของ public app shell, tax engine/rules และ PDF runtime
+- metadata เชิงเทคนิค: cache version, tax-rule version, cached timestamp และจำนวน route ที่เตรียมสำเร็จ
+
+Service worker ห้าม cache:
+
+- Local Storage, รายรับ, รายจ่าย, ภาษีหัก ณ ที่จ่าย, ค่าลดหย่อน หรือ note ของผู้ใช้
+- `/api`, `/auth`, `/login`, `/signup`, `/profile`, `/settings` และ Cloud Sync payload
+- query-bearing navigation URL
+- PDF, Excel, CSV, ZIP หรือเส้นทาง export/download/upload
+- OAuth callback/token หรือข้อมูลบัญชี
+
+ข้อมูลที่ผู้ใช้แก้ขณะออฟไลน์ยังบันทึกใน Local Storage ตามกลไก Calculator เดิม Cloud Sync
+ไม่ทำงานแทนผู้ใช้และจะกลับมาทำงานตาม opt-in setting เมื่อออนไลน์
+
+## Invalidation
+
+เมื่อ public shell เปลี่ยนแบบไม่ compatible ให้เพิ่ม `CACHE_VERSION` ใน `public/sw.js` เมื่อเผยแพร่
+tax-rule bundle ใหม่ ให้เปลี่ยน `TAX_RULE_VERSION` ให้ตรงกับ reviewed/published metadata
+ชื่อ cache จะเปลี่ยนและ service worker จะลบเฉพาะ cache รุ่นเก่าภายใต้ `jmwl-public-static-`
+
+## Acceptance
+
+- Automated: manifest/icon dimensions, cache allow-list/privacy, offline Calculator, cached rule metadata,
+  offline PDF และ online recovery
+- Manual: Android/desktop installability, iOS Add to Home Screen, maskable safe area, standalone launch,
+  update/recovery และ accessibility ตาม
+  [`Phase1FManualAcceptance.md`](./Phase1FManualAcceptance.md)
+
+ห้ามปิด Phase 1F จาก automated results เพียงอย่างเดียว ต้องแนบผล manual-device acceptance ก่อน

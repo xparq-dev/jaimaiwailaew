@@ -9,16 +9,18 @@
 
 ## สถานะโครงการ
 
-> สถานะ: Phase 1E — Auth + Local-first Cloud Sync ปิด Release Gate เป็น `PASS` แล้วบน
-> production baseline `main @ 56b1192` หลัง merge PR #16 และ PR #17
+> สถานะ: Phase 1E — Auth + Local-first Cloud Sync ปิด Release Gate เป็น `PASS` แล้ว
+> และ Phase 1F — PWA and Offline Completion อยู่ระหว่าง implementation/acceptance
+> บน branch `feat/phase-1f-pwa-offline`
 
 โครงการพัฒนาผ่าน Phase 1A–1D, Tax Rules Verification และ Phase 1E แล้ว ปัจจุบันรองรับ
 เครื่องคำนวณแบบ local-first, การประมาณการภาษีจากชุดกฎปี 2568/2569 ที่เผยแพร่เป็นเวอร์ชัน
 `1.0.0`, รายงาน PDF/Excel/CSV ที่สร้างในเบราว์เซอร์, Google/GitHub OAuth และ Cloud Sync
 แบบ opt-in ผ่าน Supabase Auth กับ Cloudflare Worker/R2 โดยยังใช้งานแบบไม่เข้าสู่ระบบได้ตามเดิม
 
-Phase 1F ยังไม่เริ่มและยังไม่มี scope ที่อนุมัติ เอกสารเสนอ PWA/Offline Completion เป็นงานถัดไปที่
-พร้อมกำหนดขอบเขตที่สุด แต่ยังเป็นเพียง proposed next phase
+Phase 1F ได้รับอนุมัติแล้ว โดยจำกัด scope ไว้ที่ installability, public app shell,
+versioned tax-rule runtime, offline Calculator/PDF, offline status และ cache privacy
+ยังไม่ถือว่าปิด Phase จนกว่าจะผ่าน automated checks และ manual acceptance บนอุปกรณ์จริง
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
@@ -101,19 +103,21 @@ production CSP, การลงทะเบียน service worker และ of
 
 ## PWA และ caching strategy
 
-`public/sw.js` เป็น service-worker baseline แบบ allowlist และมีขอบเขตโดยตั้งใจดังนี้:
+`public/sw.js` เป็น service worker แบบ allow-list และมีขอบเขตโดยตั้งใจดังนี้:
 
-- precache เฉพาะหน้า offline fallback และไอคอนสาธารณะ
-- cache-on-demand เฉพาะ `/_next/static/`, `/icons/` และ manifest/favicon ที่ระบุชัด
-- navigation ใช้ network ก่อนและ cache successful same-origin shell ที่ไม่มี query; หากไม่มี shell ใน cache
-  จึงแสดง static offline fallback
+- precache เฉพาะ offline fallback, manifest และ PNG install icons สาธารณะ
+- warm เฉพาะหน้า public Calculator ที่อยู่ใน `SAFE_NAVIGATION_PATHS` และ asset graph ใต้
+  `/_next/static/`; หน้า Auth/Account/Settings/API/Sync ไม่อยู่ใน allow-list
+- navigation ที่ปลอดภัยใช้ network ก่อน แล้ว fallback ไปยัง shell ที่เตรียมไว้หรือ static offline fallback
+- เตรียม PDF runtime ขณะออนไลน์เพื่อให้สร้าง PDF ภายใน browser ได้เมื่อออฟไลน์
 - ไม่ cache API response, เส้นทาง export/download/upload หรือไฟล์ PDF/CSV/Excel; ข้อมูลการเงินยังอยู่ใน
   localStorage และไม่ถูกเขียนลง Cache Storage
-- cache มี version และลบเฉพาะ cache รุ่นเก่าที่ใช้ namespace ของแอปนี้
+- cache name ผูกกับ app cache version และ tax-rule version; activation ลบเฉพาะ cache รุ่นเก่าที่ใช้
+  namespace ของแอปนี้
+- Offline banner แสดง tax-rule version และ cached timestamp โดยไม่มีข้อมูลผู้ใช้
 
-PWA/Offline Completion ยังไม่ปิด acceptance criteria: ยังต้องยืนยัน installability บนอุปกรณ์จริง,
-เพิ่ม PNG icons, ทำให้ Calculator และชุดกฎพร้อมใช้งาน offline หลัง first online visit, แสดง rule version
-กับ cached timestamp และตรวจ offline PDF โดยยืนยันว่าไม่มีข้อมูลผู้ใช้หรือไฟล์ export หลุดเข้า Cache Storage
+Phase 1F ยังไม่ปิด acceptance criteria จนกว่าจะยืนยัน installability และ maskable icon
+บนอุปกรณ์จริงตาม [`docs/Phase1FManualAcceptance.md`](./docs/Phase1FManualAcceptance.md)
 
 เมื่อต้องเปลี่ยนสิ่งที่ precache ให้แก้ `CACHE_VERSION` ใน `public/sw.js`
 เพื่อให้ service worker ลบ cache รุ่นเก่าหลัง activate
@@ -167,5 +171,5 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 - ยังไม่มี Lighthouse report อย่างเป็นทางการสำหรับ mobile และ desktop
 - Cloudflare Worker/R2 ใช้งานกับ Cloud Sync แล้ว แต่ custom domain และ DNS/WAF/Analytics ยังต้องตัดสินใจแยก
 - หน้าเว็บตั้ง `noindex` ไว้ใน Foundation โดยตั้งใจ ต้องทบทวนหลังเนื้อหาและกฎผ่านการอนุมัติ
-- PWA ใช้ SVG icon แบบ regular/maskable ใน skeleton; ควรเพิ่ม PNG หลายขนาดและตรวจการติดตั้งบนอุปกรณ์จริงก่อน production
+- PWA มี PNG regular/maskable icons แล้ว แต่ยังต้องบันทึกผลการติดตั้งและการแสดงไอคอนบนอุปกรณ์จริงก่อนปิด Phase 1F
 - CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ก่อนเปิดรับข้อมูลจริงควรประเมิน nonce-based CSP เทียบกับต้นทุน dynamic rendering

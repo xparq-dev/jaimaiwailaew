@@ -48,9 +48,11 @@ export default function PrivacyPage() {
           title: "Service worker และไฟล์ส่งออก",
           content: (
             <p>
-              Service worker เก็บเฉพาะ offline fallback และ static asset
-              ที่กำหนดไว้ ไม่ cache ข้อมูลการเงิน, API response, PDF, Excel หรือ
-              CSV ไฟล์รายงานยังสร้างในเบราว์เซอร์และดาวน์โหลดลงอุปกรณ์โดยตรง
+              Service worker เก็บเฉพาะ offline fallback และ static asset ของ
+              public Calculator ที่กำหนดใน allow-list รวมถึง metadata
+              เวอร์ชันกฎและเวลาแคช โดยไม่ cache ข้อมูลการเงิน, API response,
+              ข้อมูลบัญชี/การซิงก์, PDF, Excel หรือ CSV
+              ไฟล์รายงานยังสร้างในเบราว์เซอร์และดาวน์โหลดลงอุปกรณ์โดยตรง
             </p>
           ),
         },

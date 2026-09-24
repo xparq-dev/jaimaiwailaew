@@ -10,7 +10,7 @@
 
 - Phase 1E Release Gate: **PASS / Closed**
 - Branch: `main`
-- Baseline commit: `56b1192` — Merge PR #17
+- Baseline commit ก่อน Phase 1F: `888918b` — Merge PR #18 (documentation reconciliation)
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
 - PR #17: ลบข้อความ Push/Notification ที่ค้างใน Settings/Profile
@@ -59,21 +59,20 @@
 
 ### PWA / Offline Completion
 
-ระบบมี manifest, service-worker baseline, versioned public cache และ offline fallback แล้ว แต่ยังไม่ถือว่า
-PWA/Offline Completion เสร็จจนกว่าจะผ่าน installability และ offline acceptance บนอุปกรณ์เป้าหมาย:
+Phase 1F ได้รับอนุมัติและเริ่มบน branch `feat/phase-1f-pwa-offline` แล้ว แต่ยังไม่ถือว่าเสร็จ
+จนกว่า automated checks และ installability/offline acceptance บนอุปกรณ์เป้าหมายจะผ่านครบ:
 
-- [ ] เพิ่ม PNG icons หลายขนาดและตรวจ maskable icon
+- [x] เพิ่ม PNG icons ขนาด 192/512, Apple touch icon และ maskable icon
 - [ ] ตรวจติดตั้งบนอุปกรณ์จริงและ browser ใน product matrix
-- [ ] รองรับ Calculator และ versioned tax-rule bundle หลัง first online visit
-- [ ] แสดง Offline banner พร้อม tax-rule version และ cached timestamp
-- [ ] ตรวจ offline PDF โดยไม่มี user data หรือไฟล์ export ใน Cache Storage
-- [ ] ตรวจ recovery เมื่อกลับ online โดยไม่ทำให้ local data สูญหาย
+- [x] รองรับ Calculator และ versioned tax-rule runtime หลัง first online visit ใน automated browser test
+- [x] แสดง Offline banner พร้อม tax-rule version และ cached timestamp
+- [x] ตรวจ offline PDF โดยไม่มี user data หรือไฟล์ export ใน Cache Storage ด้วย automated browser test
+- [x] ตรวจ recovery เมื่อกลับ online โดยไม่ทำให้ local data สูญหายใน automated browser test
+- [ ] ผ่าน CI, Vercel Preview และ manual device acceptance ครบ
 
 ## Proposed next phase
 
-Phase 1F **ยังไม่เริ่มและยังไม่มี branch** ข้อเสนอที่มี specification พร้อมที่สุดคือ
-**PWA and Offline Completion** แต่ต้องได้รับ scope และ acceptance criteria ที่อนุมัติอย่างชัดเจนก่อน
-สร้าง branch หรือแก้ runtime code
+Phase หลัง 1F ยังไม่มี scope ที่อนุมัติ ห้ามเริ่มงานถัดไปก่อน Phase 1F ผ่าน release gate
 
 Release Hardening, Knowledge Center, account-roadmap follow-ups, reports, admin, payment/LINE และ OCR
 ต้องแยก scope/PR ตาม ownership ไม่ควรรวมกับ PWA/Offline feature PR

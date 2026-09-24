@@ -1,3 +1,5 @@
+import pdfMake from "pdfmake/build/pdfmake.js";
+
 import type { LocalPdfReportModel } from "@/pdf/local-pdf-report";
 
 import {
@@ -14,9 +16,6 @@ export interface LocalPdfArtifact {
 export async function createLocalPdfArtifact(
   report: LocalPdfReportModel,
 ): Promise<LocalPdfArtifact> {
-  const importedPdfMake = await import("pdfmake/build/pdfmake.js");
-  const pdfMake = importedPdfMake.default;
-
   pdfMake.addVirtualFileSystem(sarabunVfs);
   pdfMake.addFonts({
     Sarabun: {

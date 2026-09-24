@@ -1,10 +1,13 @@
 "use client";
 
 import { CloudOff, Wifi } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useLocale } from "@/components/providers/locale-provider";
+import {
+  getOfflineCacheMetadata,
+  type OfflineCacheMetadata,
+} from "@/pwa/service-worker-client";
 
 function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true);
@@ -56,6 +59,18 @@ export function NetworkStatusBadge() {
 
 export function OfflineBanner() {
   const isOnline = useOnlineStatus();
+  const [metadata, setMetadata] = useState<OfflineCacheMetadata | null>(null);
+
+  useEffect(() => {
+    if (isOnline) return;
+    let active = true;
+    void getOfflineCacheMetadata().then((value) => {
+      if (active) setMetadata(value);
+    });
+    return () => {
+      active = false;
+    };
+  }, [isOnline]);
 
   if (isOnline) {
     return null;
@@ -68,12 +83,25 @@ export function OfflineBanner() {
     >
       <div className="mx-auto flex max-w-screen-2xl items-start gap-2 lg:pl-72">
         <CloudOff aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-        <p>
-          คุณกำลังใช้งานแบบออฟไลน์ โครงสร้างนี้ยังไม่เปิดใช้การคำนวณ
-          และจะไม่อ้างว่าข้อมูลกฎหมายเป็นข้อมูลล่าสุด{" "}
-          <Link className="font-semibold underline" href="/offline">
+        <p className="leading-relaxed">
+          คุณกำลังใช้งานแบบออฟไลน์
+          เครื่องคำนวณใช้ข้อมูลในอุปกรณ์และกฎภาษีที่แคชไว้
+          {metadata
+            ? ` เวอร์ชัน ${metadata.taxRuleVersion}`
+            : " (ไม่ทราบเวอร์ชัน)"}
+          {metadata?.cachedAt
+            ? ` เมื่อ ${new Intl.DateTimeFormat("th-TH", {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "Asia/Bangkok",
+              }).format(new Date(metadata.cachedAt))} น.`
+            : " โดยไม่พบเวลาที่แคช"}
+          {metadata && !metadata.ready
+            ? " ชุดออฟไลน์อาจยังเตรียมไม่ครบ กรุณากลับมาออนไลน์ก่อนใช้งานครั้งถัดไป"
+            : " โปรดตรวจข้อมูลล่าสุดอีกครั้งเมื่อกลับมาออนไลน์"}{" "}
+          <a className="font-semibold underline" href="/offline">
             ดูรายละเอียด
-          </Link>
+          </a>
         </p>
       </div>
     </div>

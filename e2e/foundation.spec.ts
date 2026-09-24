@@ -76,9 +76,12 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   expect(manifest.start_url).toBe("/");
   expect(manifest.icons).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ src: "/icons/icon.svg", purpose: "any" }),
       expect.objectContaining({
-        src: "/icons/maskable-icon.svg",
+        src: "/icons/icon-192.png",
+        purpose: "any",
+      }),
+      expect.objectContaining({
+        src: "/icons/maskable-icon-512.png",
         purpose: "maskable",
       }),
     ]),
@@ -122,20 +125,25 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   try {
     await page.goto("/offline-e2e-probe");
     await expect(
-      page.getByRole("heading", { name: "ขณะนี้คุณกำลังออฟไลน์" }),
+      page.getByRole("heading", {
+        name: "หน้านี้ยังไม่ได้เตรียมไว้สำหรับออฟไลน์",
+      }),
     ).toBeVisible();
   } finally {
     await page.context().setOffline(false);
   }
 });
 
-test("serves remaining unstarted route families as honest placeholders", async ({
+test("keeps unstarted learning content honest and publishes offline guidance", async ({
   page,
 }) => {
-  for (const route of ["/learn/tax-basics", "/offline"]) {
-    await page.goto(route);
-    await expect(page.getByText("ยังไม่เปิดใช้การคำนวณ")).toBeVisible();
-  }
+  await page.goto("/learn/tax-basics");
+  await expect(page.getByText("ยังไม่เปิดใช้การคำนวณ")).toBeVisible();
+
+  await page.goto("/offline");
+  await expect(
+    page.getByRole("heading", { name: "ใช้เครื่องคำนวณต่อได้เมื่อออฟไลน์" }),
+  ).toBeVisible();
 });
 
 test("switches language and theme without putting state in the URL", async ({

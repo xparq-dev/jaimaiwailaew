@@ -5,6 +5,10 @@
 Tax rules in **Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว)** are strictly deterministic, versioned, schema-validated, and safe-by-default.
 This document details the rule versioning model, fail-closed policy, Money precision policy, source review workflow, and requirements before any tax year can become available for real tax estimation.
 
+> Current release status (2026-09-23): BE 2568/2569 rule sets are
+> `verified / published (v1.0.0)` and available for estimates. The workflow and fail-closed
+> requirements below continue to apply to every new or changed rule-set version.
+
 ---
 
 ## 1. Tax Rule Versioning Model
@@ -46,18 +50,21 @@ Financial calculations are handled exclusively in **integer satang** (`MoneySata
 Every tax rule must link to verified official sources before publication:
 
 ### Evidence Levels
+
 - `primary_official`: Official law, Revenue Department announcement, royal gazette, or official form.
 - `secondary_official`: Official Revenue Department website guide or official press release.
 - `professional_review`: Review note signed off by a licensed Thai Tax Auditor / CPA / Tax Lawyer.
 - `unverified`: Default state for unverified placeholders.
 
 ### Reviewer Statuses
+
 - `not_reviewed`: Source has not been checked.
 - `under_review`: Source under professional review.
 - `reviewed`: Source validated by qualified expert.
 - `rejected`: Source rejected as inaccurate or outdated.
 
 ### Requirements to Change Rule Status from `unverified` to `published`
+
 1. All sources must be `primary_official` or `secondary_official` with valid official URLs and `lastCheckedAt` timestamps.
 2. Rule set `verificationStatus` must be changed to `verified`.
 3. `notForCalculation` must be set to `false`.
@@ -66,9 +73,10 @@ Every tax rule must link to verified official sources before publication:
 
 ---
 
-## 5. Data Intentionally NOT Present in Phase 1A
+## 5. Historical Phase 1A Baseline
 
-The following legal tax data is **intentionally absent** from repository files in Phase 1A:
+The following legal tax data was **intentionally absent** from the initial Phase 1A baseline and
+was added only through the later verification/publish workflow:
 
 - Personal tax bracket ranges and marginal tax rates.
 - Standard deduction percentage ceilings and maximum Baht limits.
@@ -80,8 +88,10 @@ The following legal tax data is **intentionally absent** from repository files i
 
 ## 6. Phase 1A Completion & Gate to Phase 1B (Calculator UX)
 
-Phase 1A Tax Rule Engine implementation is complete with 100% test pass rate.
-The system remains in a safe-by-default state where unverified placeholders block all calculation.
+Phase 1A Tax Rule Engine implementation is complete. The later BE 2568/2569 verification and
+publication gate also passed; unverified placeholders and unsupported future rule sets still block
+all calculations by default.
 
-**Gate to Phase 1B (Calculator UX)**:
+**Historical Gate to Phase 1B (passed)**:
+
 - Approval of Phase 1A codebase and documentation from the Project Owner.

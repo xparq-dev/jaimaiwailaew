@@ -1,8 +1,13 @@
 Product Requirements Document
 
 > หมายเหตุสถานะการดำเนินงาน: ข้อกำหนดในเอกสารนี้เป็น source of truth ของผลิตภัณฑ์
-> ส่วนผลการทำ Phase 0, deployment และ acceptance gates ที่ยังค้าง อัปเดตไว้ใน
+> ส่วนผลการทำ Phase 1A–1E, deployment และ acceptance gates ที่ยังค้าง อัปเดตไว้ใน
 > [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) เพื่อไม่แก้ข้อกำหนดให้ปะปนกับสถานะงาน
+>
+> **Architecture reconciliation:** แผน Account/Cloud เดิมด้านล่างอธิบาย Supabase Database/RLS
+> แต่ implementation ที่ผ่าน Phase 1E ใช้ Supabase เฉพาะ Auth และใช้ Cloudflare Worker กับ private R2
+> สำหรับ Cloud Sync แบบ opt-in รายการ Email login, account deletion, audit log, consent management,
+> dashboard และ Supabase Database/RLS จึงเป็น roadmap ที่ต้อง re-scope ไม่ใช่สถานะปัจจุบัน
 
 ชื่อและตัวตนผลิตภัณฑ์
 รายการ	ข้อกำหนด
@@ -27,7 +32,7 @@ MVP 1 ต้องทำสิ่งต่อไปนี้ได้:
 
 ไม่จำกัดจำนวนครั้งในการคำนวณ
 
-ไม่บันทึกข้อมูลผู้เยี่ยมชมไปยัง Cloud
+ไม่บันทึกข้อมูลผู้เยี่ยมชมไปยัง Cloud; เฉพาะสมาชิกที่เปิด Cloud Sync แบบ opt-in จึงส่งสำเนา Workspace
 
 เก็บข้อมูลชั่วคราวเฉพาะใน session หรือใน browser ของผู้ใช้ตามการอนุญาต
 
@@ -908,6 +913,9 @@ Content สามารถ version ได้ในอนาคต
 
 Phase 3: Account and Cloud Data
 เป้าหมาย: ให้ผู้ใช้บันทึกงานและกลับมาใช้ต่อได้อย่างปลอดภัย
+
+สถานะหลัง Phase 1E: Google/GitHub OAuth, Profile/Logout และ opt-in Cloud Sync ผ่าน Worker/R2 ทำแล้ว
+รายการที่เหลือในส่วนนี้ต้องได้รับ scope ใหม่ตาม architecture reconciliation ด้านบน
 
 Supabase Auth
 

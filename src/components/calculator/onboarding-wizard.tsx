@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useAuth } from "@/auth/auth-provider";
 import { PERSONA_OPTIONS } from "@/calculator/categories";
 import { useCalculatorStore } from "@/calculator/store";
 import type { CalculatorPersona } from "@/calculator/types";
@@ -37,9 +38,13 @@ export function OnboardingWizard({
 }: OnboardingWizardProps) {
   const router = useRouter();
   const workspace = useCalculatorStore((state) => state.workspace);
+  const createAdditionalWorkspace = useCalculatorStore(
+    (state) => state.createAdditionalWorkspace,
+  );
   const initializeWorkspace = useCalculatorStore(
     (state) => state.initializeWorkspace,
   );
+  const { user } = useAuth();
 
   const getInitialPersona = (): CalculatorPersona => {
     switch (initialFlow) {
@@ -65,12 +70,17 @@ export function OnboardingWizard({
   const periods = taxYearPeriodDefaults(taxYearBE);
 
   const handleStart = () => {
+    const input = getDefaultWorkspaceInput(persona, taxYearBE, periodChoice);
+    if (workspace && user) {
+      createAdditionalWorkspace(input);
+      router.push("/calculator");
+      return;
+    }
     if (workspace && !confirmReplace) {
       setConfirmReplace(true);
       return;
     }
 
-    const input = getDefaultWorkspaceInput(persona, taxYearBE, periodChoice);
     initializeWorkspace(input, true);
     router.push("/calculator");
   };
@@ -78,7 +88,11 @@ export function OnboardingWizard({
   return (
     <div className="space-y-8">
       <PageHeader
-        description="เลือกรูปแบบเพื่อตั้งค่าพื้นที่จัดระเบียบข้อมูลเบื้องต้น ข้อมูลทั้งหมดจะบันทึกในอุปกรณ์นี้เท่านั้นและไม่ส่งขึ้นเครือข่าย"
+        description={
+          user
+            ? "เลือกรูปแบบเพื่อสร้าง Workspace เพิ่ม ข้อมูลจะบันทึกในอุปกรณ์ก่อนและส่งสำเนาเมื่อคุณเปิด Cloud Sync"
+            : "เลือกรูปแบบเพื่อตั้งค่าพื้นที่จัดระเบียบข้อมูลเบื้องต้น ข้อมูลทั้งหมดจะบันทึกในอุปกรณ์นี้เท่านั้นและไม่ส่งขึ้นเครือข่าย"
+        }
         eyebrow="เริ่มต้นใช้งาน"
         title="ตั้งค่าเครื่องคำนวณ"
       />

@@ -4,6 +4,7 @@ import { Cloud, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 import { useAuth } from "@/auth/auth-provider";
+import { useCalculatorStore } from "@/calculator/store";
 import { Button } from "@/components/ui/button";
 import { isCloudSyncConfigured } from "@/sync/cloud-api";
 import { useCloudSync } from "@/sync/sync-provider";
@@ -29,6 +30,9 @@ export function SettingsPanel() {
     status: syncStatus,
     syncNow,
   } = useCloudSync();
+  const workspaceCount = useCalculatorStore(
+    (state) => (state.workspace ? 1 : 0) + state.otherWorkspaces.length,
+  );
   if (authStatus === "loading") {
     return <p role="status">กำลังโหลดการตั้งค่า…</p>;
   }
@@ -55,7 +59,7 @@ export function SettingsPanel() {
             <h2 className="text-lg font-bold">Cloud Sync</h2>
             <p className="text-muted-foreground mt-1 text-sm leading-6">
               เก็บสำเนา Workspace ใน Cloudflare R2
-              และใช้ข้อมูลล่าสุดตามเวลาแก้ไข
+              และใช้ข้อมูลล่าสุดตามเวลาแก้ไข ระบบจะซิงก์ Workspace ทั้งหมด
               ข้อมูลจะไม่ถูกอัปโหลดจนกว่าคุณจะเปิดสวิตช์นี้
             </p>
           </div>
@@ -83,6 +87,9 @@ export function SettingsPanel() {
           <p>
             สถานะ: <strong>{syncLabels[syncStatus]}</strong>
           </p>
+          <p className="text-muted-foreground mt-1">
+            Workspace ในอุปกรณ์นี้: {workspaceCount} รายการ
+          </p>
           {lastSyncedAt ? (
             <p className="text-muted-foreground mt-1">
               ล่าสุด:{" "}
@@ -94,6 +101,12 @@ export function SettingsPanel() {
             </p>
           ) : null}
           {syncError ? <p className="text-danger mt-2">{syncError}</p> : null}
+          {!enabled ? (
+            <p className="text-warning-strong mt-2">
+              อุปกรณ์นี้ยังไม่ส่งหรือดึง Workspace จาก Cloud กรุณาเปิด Cloud
+              Sync บนอุปกรณ์แต่ละเครื่องที่ต้องการใช้งานร่วมกัน
+            </p>
+          ) : null}
         </div>
 
         <Button
@@ -114,7 +127,8 @@ export function SettingsPanel() {
       <aside className="border-border bg-muted/40 rounded-2xl border p-5 text-sm leading-6">
         <strong>ความเป็นส่วนตัว:</strong> ระบบใช้ Supabase เฉพาะการยืนยันตัวตน
         และส่งข้อมูล Workspace ไปยัง R2 ผ่าน Worker เฉพาะเมื่อเปิด Cloud Sync
-        เท่านั้น คุณยังใช้งานแบบ Local-only โดยไม่เข้าสู่ระบบได้เสมอ
+        เท่านั้น คุณต้องเปิด Cloud Sync แยกในแต่ละอุปกรณ์ และยังใช้งานแบบ
+        Local-only โดยไม่เข้าสู่ระบบได้เสมอ
       </aside>
     </div>
   );

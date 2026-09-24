@@ -41,10 +41,13 @@ import { migrateLocalStorageV1ToV2 } from "./migration";
 
 interface CalculatorStoreState {
   workspace: CalculatorWorkspace | null;
+  otherWorkspaces: CalculatorWorkspace[];
   lastSavedAt: string | null;
   hydrationComplete: boolean;
   persistError: string | null;
   initializeWorkspace: (input: CreateWorkspaceInput, replace?: boolean) => void;
+  createAdditionalWorkspace: (input: CreateWorkspaceInput) => void;
+  selectWorkspace: (workspaceId: string) => void;
   replaceWorkspace: (input: CreateWorkspaceInput) => void;
   updateWorkspacePersona: (persona: CalculatorPersona) => void;
   clearLocalData: () => void;
@@ -79,6 +82,9 @@ interface CalculatorStoreState {
     values: SocialSecuritySettingsFormValues,
   ) => string | null;
   restoreWorkspaceFromSync: (workspace: CalculatorWorkspace) => string | null;
+  restoreWorkspacesFromSync: (
+    workspaces: readonly CalculatorWorkspace[],
+  ) => string | null;
 }
 
 function parseMoneyAmount(amount: string) {
@@ -208,6 +214,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
   persist(
     (set, get) => ({
       workspace: null,
+      otherWorkspaces: [],
       lastSavedAt: null,
       hydrationComplete: false,
       persistError: null,
@@ -223,6 +230,45 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
           lastSavedAt: nowIsoTimestamp(),
           persistError: null,
         });
+      },
+
+      createAdditionalWorkspace: (input) => {
+        const current = get().workspace;
+        const next = createCalculatorWorkspace(input);
+        set((state) => ({
+          workspace: next,
+          otherWorkspaces: current
+            ? [
+                current,
+                ...state.otherWorkspaces.filter(
+                  (candidate) => candidate.id !== current.id,
+                ),
+              ]
+            : state.otherWorkspaces,
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        }));
+      },
+
+      selectWorkspace: (workspaceId) => {
+        const current = get().workspace;
+        if (!current || current.id === workspaceId) return;
+        const selected = get().otherWorkspaces.find(
+          (candidate) => candidate.id === workspaceId,
+        );
+        if (!selected) return;
+
+        set((state) => ({
+          workspace: selected,
+          otherWorkspaces: [
+            current,
+            ...state.otherWorkspaces.filter(
+              (candidate) => candidate.id !== workspaceId,
+            ),
+          ],
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        }));
       },
 
       replaceWorkspace: (input) => {
@@ -249,6 +295,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
       clearLocalData: () => {
         set({
           workspace: null,
+          otherWorkspaces: [],
           lastSavedAt: null,
           persistError: null,
         });
@@ -628,12 +675,53 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         });
         return null;
       },
+
+      restoreWorkspacesFromSync: (workspaces) => {
+        const unique = new Map<string, CalculatorWorkspace>();
+        for (const candidate of workspaces) {
+          const parsed = persistedCalculatorStateSchema.safeParse({
+            workspace: candidate,
+            otherWorkspaces: [],
+            lastSavedAt: candidate.updatedAt,
+          });
+          if (!parsed.success || !parsed.data.workspace) {
+            return "ข้อมูลจาก Cloud มีรูปแบบไม่ถูกต้อง จึงยังไม่ได้นำมาใช้";
+          }
+          unique.set(parsed.data.workspace.id, {
+            ...parsed.data.workspace,
+            taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(
+              parsed.data.workspace.taxYearBE,
+            ),
+          });
+        }
+
+        const normalized = [...unique.values()];
+        const currentId = get().workspace?.id;
+        const active =
+          normalized.find((candidate) => candidate.id === currentId) ??
+          [...normalized].sort(
+            (left, right) =>
+              Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+          )[0] ??
+          null;
+
+        set({
+          workspace: active,
+          otherWorkspaces: active
+            ? normalized.filter((candidate) => candidate.id !== active.id)
+            : [],
+          lastSavedAt: active?.updatedAt ?? null,
+          persistError: null,
+        });
+        return null;
+      },
     }),
     {
       name: CALCULATOR_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         workspace: state.workspace,
+        otherWorkspaces: state.otherWorkspaces,
         lastSavedAt: state.lastSavedAt,
       }),
       onRehydrateStorage: () => (state, error) => {
@@ -658,6 +746,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
                   ),
                 };
                 state.lastSavedAt = migrationResult.lastSavedAt;
+                state.otherWorkspaces = [];
                 state.persistError = null;
               }
               return;
@@ -681,6 +770,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
 
         const parsed = persistedCalculatorStateSchema.safeParse({
           workspace: state.workspace,
+          otherWorkspaces: state.otherWorkspaces,
           lastSavedAt: state.lastSavedAt,
         });
 
@@ -697,6 +787,14 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
             parsed.data.workspace!.taxYearBE,
           ),
         };
+        state.otherWorkspaces = parsed.data.otherWorkspaces.map(
+          (workspace) => ({
+            ...workspace,
+            taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(
+              workspace.taxYearBE,
+            ),
+          }),
+        );
       },
     },
   ),

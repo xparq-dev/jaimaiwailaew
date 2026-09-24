@@ -44,6 +44,62 @@ describe("Calculator Zustand Local Store and Migration Safety", () => {
     expect(parsed.state.workspace.schemaVersion).toBe(2);
   });
 
+  it("keeps multiple member workspaces and switches without replacing data", () => {
+    useCalculatorStore
+      .getState()
+      .initializeWorkspace(
+        getDefaultWorkspaceInput("salaried_employee", 2569, "full_year"),
+      );
+    const firstId = useCalculatorStore.getState().workspace!.id;
+    useCalculatorStore.getState().addIncomeEntry({
+      entryFrequency: "one_time",
+      occurredOn: "2026-01-31",
+      categoryCode: "salary",
+      amount: "18000",
+    });
+
+    useCalculatorStore
+      .getState()
+      .createAdditionalWorkspace(
+        getDefaultWorkspaceInput("freelancer", 2568, "full_year"),
+      );
+    const secondId = useCalculatorStore.getState().workspace!.id;
+
+    expect(secondId).not.toBe(firstId);
+    expect(useCalculatorStore.getState().otherWorkspaces).toHaveLength(1);
+    useCalculatorStore.getState().selectWorkspace(firstId);
+    expect(useCalculatorStore.getState().workspace?.id).toBe(firstId);
+    expect(useCalculatorStore.getState().workspace?.incomeEntries).toHaveLength(
+      1,
+    );
+    expect(useCalculatorStore.getState().otherWorkspaces[0]?.id).toBe(secondId);
+  });
+
+  it("restores all cloud workspaces while preserving the active workspace", () => {
+    useCalculatorStore
+      .getState()
+      .initializeWorkspace(
+        getDefaultWorkspaceInput("salaried_employee", 2569, "full_year"),
+      );
+    const current = useCalculatorStore.getState().workspace!;
+    const remote = {
+      ...current,
+      id: "remote-workspace",
+      persona: "freelancer" as const,
+      updatedAt: "2026-09-24T12:00:00.000Z",
+    };
+
+    expect(
+      useCalculatorStore
+        .getState()
+        .restoreWorkspacesFromSync([current, remote]),
+    ).toBeNull();
+    expect(useCalculatorStore.getState().workspace?.id).toBe(current.id);
+    expect(useCalculatorStore.getState().otherWorkspaces).toEqual([
+      expect.objectContaining({ id: "remote-workspace" }),
+    ]);
+  });
+
   it("updates the workspace persona without clearing existing entries", () => {
     useCalculatorStore
       .getState()

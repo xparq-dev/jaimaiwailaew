@@ -19,7 +19,7 @@ import {
   isCloudSyncEnabled,
   setCloudSyncEnabled as persistCloudSyncEnabled,
 } from "./preferences";
-import { syncWorkspace } from "./syncEngine";
+import { syncWorkspaces } from "./syncEngine";
 import type { CloudSyncStatus } from "./types";
 
 interface CloudSyncContextValue {
@@ -39,11 +39,14 @@ export function CloudSyncProvider({
   readonly children: ReactNode;
 }) {
   const { status: authStatus, user, getAccessToken } = useAuth();
-  const workspaceUpdatedAt = useCalculatorStore(
-    (state) => state.workspace?.updatedAt ?? null,
+  const workspaceUpdatedAt = useCalculatorStore((state) =>
+    [state.workspace, ...state.otherWorkspaces]
+      .filter((workspace) => workspace !== null)
+      .map((workspace) => `${workspace.id}:${workspace.updatedAt}`)
+      .join("|"),
   );
-  const restoreWorkspaceFromSync = useCalculatorStore(
-    (state) => state.restoreWorkspaceFromSync,
+  const restoreWorkspacesFromSync = useCalculatorStore(
+    (state) => state.restoreWorkspacesFromSync,
   );
   const [enabledOverride, setEnabledOverride] = useState<{
     readonly userId: string;
@@ -86,13 +89,17 @@ export function CloudSyncProvider({
     setStatus("syncing");
     setError(null);
     try {
-      const result = await syncWorkspace({
+      const calculatorState = useCalculatorStore.getState();
+      const result = await syncWorkspaces({
         userId: user.id,
-        localWorkspace: useCalculatorStore.getState().workspace,
+        localWorkspaces: [
+          ...(calculatorState.workspace ? [calculatorState.workspace] : []),
+          ...calculatorState.otherWorkspaces,
+        ],
         transport,
       });
-      if (result.action === "pulled" && result.workspace) {
-        const restoreError = restoreWorkspaceFromSync(result.workspace);
+      if (result.action === "pulled" || result.action === "merged") {
+        const restoreError = restoreWorkspacesFromSync(result.workspaces);
         if (restoreError) throw new Error(restoreError);
       }
       setLastSyncedAt(result.syncedAt);
@@ -107,7 +114,7 @@ export function CloudSyncProvider({
     } finally {
       runningRef.current = false;
     }
-  }, [authStatus, enabled, restoreWorkspaceFromSync, transport, user]);
+  }, [authStatus, enabled, restoreWorkspacesFromSync, transport, user]);
 
   useEffect(() => {
     if (!enabled) return;

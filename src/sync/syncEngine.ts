@@ -54,37 +54,85 @@ export async function syncWorkspace({
   readonly transport: CloudSyncTransport;
   readonly now?: () => Date;
 }): Promise<SyncResult> {
+  return syncWorkspaces({
+    userId,
+    localWorkspaces: localWorkspace ? [localWorkspace] : [],
+    transport,
+    now,
+  });
+}
+
+export async function syncWorkspaces({
+  userId,
+  localWorkspaces,
+  transport,
+  now = () => new Date(),
+}: {
+  readonly userId: string;
+  readonly localWorkspaces: readonly CalculatorWorkspace[];
+  readonly transport: CloudSyncTransport;
+  readonly now?: () => Date;
+}): Promise<SyncResult> {
   const syncedAt = now().toISOString();
+  const remoteDocuments = await transport.listWorkspaces(userId);
+  const localById = new Map(localWorkspaces.map((item) => [item.id, item]));
+  const remoteById = new Map(
+    remoteDocuments.map((item) => [item.workspace.id, item]),
+  );
+  const resolved = new Map<string, CalculatorWorkspace>();
+  let pushed = false;
+  let pulled = false;
 
-  if (!localWorkspace) {
-    const remoteWorkspaces = await transport.listWorkspaces(userId);
-    const newest = newestRemoteWorkspace(remoteWorkspaces);
-    return newest
-      ? { action: "pulled", workspace: newest.workspace, syncedAt }
-      : { action: "none", workspace: null, syncedAt };
+  for (const local of localWorkspaces) {
+    const remote = remoteById.get(local.id);
+    if (!remote) {
+      await transport.putWorkspace(createCloudWorkspaceDocument(local));
+      resolved.set(local.id, local);
+      pushed = true;
+      continue;
+    }
+
+    const winner = resolveLastWriteWins(local, remote);
+    if (winner === "remote") {
+      resolved.set(local.id, remote.workspace);
+      pulled = true;
+    } else {
+      resolved.set(local.id, local);
+      if (winner === "local") {
+        await transport.putWorkspace(
+          createCloudWorkspaceDocument(local, remote),
+        );
+        pushed = true;
+      }
+    }
   }
 
-  const remoteDocument = await transport.getWorkspace(localWorkspace.id);
-  if (!remoteDocument) {
-    await transport.putWorkspace(createCloudWorkspaceDocument(localWorkspace));
-    return { action: "pushed", workspace: localWorkspace, syncedAt };
+  for (const remote of remoteDocuments) {
+    if (!localById.has(remote.workspace.id)) {
+      resolved.set(remote.workspace.id, remote.workspace);
+      pulled = true;
+    }
   }
 
-  const winner = resolveLastWriteWins(localWorkspace, remoteDocument);
-  if (winner === "remote") {
-    return {
-      action: "pulled",
-      workspace: remoteDocument.workspace,
-      syncedAt,
-    };
-  }
+  const workspaces = [...resolved.values()].sort(
+    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+  );
+  const newest = newestRemoteWorkspace(
+    workspaces.map((workspace) => createCloudWorkspaceDocument(workspace)),
+  )?.workspace;
+  const action =
+    pushed && pulled
+      ? "merged"
+      : pushed
+        ? "pushed"
+        : pulled
+          ? "pulled"
+          : "none";
 
-  if (winner === "local") {
-    await transport.putWorkspace(
-      createCloudWorkspaceDocument(localWorkspace, remoteDocument),
-    );
-    return { action: "pushed", workspace: localWorkspace, syncedAt };
-  }
-
-  return { action: "none", workspace: localWorkspace, syncedAt };
+  return {
+    action,
+    workspace: newest ?? null,
+    workspaces,
+    syncedAt,
+  };
 }

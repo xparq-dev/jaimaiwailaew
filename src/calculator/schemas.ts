@@ -235,6 +235,7 @@ export const calculatorWorkspaceSchema = z.strictObject({
 
 export const persistedCalculatorStateSchema = z.strictObject({
   workspace: z.union([calculatorWorkspaceSchema, z.null()]),
+  otherWorkspaces: z.array(calculatorWorkspaceSchema).default([]),
   lastSavedAt: z.union([timestampSchema, z.null()]),
 });
 

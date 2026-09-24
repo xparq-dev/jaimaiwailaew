@@ -45,7 +45,8 @@ export interface CloudSyncTransport {
 }
 
 export interface SyncResult {
-  readonly action: "none" | "pushed" | "pulled";
+  readonly action: "none" | "pushed" | "pulled" | "merged";
   readonly workspace: CalculatorWorkspace | null;
+  readonly workspaces: readonly CalculatorWorkspace[];
   readonly syncedAt: string;
 }

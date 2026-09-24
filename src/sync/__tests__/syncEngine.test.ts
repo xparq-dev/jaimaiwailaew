@@ -6,7 +6,11 @@ import {
   getDefaultWorkspaceInput,
 } from "@/calculator/workspace";
 
-import { createCloudWorkspaceDocument, syncWorkspace } from "../syncEngine";
+import {
+  createCloudWorkspaceDocument,
+  syncWorkspace,
+  syncWorkspaces,
+} from "../syncEngine";
 import type { CloudSyncTransport, CloudWorkspaceDocument } from "../types";
 
 function workspace(id: string, updatedAt: string): CalculatorWorkspace {
@@ -122,5 +126,36 @@ describe("syncWorkspace Last-Write-Wins", () => {
 
     expect(result.action).toBe("pulled");
     expect(result.workspace?.id).toBe("newest");
+    expect(result.workspaces.map((item) => item.id)).toEqual([
+      "newest",
+      "older",
+    ]);
+  });
+
+  it("merges and synchronizes every local and remote workspace by id", async () => {
+    const localOnly = workspace("local-only", "2026-09-20T10:00:00.000Z");
+    const newerLocal = workspace("shared", "2026-09-20T12:00:00.000Z");
+    const olderRemote = createCloudWorkspaceDocument(
+      workspace("shared", "2026-09-20T11:00:00.000Z"),
+    );
+    const remoteOnly = createCloudWorkspaceDocument(
+      workspace("remote-only", "2026-09-20T09:00:00.000Z"),
+    );
+    const transport = transportFixture([olderRemote, remoteOnly]);
+
+    const result = await syncWorkspaces({
+      userId: "user-a",
+      localWorkspaces: [localOnly, newerLocal],
+      transport,
+      now,
+    });
+
+    expect(result.action).toBe("merged");
+    expect(result.workspaces.map((item) => item.id).sort()).toEqual([
+      "local-only",
+      "remote-only",
+      "shared",
+    ]);
+    expect(transport.putWorkspace).toHaveBeenCalledTimes(2);
   });
 });

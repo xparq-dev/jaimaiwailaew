@@ -1,11 +1,11 @@
 # Checklist ก่อน Deploy
 
-อัปเดตสถานะล่าสุด: 2026-09-24 (Asia/Bangkok)
+อัปเดตสถานะล่าสุด: 2026-09-25 (Asia/Bangkok)
 
 เอกสารนี้มีสองระดับ:
 
 - **Foundation deployment checkpoint** ใช้ยืนยันว่า Phase 0 ขึ้น Preview/Production ได้อย่างปลอดภัย
-- **Current release checklist** ใช้ทบทวน Production baseline หลัง Phase 1E
+- **Current release checklist** ใช้ทบทวน Production baseline หลัง PR #20 และ Phase 1F automated gate
 
 สถานะรายละเอียดและหลักฐาน deployment อยู่ใน
 [`PROJECT_STATUS.md`](./PROJECT_STATUS.md)
@@ -21,13 +21,13 @@
 - [x] ไม่มี TypeScript error
 - [x] ไม่พบ secret ใน source code ที่ Git ติดตาม
 - [x] ไม่มี `.env` หรือ `.env.local` ถูก commit; ติดตามเฉพาะ `.env.example`
-- [ ] เปิด branch protection หรือ ruleset สำหรับ `main` ใน GitHub
+- [x] เปิด ruleset `Protect main` สำหรับ `main` พร้อม required CI/Browser checks
 - [x] เปิด Dependabot สำหรับตรวจ dependency
 - [x] มี README สำหรับ onboarding นักพัฒนา
 - [x] Vercel Preview และ Production deployment ทำงาน
 - [x] Production ใช้ HTTPS ที่ <https://jaimaiwailaew.vercel.app>
 - [x] Vercel และ GitHub Actions ใช้ Node.js 22.x
-- [ ] บันทึก Lighthouse audit สำหรับ mobile และ desktop
+- [x] บันทึก Lighthouse 13.5.0 audit สำหรับ 4 routes ทั้ง mobile และ desktop
 - [ ] ตัดสินใจว่าจะ defer Cloudflare จนมี custom domain หรือเชื่อม DNS/WAF/Analytics ใน Phase 0
 
 ## 2. Tax Safety
@@ -74,7 +74,7 @@
 - [ ] ตรวจจำนวนเงินและตารางจริงบนจอเล็ก
 - [ ] ตรวจ Empty, Loading, Error และ Offline states ของ Calculator flow
 - [ ] ตรวจ PDF ภาษาไทยบน browser/ระบบปฏิบัติการเป้าหมาย
-- [ ] บันทึก Lighthouse accessibility/performance audit
+- [x] บันทึก Lighthouse accessibility/performance lab audit โดย accessibility ได้ 100 ทุก report
 
 ## 5. PWA และ Offline
 
@@ -82,12 +82,12 @@
 - [x] Offline fallback ของ Foundation ทำงานหลังเคยเปิดออนไลน์
 - [x] Public cache ใช้ allowlist, versioning และล้าง cache รุ่นเก่าได้
 - [x] Tests ยืนยันว่า service worker ไม่ cache calculator routes, ข้อมูลการเงิน หรือ PDF
-- [ ] เพิ่ม PNG icons หลายขนาดและตรวจ maskable icon
+- [x] เพิ่ม PNG icons 192/512, Apple touch icon และ maskable icon พร้อม automated dimension tests
 - [ ] ทดสอบการติดตั้ง PWA บนอุปกรณ์จริงและ browser เป้าหมาย
-- [ ] Cache calculator shell, public learn content และ last-known tax-rule bundle
-- [ ] Calculator ทำงาน offline หลังเปิด online สำเร็จ
-- [ ] Offline Banner แสดงสถานะ, rule version และ cached timestamp
-- [ ] ทดสอบ offline PDF โดยไม่ให้ PDF/ข้อมูลผู้ใช้เข้า public cache
+- [x] Cache เฉพาะ Calculator public shell และ versioned tax-rule runtime; Learn content ยัง network-only ตาม policy
+- [x] Calculator ทำงาน offline หลังเปิด online สำเร็จใน automated Production browser test
+- [x] Offline Banner แสดงสถานะ, rule version และ cached timestamp
+- [x] ทดสอบ offline PDF โดยไม่มี PDF/ข้อมูลผู้ใช้ใน public cache
 
 ## 6. Auth และ Local-first Cloud Sync
 
@@ -108,8 +108,9 @@
 2. สร้างและตรวจ Foundation ตาม Master Prompt/Prompt 1
 3. เชื่อม GitHub กับ Vercel และยืนยัน Preview, Production และ HTTPS
 4. ปิด Phase 1A–1D, Tax Rules Verification และ Phase 1E
-5. Merge PR #16/#17 และตรวจ Production baseline `main @ 56b1192`
+5. Merge PR #19/#20 และตรวจ Production baseline `main @ 2009799`
+6. เปิด ruleset `Protect main` และบันทึก Lighthouse/security baseline ใน Phase 1G
 
-Phase 1F ยังไม่เริ่ม งานที่เสนอพร้อมที่สุดคือ
-[`05_PWAandOffline.md`](./05_PWAandOffline.md) แต่ต้องอนุมัติ scope/acceptance criteria ก่อนสร้าง branch
-ส่วน Release Hardening, Knowledge Center และ account-roadmap follow-ups ต้องแยก scope และ PR
+Phase 1F implementation/automated Production gate ผ่านแล้ว แต่ manual device certification ยังต้องบันทึก
+ตาม [`Phase1FManualAcceptance.md`](./Phase1FManualAcceptance.md) Phase 2 Knowledge Center และ
+account-roadmap follow-ups ยังไม่เริ่มและต้องแยก scope/PR

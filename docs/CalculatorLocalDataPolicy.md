@@ -1,6 +1,6 @@
 # นโยบายการจัดเก็บข้อมูลภายในอุปกรณ์ (Calculator Local Data Policy)
 
-อัปเดตล่าสุด: 2026-09-24 (Phase 1E Auth + Local-first Cloud Sync)
+อัปเดตล่าสุด: 2026-09-25 (Phase 1F + multi-workspace sync/delete)
 
 เอกสารนี้ระบุนโยบายและสถาปัตยกรรมความปลอดภัยและการปกป้องความเป็นส่วนตัวของข้อมูลการเงินในส่วนเครื่องคำนวณของ **Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว)**
 
@@ -77,9 +77,10 @@
    - แสดงสถานะ rule version และผลประมาณการภาษีพร้อม disclaimer
    - ข้อความที่อาจถูกโปรแกรมตารางคำนวณตีความเป็นสูตรถูกทำให้เป็นข้อความก่อนบันทึกไฟล์
    - ไม่มี API request, upload, Auth, Cloud, analytics หรือ background sync ในขั้นตอนสร้างและดาวน์โหลด
-11. **Workspace และประเภทผู้ใช้งาน:** โหมดไม่สมัครสมาชิกเก็บ Workspace ได้ 1 รายการใน localStorage เดิม
-   - หน้าเริ่มต้นอ่านเฉพาะ state ในอุปกรณ์เพื่อแสดง Workspace เดิมและลิงก์กลับเข้าใช้งาน
-   - การเริ่ม Workspace ใหม่ต้องผ่านคำเตือนและ confirmation เดิมก่อนแทนที่ข้อมูล
+11. **Workspace และประเภทผู้ใช้งาน:** โหมดไม่สมัครสมาชิกเก็บ Workspace ได้ 1 รายการ; สมาชิกเก็บและสลับหลาย Workspace ใน localStorage เดิมได้
+   - หน้าเริ่มต้นอ่าน state ในอุปกรณ์เพื่อแสดง Workspace ทั้งหมดที่เข้าถึงได้และเปิดรายการที่เลือก
+   - ผู้ใช้ไม่เข้าสู่ระบบต้องผ่านคำเตือนและ confirmation ก่อนแทนที่ Workspace เดิม; สมาชิกเพิ่ม Workspace ได้โดยไม่เขียนทับรายการเดิม
+   - การลบ Workspace ต้องผ่าน confirmation; หากลบ Workspace ปัจจุบัน ระบบสลับไป Workspace อื่นหรือกลับสู่สถานะว่างอย่างปลอดภัย
    - การแก้ไขประเภทผู้ใช้งานเปลี่ยนเฉพาะ `persona` และ `updatedAt`; ไม่ลบหรือย้ายรายการการเงิน
    - คำแนะนำแหล่งรายได้และสถานะ dialog เป็น UI state ใน browser ไม่มี network request และไม่เพิ่มข้อมูลสมาชิก
    - Google/GitHub Auth และ Cloud Sync แบบ opt-in เปิดใช้งานแล้ว; Local-only mode ยังคงเป็นค่าเริ่มต้น
@@ -87,6 +88,8 @@
    - ข้อมูลเก็บใน private R2 และไม่เปิด public access
    - API ใช้ CORS allow-list และตอบ fail closed สำหรับ origin/token/ownership ที่ไม่ผ่าน
    - ใช้ Last-Write-Wins จาก `updatedAt`; เมื่อเปิด Sync ระบบซิงก์หลังข้อมูลเปลี่ยน เมื่อกลับ online และเมื่อผู้ใช้กด “ซิงก์ตอนนี้”
+   - ระบบ reconcile Workspace collection ทั้งหมดของเจ้าของเดียวกัน และใช้ tombstone ฝั่ง private R2 สำหรับการลบ
+   - การลบขณะออฟไลน์ถูกเก็บเป็น pending deletion ใน local state จน Worker ยืนยัน; tombstone ป้องกัน stale device อัปโหลด Workspace เดิมกลับมา
    - ไม่มี Firebase, Web Push, Notification API หรือ background notification
 
 ---

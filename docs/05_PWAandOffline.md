@@ -1,8 +1,8 @@
 # Phase 1F — PWA and Offline Completion
 
-> สถานะปัจจุบัน: scope ได้รับอนุมัติและอยู่ระหว่าง implementation/acceptance บน
-> `feat/phase-1f-pwa-offline` ยังไม่ถือว่า Phase เสร็จจนกว่า CI, browser tests และ manual device
-> acceptance จะผ่านครบ
+> สถานะปัจจุบัน: implementation merge ผ่าน PR #19 แล้ว และ automated Production gate เป็น `PASS`
+> ตาม [`Phase1GReleaseHardening.md`](./Phase1GReleaseHardening.md) ส่วน manual device certification
+> ยัง `HOLD` จนกว่าจะบันทึกผล Android/iOS/Desktop ใน product matrix ครบ
 
 ## เป้าหมาย
 
@@ -53,4 +53,5 @@ tax-rule bundle ใหม่ ให้เปลี่ยน `TAX_RULE_VERSION` �
   update/recovery และ accessibility ตาม
   [`Phase1FManualAcceptance.md`](./Phase1FManualAcceptance.md)
 
-ห้ามปิด Phase 1F จาก automated results เพียงอย่างเดียว ต้องแนบผล manual-device acceptance ก่อน
+Phase 1F implementation และ automated Production gate ปิดเป็น `PASS` ได้จากหลักฐาน CI/Production
+แต่ห้ามระบุว่า manual device certification ผ่านจนกว่าจะมี device/browser/version และผลจริงครบตาม checklist

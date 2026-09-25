@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://jaimaiwailaew.vercel.app",
   ),
-  applicationName: "Jai Mai Wai Laew",
+  applicationName: "จ่ายไม่ไหวแล้ว",
   title: {
     default: "จ่ายไม่ไหวแล้ว | ผู้ช่วยเตรียมข้อมูลภาษี",
     template: "%s | จ่ายไม่ไหวแล้ว",

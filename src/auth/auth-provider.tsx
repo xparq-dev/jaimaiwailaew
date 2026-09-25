@@ -17,6 +17,7 @@ import {
   isSupabaseConfigured,
   isSupabaseTestMode,
 } from "@/lib/supabase";
+import { resolveAuthAvatarUrl } from "@/auth/user-profile";
 
 const MOCK_AUTH_KEY = "jaimaiwailaew:e2e:auth-user";
 
@@ -24,6 +25,7 @@ export interface AuthUser {
   readonly id: string;
   readonly email: string | null;
   readonly provider: string | null;
+  readonly avatarUrl: string | null;
 }
 
 type AuthStatus = "loading" | "anonymous" | "authenticated" | "unconfigured";
@@ -35,7 +37,10 @@ interface AuthContextValue {
   readonly configured: boolean;
   signInWithPassword(email: string, password: string): Promise<string | null>;
   signUpWithPassword(email: string, password: string): Promise<string | null>;
-  signInWithOAuth(provider: OAuthProvider): Promise<string | null>;
+  signInWithOAuth(
+    provider: OAuthProvider,
+    targetWindow?: Window | null,
+  ): Promise<string | null>;
   logout(): Promise<void>;
   getAccessToken(): Promise<string | null>;
 }
@@ -50,6 +55,7 @@ function toAuthUser(user: User): AuthUser {
       typeof user.app_metadata.provider === "string"
         ? user.app_metadata.provider
         : null,
+    avatarUrl: resolveAuthAvatarUrl(user.user_metadata),
   };
 }
 
@@ -123,6 +129,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
           id: "e2e-user",
           email,
           provider: "email",
+          avatarUrl: null,
         };
         localStorage.setItem(MOCK_AUTH_KEY, JSON.stringify(mockUser));
         accessTokenRef.current = "e2e-access-token";
@@ -162,20 +169,38 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     [signInWithPassword],
   );
 
-  const signInWithOAuth = useCallback(async (provider: OAuthProvider) => {
-    if (isSupabaseTestMode) {
-      return "โหมดทดสอบรองรับการเข้าสู่ระบบด้วยอีเมลเท่านั้น";
-    }
-    const client = getSupabaseClient();
-    if (!client) return "ยังไม่ได้ตั้งค่า Supabase Auth";
-    const { error } = await client.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    return error?.message ?? null;
-  }, []);
+  const signInWithOAuth = useCallback(
+    async (provider: OAuthProvider, targetWindow?: Window | null) => {
+      if (isSupabaseTestMode) {
+        return "โหมดทดสอบรองรับการเข้าสู่ระบบด้วยอีเมลเท่านั้น";
+      }
+      const client = getSupabaseClient();
+      if (!client) return "ยังไม่ได้ตั้งค่า Supabase Auth";
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) return error.message;
+      if (!data.url) return "ไม่พบ URL สำหรับเข้าสู่ระบบ กรุณาลองอีกครั้ง";
+
+      try {
+        if (targetWindow && !targetWindow.closed) {
+          targetWindow.opener = null;
+          targetWindow.location.replace(data.url);
+        } else {
+          window.location.assign(data.url);
+        }
+        return null;
+      } catch {
+        targetWindow?.close();
+        return "เบราว์เซอร์ไม่อนุญาตให้เปิดหน้าลงชื่อเข้าใช้ กรุณาเปิดเว็บไซต์นี้ใน Safari หรือ Chrome แล้วลองอีกครั้ง";
+      }
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     if (isSupabaseTestMode) {

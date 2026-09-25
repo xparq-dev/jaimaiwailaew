@@ -1,34 +1,35 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { LanguageToggle } from "@/components/language-toggle";
 import {
   LocaleProvider,
   useLocale,
 } from "@/components/providers/locale-provider";
 
-function CurrentHomeLabel() {
-  const { dictionary } = useLocale();
-  return <span>{dictionary.navigation.home}</span>;
+function CurrentLocale() {
+  const { dictionary, locale } = useLocale();
+  return (
+    <span>
+      {locale}:{dictionary.navigation.home}
+    </span>
+  );
 }
 
 describe("LocaleProvider", () => {
-  it("switches between Thai and English and persists the preference locally", async () => {
-    const user = userEvent.setup();
-    document.documentElement.lang = "th";
+  it("keeps the interface Thai-only and removes a stale language preference", async () => {
+    window.localStorage.setItem("jmwl-locale", "en");
+    document.documentElement.lang = "en";
+
     render(
       <LocaleProvider>
-        <LanguageToggle />
-        <CurrentHomeLabel />
+        <CurrentLocale />
       </LocaleProvider>,
     );
 
-    expect(screen.getByText("ภาพรวม")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "เปลี่ยนภาษา EN" }));
-
-    expect(screen.getByText("Overview")).toBeInTheDocument();
-    expect(window.localStorage.getItem("jmwl-locale")).toBe("en");
-    expect(document.documentElement.lang).toBe("th");
+    expect(screen.getByText("th:ภาพรวม")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(window.localStorage.getItem("jmwl-locale")).toBeNull();
+      expect(document.documentElement.lang).toBe("th");
+    });
   });
 });

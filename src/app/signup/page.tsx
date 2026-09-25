@@ -6,7 +6,7 @@ export default function SignupPage() {
     <div className="space-y-8">
       <PageHeader
         description="สร้างบัญชีด้วย Google หรือ GitHub และเลือกเปิด Cloud Sync ภายหลังได้"
-        eyebrow="Phase 1E · Supabase Auth"
+        eyebrow="บัญชีและการซิงก์"
         title="สร้างบัญชี"
       />
       <AuthForm mode="signup" />

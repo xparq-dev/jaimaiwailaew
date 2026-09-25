@@ -20,7 +20,7 @@ describe("i18n foundation", () => {
 
   it("rejects unsupported locale values", () => {
     expect(isLocale("th")).toBe(true);
-    expect(isLocale("en")).toBe(true);
+    expect(isLocale("en")).toBe(false);
     expect(isLocale("th-TH")).toBe(false);
     expect(isLocale(null)).toBe(false);
   });

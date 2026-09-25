@@ -1,6 +1,6 @@
 # สถานะโครงการ
 
-ตรวจสอบล่าสุด: 2026-09-25 (Asia/Bangkok)
+ตรวจสอบล่าสุด: 2026-09-25 18:42 (Asia/Bangkok)
 
 เอกสารนี้เป็น source of truth สำหรับสถานะการดำเนินงานจริง ส่วนข้อกำหนดผลิตภัณฑ์ระยะยาวให้ยึด
 [`ProductRequirementsDocument.md`](./ProductRequirementsDocument.md) โดยต้องอ่านหมายเหตุการ re-scope
@@ -8,9 +8,8 @@
 
 ## Production baseline
 
-- Phase 1G Release Gate: **PASS / Closed**
+- Production baseline: `77bbe1c` — Merge PR #22
 - Branch: `main`
-- Production baseline: `200979963a6ebaaec7f490a45c625d579652a1f4` — Merge PR #20 (last merged)
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
 - PR #17: ลบข้อความ Push/Notification ที่ค้างใน Settings/Profile
@@ -18,17 +17,11 @@
 - PR #19: Phase 1F PWA and Offline Completion
 - PR #20: member multi-workspace, cross-device sync และ safe workspace deletion
 - PR #21: Phase 1G release closeout (docs/governance เท่านั้น ไม่มี runtime change)
+- PR #22: mobile header refresh, account avatar, Thai OAuth on PWA/mobile/embedded
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
 - `supabase/`: local untracked directory ที่สงวนไว้และยังไม่อยู่ใน version-control scope
-
-## In-flight
-
-- Branch: `feat/mobile-header-home-refresh` — **3 commits ahead of main, PR ยังไม่เปิด**
-  - `64fcb6b` feat: refresh mobile header and home experience
-  - `eb4c646` fix: simplify mobile header and show account avatar
-  - `21d52ca` fix: improve Thai auth experience on mobile
 
 ## Phase ที่ปิดแล้ว
 
@@ -45,6 +38,8 @@
 - Phase 1F implementation และ automated Production gate — PWA install metadata, public offline shell,
   offline Calculator/PDF, cache privacy และ online recovery เป็น `PASS`; manual device certification
   ยังติดตามแยกด้านล่าง
+- Phase 1H (PR #22) — Mobile header refresh, `UserAvatar` component, whitelist-only avatar URL resolver,
+  Thai OAuth UX บน PWA/embedded/iOS context
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -90,8 +85,13 @@ Phase 1F merge ผ่าน PR #19 แล้ว และ automated Production g
 
 ## Proposed next phase
 
-Phase 1G — Release Hardening and Phase 1F Closeout ได้รับอนุมัติและเริ่มบน branch
-`chore/phase-1f-release-closeout` โดยเป็น documentation/governance scope ไม่มี runtime change
+Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (PR #21)
+
+รายการที่เปิดอยู่ก่อนเริ่ม Phase ใหม่:
+- [ ] ตัดสินใจเรื่อง custom domain และ Cloudflare DNS/WAF/Analytics
+- [ ] เติมข้อมูลผู้ควบคุมข้อมูล/ช่องทางติดต่อ และตรวจ Privacy/Terms/Disclaimer ด้านกฎหมาย
+- [ ] ประเมิน nonce-based CSP
+- [ ] manual device acceptance ครบ Android/iOS/Desktop (PWA install)
 
 Phase 2 Knowledge Center, account-roadmap follow-ups, reports, admin, payment/LINE และ OCR
 ยังไม่เริ่ม และต้องแยก scope/PR ตาม ownership

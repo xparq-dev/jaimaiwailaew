@@ -1,11 +1,11 @@
 # Checklist ก่อน Deploy
 
-อัปเดตสถานะล่าสุด: 2026-09-12 (Asia/Bangkok)
+อัปเดตสถานะล่าสุด: 2026-09-25 (Asia/Bangkok)
 
 เอกสารนี้มีสองระดับ:
 
 - **Foundation deployment checkpoint** ใช้ยืนยันว่า Phase 0 ขึ้น Preview/Production ได้อย่างปลอดภัย
-- **MVP 1 launch checklist** ต้องตรวจใหม่ทั้งหมดก่อนเปิดให้ผู้ใช้กรอกและคำนวณภาษีจริง
+- **Current release checklist** ใช้ทบทวน Production baseline หลัง PR #20 และ Phase 1F automated gate
 
 สถานะรายละเอียดและหลักฐาน deployment อยู่ใน
 [`PROJECT_STATUS.md`](./PROJECT_STATUS.md)
@@ -21,13 +21,13 @@
 - [x] ไม่มี TypeScript error
 - [x] ไม่พบ secret ใน source code ที่ Git ติดตาม
 - [x] ไม่มี `.env` หรือ `.env.local` ถูก commit; ติดตามเฉพาะ `.env.example`
-- [ ] เปิด branch protection หรือ ruleset สำหรับ `main` ใน GitHub
+- [x] เปิด ruleset `Protect main` สำหรับ `main` พร้อม required CI/Browser checks
 - [x] เปิด Dependabot สำหรับตรวจ dependency
 - [x] มี README สำหรับ onboarding นักพัฒนา
 - [x] Vercel Preview และ Production deployment ทำงาน
 - [x] Production ใช้ HTTPS ที่ <https://jaimaiwailaew.vercel.app>
 - [x] Vercel และ GitHub Actions ใช้ Node.js 22.x
-- [ ] บันทึก Lighthouse audit สำหรับ mobile และ desktop
+- [x] บันทึก Lighthouse 13.5.0 audit สำหรับ 4 routes ทั้ง mobile และ desktop
 - [ ] ตัดสินใจว่าจะ defer Cloudflare จนมี custom domain หรือเชื่อม DNS/WAF/Analytics ใน Phase 0
 
 ## 2. Tax Safety
@@ -37,32 +37,32 @@
 - [x] Placeholder rule มี source metadata ที่บังคับให้เติมแหล่งทางการก่อนใช้จริง
 - [x] Rule ที่ไม่ผ่านการตรวจสอบถูกบล็อกไม่ให้คำนวณหรือ publish
 - [x] Schema และ safety-contract tests ของ Foundation ผ่าน
-- [ ] สร้าง Calculation Engine และ unit tests ของสูตรสำคัญตาม `02_TaxRuleEngine.md`
-- [ ] เติมกฎและแหล่งข้อมูลจริงที่ผู้เชี่ยวชาญตรวจสอบแล้ว
-- [ ] ให้ผู้เชี่ยวชาญภาษีหรือผู้ทำบัญชีอนุมัติกฎปี 2568/2569 และ test cases
-- [ ] PDF มี disclaimer, rule version, period และลายน้ำตามข้อกำหนด
-- [ ] หน้า Summary มี disclaimer, warnings และ assumptions
+- [x] สร้าง Calculation Engine และ unit tests ของสูตรสำคัญตาม `02_TaxRuleEngine.md`
+- [x] เติมกฎและแหล่งข้อมูลปี 2568/2569 ตาม Tax Rules Verification record
+- [x] ปิด Tax Rules Verification/Legal Sign-off release gate และ Golden Test Suite
+- [x] PDF มี disclaimer, rule version, period และลายน้ำตามข้อกำหนด
+- [x] หน้า Summary มี disclaimer, warnings และ assumptions
 - [x] หน้า Foundation ไม่ยืนยันว่าผลลัพธ์เป็นทางการ
 - [x] ไม่มีข้อความอ้างว่า “ยื่นแทน”, “รับรอง” หรือ “การันตี” ผลภาษี
 
 ## 3. Privacy และ Security
 
-- [x] Foundation ไม่มี API รับหรือส่งข้อมูลการเงิน
-- [ ] PDF generate ใน browser — งาน Phase PDF Export
+- [x] Local-only mode ไม่ส่งข้อมูลการเงิน; Cloud Sync ส่งสำเนาเฉพาะเมื่อบัญชีเปิด opt-in
+- [x] PDF generate ใน browser
 - [x] Foundation ไม่มีการ log รายการการเงิน
 - [x] Foundation ไม่มี query parameter ที่มีข้อมูลการเงิน
 - [x] ยังไม่เปิด analytics หรือ tracking ของเนื้อหาฟอร์ม
-- [ ] มี Clear Local Data พร้อม confirmation — งาน Calculator UX
-- [x] Privacy Notice อธิบายพฤติกรรมของ Foundation ตามจริง
+- [x] มี Clear Local Data พร้อม confirmation
+- [x] Privacy Notice อธิบาย Local-first และ opt-in Cloud Sync
 - [x] Terms และ Disclaimer เข้าถึงได้จาก navigation/footer
 - [x] CSP และ security headers ทำงานบน Production
 - [x] HTTPS ผ่าน Vercel
 - [ ] เติมข้อมูลผู้ควบคุมข้อมูล ช่องทางติดต่อ และตรวจ Privacy/Terms/Disclaimer ด้านกฎหมาย
 - [ ] ประเมิน nonce-based CSP ก่อนเปิดรับข้อมูลจริง
-- [x] Turnstile/rate limiting ยังไม่จำเป็น เพราะไม่มี public endpoint ที่รับข้อมูลการเงิน
+- [x] Worker บังคับ JWT, ownership isolation และ CORS allow-list แบบ fail closed
+- [ ] ประเมิน rate limiting/abuse controls สำหรับ authenticated Cloud Sync endpoint แยกจาก Foundation
 
-เมื่อเพิ่ม public endpoint ในอนาคต ให้ประเมิน rate limiting และ Turnstile ใหม่ ห้ามถือสถานะ
-`ไม่จำเป็น` ใน Foundation เป็นการอนุมัติสำหรับ endpoint ใหม่
+ห้ามถือสถานะ Turnstile/rate limiting ใน Foundation เป็นการอนุมัติถาวรสำหรับ endpoint ปัจจุบันหรืออนาคต
 
 ## 4. UX และ Accessibility
 
@@ -74,7 +74,7 @@
 - [ ] ตรวจจำนวนเงินและตารางจริงบนจอเล็ก
 - [ ] ตรวจ Empty, Loading, Error และ Offline states ของ Calculator flow
 - [ ] ตรวจ PDF ภาษาไทยบน browser/ระบบปฏิบัติการเป้าหมาย
-- [ ] บันทึก Lighthouse accessibility/performance audit
+- [x] บันทึก Lighthouse accessibility/performance lab audit โดย accessibility ได้ 100 ทุก report
 
 ## 5. PWA และ Offline
 
@@ -82,30 +82,35 @@
 - [x] Offline fallback ของ Foundation ทำงานหลังเคยเปิดออนไลน์
 - [x] Public cache ใช้ allowlist, versioning และล้าง cache รุ่นเก่าได้
 - [x] Tests ยืนยันว่า service worker ไม่ cache calculator routes, ข้อมูลการเงิน หรือ PDF
-- [ ] เพิ่ม PNG icons หลายขนาดและตรวจ maskable icon
+- [x] เพิ่ม PNG icons 192/512, Apple touch icon และ maskable icon พร้อม automated dimension tests
 - [ ] ทดสอบการติดตั้ง PWA บนอุปกรณ์จริงและ browser เป้าหมาย
-- [ ] Cache calculator shell, public learn content และ last-known tax-rule bundle
-- [ ] Calculator ทำงาน offline หลังเปิด online สำเร็จ
-- [ ] Offline Banner แสดงสถานะ, rule version และ cached timestamp
-- [ ] ทดสอบ offline PDF โดยไม่ให้ PDF/ข้อมูลผู้ใช้เข้า public cache
+- [x] Cache เฉพาะ Calculator public shell และ versioned tax-rule runtime; Learn content ยัง network-only ตาม policy
+- [x] Calculator ทำงาน offline หลังเปิด online สำเร็จใน automated Production browser test
+- [x] Offline Banner แสดงสถานะ, rule version และ cached timestamp
+- [x] ทดสอบ offline PDF โดยไม่มี PDF/ข้อมูลผู้ใช้ใน public cache
 
-## 6. Handoff และลำดับงานถัดไป
+## 6. Auth และ Local-first Cloud Sync
+
+- [x] Google OAuth end-to-end ผ่านบน Production
+- [x] GitHub OAuth end-to-end ผ่านบน Production
+- [x] Cloud Sync เป็น opt-in และ Local-only mode ใช้งานได้โดยไม่เข้าสู่ระบบ
+- [x] Local → R2 → Local restore ผ่าน
+- [x] Cross-account isolation A/B ผ่าน
+- [x] Offline → reconnect → sync ผ่าน
+- [x] R2 เป็น private และ Worker ตรวจ JWT/ownership
+- [x] Firebase, FCM, VAPID, Web Push และ Notification permission ถูกถอดออก
+
+## 7. Handoff และลำดับงานถัดไป
 
 ดำเนินการแล้ว:
 
 1. สร้าง GitHub repository `jaimaiwailaew`
 2. สร้างและตรวจ Foundation ตาม Master Prompt/Prompt 1
 3. เชื่อม GitHub กับ Vercel และยืนยัน Preview, Production และ HTTPS
-4. หยุดที่ Phase 0 และบันทึกรายการ acceptance gates ที่ยังไม่ปิด
+4. ปิด Phase 1A–1D, Tax Rules Verification และ Phase 1E
+5. Merge PR #19/#20 และตรวจ Production baseline `main @ 2009799`
+6. เปิด ruleset `Protect main` และบันทึก Lighthouse/security baseline ใน Phase 1G
 
-เมื่อ Owner รับทราบหรือกำหนดให้ defer รายการ Phase 0 ที่ค้าง ให้ดำเนินการตามลำดับนี้:
-
-1. ใช้ [`02_TaxRuleEngine.md`](./02_TaxRuleEngine.md) สร้าง Tax Rules Engine โดยไม่เดาตัวเลขกฎหมาย
-2. รัน lint, typecheck, tests และ build แล้วหยุดรายงาน Owner
-3. เริ่ม [`03_CalculatorUX.md`](./03_CalculatorUX.md) เฉพาะเมื่อ Tax Rule Engine ผ่านและ Owner อนุมัติ
-4. ทำ [`04_PDFExport.md`](./04_PDFExport.md) หลัง Calculator UX ผ่าน
-5. ทำ [`05_PWAandOffline.md`](./05_PWAandOffline.md) หลัง Calculator/PDF พร้อมสำหรับ offline flow
-
-ก่อนเปิดเว็บให้ผู้ใช้คำนวณจริง ต้องให้ผู้เชี่ยวชาญภาษีหรือผู้ทำบัญชีตรวจสอบ Tax Rules ปี
-2568/2569 และ test cases เพราะความถูกต้องขึ้นกับกฎภาษี ข้อเท็จจริง เอกสารประกอบ และการตีความ
-ที่อาจเปลี่ยนแปลงได้
+Phase 1F implementation/automated Production gate ผ่านแล้ว แต่ manual device certification ยังต้องบันทึก
+ตาม [`Phase1FManualAcceptance.md`](./Phase1FManualAcceptance.md) Phase 2 Knowledge Center และ
+account-roadmap follow-ups ยังไม่เริ่มและต้องแยก scope/PR

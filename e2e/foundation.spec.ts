@@ -8,10 +8,12 @@ test("renders the responsive foundation shell and legal access", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "เริ่มจากฐานที่ปลอดภัย ก่อนเริ่มคำนวณจริง",
+      name: "จัดข้อมูลการเงินให้เป็นเรื่องที่รับมือได้",
     }),
   ).toBeVisible();
-  await expect(page.getByText("ยังไม่พร้อมเผยแพร่")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "เปิดพื้นที่ข้อมูลของฉัน" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "ข้อจำกัดความรับผิด" }),
   ).toBeVisible();
@@ -19,6 +21,11 @@ test("renders the responsive foundation shell and legal access", async ({
   const isMobileProject = testInfo.project.name.includes("mobile");
   if (isMobileProject) {
     await page.setViewportSize({ width: 320, height: 700 });
+    const appHeader = page.getByTestId("app-header");
+    await expect(
+      appHeader.getByRole("link", { name: "จ่ายไม่ไหวแล้ว" }),
+    ).toBeVisible();
+    await expect(appHeader.getByText("JM", { exact: true })).toHaveCount(0);
     await expect(
       page.getByRole("navigation", { name: "เมนูหลักบนมือถือ" }),
     ).toBeVisible();
@@ -32,6 +39,13 @@ test("renders the responsive foundation shell and legal access", async ({
         ),
       )
       .toBe(true);
+    await expect
+      .poll(() =>
+        page.getByTestId("app-header").evaluate((header) => {
+          return header.scrollWidth <= header.clientWidth;
+        }),
+      )
+      .toBe(true);
   } else {
     await expect(
       page.getByRole("navigation", { name: "เมนูหลักบนมือถือ" }),
@@ -40,6 +54,43 @@ test("renders the responsive foundation shell and legal access", async ({
       page.getByRole("navigation", { name: "เมนูหลัก", exact: true }),
     ).toBeVisible();
   }
+});
+
+test("uses the signed-in provider avatar in the desktop brand", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name.includes("mobile"));
+
+  const avatarUrl = "https://lh3.googleusercontent.com/a/e2e-avatar=s96-c";
+  await page.route(avatarUrl, async (route) => {
+    await route.fulfill({
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#0e8f68"/></svg>',
+      contentType: "image/svg+xml",
+      status: 200,
+    });
+  });
+  await page.addInitScript(
+    ({ url }) => {
+      localStorage.setItem(
+        "jaimaiwailaew:e2e:auth-user",
+        JSON.stringify({
+          id: "avatar-user",
+          email: "avatar@example.com",
+          provider: "google",
+          avatarUrl: url,
+        }),
+      );
+    },
+    { url: avatarUrl },
+  );
+
+  await page.goto("/");
+  const desktopBrand = page
+    .getByRole("navigation", { name: "เมนูหลัก", exact: true })
+    .locator("xpath=preceding-sibling::div")
+    .getByRole("link", { name: "จ่ายไม่ไหวแล้ว" });
+  await expect(desktopBrand.locator("img")).toBeVisible();
+  await expect(desktopBrand.getByText("JM", { exact: true })).toHaveCount(0);
 });
 
 test("serves a scoped PWA manifest and baseline security headers", async ({
@@ -60,6 +111,12 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   expect(pageResponse?.headers()["content-security-policy"]).toContain(
     "frame-src 'self' blob:",
   );
+  expect(pageResponse?.headers()["content-security-policy"]).toContain(
+    "https://lh3.googleusercontent.com",
+  );
+  expect(pageResponse?.headers()["content-security-policy"]).toContain(
+    "https://avatars.githubusercontent.com",
+  );
   expect(pageResponse?.headers()["x-content-type-options"]).toBe("nosniff");
 
   const manifestResponse = await request.get("/manifest.webmanifest");
@@ -76,9 +133,12 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   expect(manifest.start_url).toBe("/");
   expect(manifest.icons).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ src: "/icons/icon.svg", purpose: "any" }),
       expect.objectContaining({
-        src: "/icons/maskable-icon.svg",
+        src: "/icons/icon-192.png",
+        purpose: "any",
+      }),
+      expect.objectContaining({
+        src: "/icons/maskable-icon-512.png",
         purpose: "maskable",
       }),
     ]),
@@ -122,25 +182,30 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   try {
     await page.goto("/offline-e2e-probe");
     await expect(
-      page.getByRole("heading", { name: "ขณะนี้คุณกำลังออฟไลน์" }),
+      page.getByRole("heading", {
+        name: "หน้านี้ยังไม่ได้เตรียมไว้สำหรับออฟไลน์",
+      }),
     ).toBeVisible();
   } finally {
     await page.context().setOffline(false);
   }
 });
 
-test("serves remaining unstarted route families as honest placeholders", async ({
+test("keeps unstarted learning content honest and publishes offline guidance", async ({
   page,
 }) => {
-  for (const route of ["/learn/tax-basics", "/offline"]) {
-    await page.goto(route);
-    await expect(page.getByText("ยังไม่เปิดใช้การคำนวณ")).toBeVisible();
-  }
+  await page.goto("/learn/tax-basics");
+  await expect(page.getByText("ยังไม่เปิดใช้การคำนวณ")).toBeVisible();
+
+  await page.goto("/offline");
+  await expect(
+    page.getByRole("heading", { name: "ใช้เครื่องคำนวณต่อได้เมื่อออฟไลน์" }),
+  ).toBeVisible();
 });
 
-test("switches language and theme without putting state in the URL", async ({
+test("keeps the interface Thai-only and switches theme without changing the URL", async ({
   page,
-}, testInfo) => {
+}) => {
   await page.goto("/");
 
   await expect(page.locator("html")).toHaveAttribute(
@@ -148,13 +213,10 @@ test("switches language and theme without putting state in the URL", async ({
     "true",
   );
 
-  await page.getByRole("button", { name: "เปลี่ยนภาษา EN" }).click();
-  const navigationName = testInfo.project.name.includes("mobile")
-    ? "เมนูหลักบนมือถือ"
-    : "เมนูหลัก";
-  await expect(
-    page.getByRole("navigation", { name: navigationName, exact: true }),
-  ).toContainText("Overview");
+  await expect(page.getByRole("button", { name: /เปลี่ยนภาษา/ })).toHaveCount(
+    0,
+  );
+  await expect(page.getByText("EN", { exact: true })).toHaveCount(0);
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await expect(page).toHaveURL(/\/$/);
 
@@ -162,7 +224,7 @@ test("switches language and theme without putting state in the URL", async ({
   const wasDark = await html.evaluate((element) =>
     element.classList.contains("dark"),
   );
-  await page.getByRole("button", { name: "Change theme" }).click();
+  await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
   await expect
     .poll(() => html.evaluate((element) => element.classList.contains("dark")))
     .toBe(!wasDark);

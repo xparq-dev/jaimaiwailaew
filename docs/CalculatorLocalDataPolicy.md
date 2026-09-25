@@ -1,15 +1,15 @@
 # นโยบายการจัดเก็บข้อมูลภายในอุปกรณ์ (Calculator Local Data Policy)
 
-อัปเดตล่าสุด: 2026-09-20 (Phase 1D Local-only Excel/CSV Export)
+อัปเดตล่าสุด: 2026-09-25 (Phase 1F + multi-workspace sync/delete)
 
 เอกสารนี้ระบุนโยบายและสถาปัตยกรรมความปลอดภัยและการปกป้องความเป็นส่วนตัวของข้อมูลการเงินในส่วนเครื่องคำนวณของ **Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว)**
 
 ---
 
-## 1. หลักการความเป็นส่วนตัวสูงสุด (Privacy-First & Local-Only)
+## 1. หลักการความเป็นส่วนตัวสูงสุด (Privacy-First & Local-First)
 
-1. **ประมวลผลบนอุปกรณ์ของผู้ใช้ 100%:** รายการรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย และค่าลดหย่อนแบบร่างทั้งหมด ถูกจัดเก็บและประมวลผลภายในเบราว์เซอร์ของอุปกรณ์ที่ผู้ใช้ใช้งานอยู่เท่านั้น
-2. **ไม่มีการส่งข้อมูลการเงินออกนอกเครื่อง:** ไม่มีการส่ง network request ที่บรรจุข้อมูลรายการ จำนวนเงิน หรือโน้ตไปยัง backend, API หรือระบบภายนอกใด ๆ ทั้งสิ้น
+1. **Local-first เป็นค่าเริ่มต้น:** รายการรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย และค่าลดหย่อนแบบร่างถูกจัดเก็บและประมวลผลในเบราว์เซอร์ ผู้ใช้ใช้งาน Calculator ได้โดยไม่เข้าสู่ระบบ
+2. **Cloud Sync เป็น opt-in:** เฉพาะผู้ใช้ที่เข้าสู่ระบบและเปิด Cloud Sync ด้วยตนเอง ระบบจึงส่งสำเนา Workspace ผ่าน Cloudflare Worker ไปยัง private R2 โดยใช้ Supabase access token สำหรับยืนยันตัวตน การปิด Cloud Sync ไม่ทำให้ข้อมูล local ถูกลบ
 3. **ไม่มีการเก็บใน URL:** ไม่มีการส่งหรือเข้ารหัสข้อมูลการเงินใน URL query string หรือ hash เพื่อป้องกันไม่ให้ข้อมูลรั่วไหลผ่าน web history หรือ server access logs
 4. **ไม่มีการส่งเข้า Analytics หรือ Logs:** ข้อมูลรายการการเงินทั้งหมดจะไม่ถูกส่งเข้า analytics, server logs, error tracking หรือ client console logs
 5. **Compact Privacy Indicator:** จัดวางการควบคุมความเป็นส่วนตัวแบบกะทัดรัดใต้ heading (“ข้อมูลบันทึกในอุปกรณ์นี้”) ซึ่งสามารถคลิก/แตะเพื่อเปิดอ่านคำอธิบายโดยละเอียดและเข้าถึงปุ่มล้างข้อมูลได้อย่างปลอดภัย
@@ -68,20 +68,29 @@
    - ไม่มีการส่งข้อมูลรายงานหรือไฟล์ PDF ไปยัง Vercel, API, analytics หรือบริการภายนอก
    - ใช้รูปแบบเอกสารสีอ่อนและฟอนต์ Sarabun ที่ฝังในแอป ไม่มี font CDN/runtime request สำหรับการ export
    - รายงานแสดงเฉพาะข้อมูลที่ใช้ตรวจสอบรายการและยอดรวม โดยไม่ส่งออกหมายเหตุส่วนตัว รหัสระบบ หรือสถานะภายในภาษาอังกฤษ
-   - รายงานแสดงยอดรวมเชิงคณิตศาสตร์ รายการต้นทาง สรุปตามกลุ่ม และข้อความภาษาไทยว่าการคำนวณภาษียังไม่เปิดใช้งาน
-   - ไม่มี tax estimate, tax due, refund หรือ tax rate
+   - รายงานแสดงยอดรวม รายการต้นทาง สรุปตามกลุ่ม ผลประมาณการภาษี และ disclaimer
+   - ชุดกฎปี 2568/2569 แสดงสถานะ `verified / published (v1.0.0)` โดยผลลัพธ์ไม่ใช่แบบยื่นภาษี
 10. **Local-only Excel/CSV Export:** สร้างเมื่อผู้ใช้กดปุ่มจาก Workspace ที่อ่านอยู่ใน memory เท่านั้น
    - แสดง Preview ของ Summary, Income, Expense, Withholding Tax, Deductions และ Breakdown ก่อน ผู้ใช้ต้องกดดาวน์โหลดใน Dialog อีกครั้ง
    - Excel เป็น OOXML `.xlsx` หลาย Sheet; CSV เป็น ZIP ที่มีไฟล์ `.csv` แยก Summary, Income, Expense, Withholding Tax, Deductions และ Breakdown
-   - ไม่ส่งออก ID ภายใน, หมายเหตุส่วนตัว, certificate reference, rule metadata, URL, path, build/version หรือผลคำนวณภาษี
+   - ไม่ส่งออก ID ภายใน, หมายเหตุส่วนตัว, certificate reference, URL, path, build/version หรือข้อมูลเทคนิค
+   - แสดงสถานะ rule version และผลประมาณการภาษีพร้อม disclaimer
    - ข้อความที่อาจถูกโปรแกรมตารางคำนวณตีความเป็นสูตรถูกทำให้เป็นข้อความก่อนบันทึกไฟล์
    - ไม่มี API request, upload, Auth, Cloud, analytics หรือ background sync ในขั้นตอนสร้างและดาวน์โหลด
-11. **Workspace และประเภทผู้ใช้งาน:** โหมดไม่สมัครสมาชิกเก็บ Workspace ได้ 1 รายการใน localStorage เดิม
-   - หน้าเริ่มต้นอ่านเฉพาะ state ในอุปกรณ์เพื่อแสดง Workspace เดิมและลิงก์กลับเข้าใช้งาน
-   - การเริ่ม Workspace ใหม่ต้องผ่านคำเตือนและ confirmation เดิมก่อนแทนที่ข้อมูล
+11. **Workspace และประเภทผู้ใช้งาน:** โหมดไม่สมัครสมาชิกเก็บ Workspace ได้ 1 รายการ; สมาชิกเก็บและสลับหลาย Workspace ใน localStorage เดิมได้
+   - หน้าเริ่มต้นอ่าน state ในอุปกรณ์เพื่อแสดง Workspace ทั้งหมดที่เข้าถึงได้และเปิดรายการที่เลือก
+   - ผู้ใช้ไม่เข้าสู่ระบบต้องผ่านคำเตือนและ confirmation ก่อนแทนที่ Workspace เดิม; สมาชิกเพิ่ม Workspace ได้โดยไม่เขียนทับรายการเดิม
+   - การลบ Workspace ต้องผ่าน confirmation; หากลบ Workspace ปัจจุบัน ระบบสลับไป Workspace อื่นหรือกลับสู่สถานะว่างอย่างปลอดภัย
    - การแก้ไขประเภทผู้ใช้งานเปลี่ยนเฉพาะ `persona` และ `updatedAt`; ไม่ลบหรือย้ายรายการการเงิน
    - คำแนะนำแหล่งรายได้และสถานะ dialog เป็น UI state ใน browser ไม่มี network request และไม่เพิ่มข้อมูลสมาชิก
-   - หลาย Workspace, Auth และ Cloud persistence ยังไม่เปิดใช้งาน
+   - Google/GitHub Auth และ Cloud Sync แบบ opt-in เปิดใช้งานแล้ว; Local-only mode ยังคงเป็นค่าเริ่มต้น
+12. **Cloud Sync Security:** Worker ตรวจ Supabase JWT และ derive owner จาก token แทนการเชื่อ user ID จาก client
+   - ข้อมูลเก็บใน private R2 และไม่เปิด public access
+   - API ใช้ CORS allow-list และตอบ fail closed สำหรับ origin/token/ownership ที่ไม่ผ่าน
+   - ใช้ Last-Write-Wins จาก `updatedAt`; เมื่อเปิด Sync ระบบซิงก์หลังข้อมูลเปลี่ยน เมื่อกลับ online และเมื่อผู้ใช้กด “ซิงก์ตอนนี้”
+   - ระบบ reconcile Workspace collection ทั้งหมดของเจ้าของเดียวกัน และใช้ tombstone ฝั่ง private R2 สำหรับการลบ
+   - การลบขณะออฟไลน์ถูกเก็บเป็น pending deletion ใน local state จน Worker ยืนยัน; tombstone ป้องกัน stale device อัปโหลด Workspace เดิมกลับมา
+   - ไม่มี Firebase, Web Push, Notification API หรือ background notification
 
 ---
 
@@ -93,7 +102,8 @@
    - ห้ามแคช state หรือ entries ของผู้ใช้
    - ห้ามแคชผลลัพธ์การคำนวณหรือโน้ต
    - ห้ามแคชคำขอ API, การอัปโหลด หรือเอกสารที่สร้างขึ้น (PDF/CSV/Excel/ZIP)
-3. **ไม่มี Background Sync:** ไม่อนุญาตให้มี background synchronization หรือ auto-upload ไปยังเซิร์ฟเวอร์
+3. **ไม่มี Service Worker Background Sync:** Service Worker ไม่อ่านหรืออัปโหลดข้อมูลผู้ใช้ การซิงก์ทำงาน
+   เฉพาะในหน้าแอปเมื่อผู้ใช้เปิด Cloud Sync และมี authenticated session เท่านั้น
 
 ---
 
@@ -108,6 +118,8 @@
 
 ## 5. สถานะกฎหมายและกฎภาษี (Legal & Tax Rule Status)
 
-1. ข้อมูลทั้งหมดใน Phase 1B เป็นการจัดระเบียบข้อมูลและสรุปผลรวมเชิงคณิตศาสตร์เท่านั้น
-2. ไม่มีการคำนวณภาษีจริง ไม่มีการนำอัตราภาษีหรือสูตรกฎหมายมาคำนวณ และไม่แสดงยอดภาษีประมาณการจนกว่าชุดกฎภาษีจะผ่านการตรวจสอบและอนุมัติอย่างเป็นทางการ
-3. Summary Breakdown เป็น product data grouping เพื่อช่วยทบทวนข้อมูลเท่านั้น โดย Tax Rules 2568/2569 ยังคง `unverified`/`notForCalculation` และ resolver ยังคง fail-closed
+1. ชุดกฎปี 2568/2569 ปัจจุบันเป็น `verified / published (v1.0.0)`,
+   `validationStatus: valid` และ `notForCalculation: false`
+2. ระบบแสดงผลประมาณการเพื่อช่วยเตรียมข้อมูลเท่านั้น ไม่ใช่แบบยื่นภาษี คำแนะนำ หรือคำรับรองว่าผู้ใช้มีสิทธิหักรายการใด
+3. Summary Breakdown เป็น product data grouping เพื่อช่วยทบทวนข้อมูล ไม่ใช่การจัดประเภทเงินได้หรือรับรองรายจ่ายตามกฎหมาย
+4. Resolver ต้อง fail closed สำหรับชุดกฎที่ยังไม่ผ่าน review/validation หรือถูกบล็อก

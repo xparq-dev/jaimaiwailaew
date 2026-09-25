@@ -1,4 +1,4 @@
-> สถานะ: ปรับรูปแบบเอกสารบน branch `feat/local-pdf-export` แล้ว — ยังรอ Final Review และอนุมัติ PR
+> สถานะปัจจุบัน: Phase 1C merge แล้วผ่าน PR #9 และ PDF Preview/Download ทำงานบน production
 
 Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอร์ เปิด Preview ของเอกสารจริงให้ตรวจสอบก่อน และดาวน์โหลดลงอุปกรณ์เมื่อผู้ใช้ยืนยัน ไม่มีการเปิดหน้าต่างพิมพ์ ไม่มีหัวกระดาษหรือ URL ที่เบราว์เซอร์เติมเอง และไม่มีการส่งข้อมูลการเงินออกจากอุปกรณ์
 
@@ -7,7 +7,8 @@ Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอ
 - A4 แนวตั้ง ระยะขอบบน/ล่าง 25 มม. และซ้าย/ขวา 20 มม. บนพื้นขาวแบบ light print theme เท่านั้น
 - ใช้ฟอนต์ Sarabun Regular, Semibold, Italic และ Semibold Italic ที่ฝังอยู่ในตัวแอป ไม่มีการเรียก font CDN ขณะสร้างเอกสาร
 - ใช้ตัวอักษรสีดำและ line-height 1.5 โดยชื่อแอป 16 pt, ชื่อเอกสาร 18 pt, หัวข้อส่วน 14 pt, หัวตาราง 12 pt, เนื้อหาตาราง 11 pt, สถานะกฎ 10 pt และ footer 9 pt
-- หัวเอกสารแสดงชื่อแอป ชื่อรายงาน เวลา Asia/Bangkok และ `Tax Rules 2568/2569: unverified / not for calculation` พร้อมเส้นสีดำ 1.5 pt
+- หัวเอกสารแสดงชื่อแอป ชื่อรายงาน เวลา Asia/Bangkok และสถานะชุดกฎ
+  `Tax Rules 2568/2569: verified / published (v1.0.0)` พร้อมเส้นสีดำ 1.5 pt
 - แต่ละส่วนเริ่มหน้าใหม่ ยกเว้นส่วนแรกที่ต่อจากหัวเอกสาร และหน้าถัดไปมีหัวกระดาษแบบย่อ
 - หัวข้อส่วนมีเส้นคั่นสีเทาเข้ม 0.5 pt และเว้นระยะ 6 มม.
 - ตารางตีเส้นครบทุกด้าน: ขอบนอกสีดำ 1 pt, ขอบในสีเทาเข้ม 0.5 pt, หัวตารางเทาอ่อน 10%, padding บน/ล่าง 4 pt และซ้าย/ขวา 6 pt
@@ -32,10 +33,10 @@ Phase 1C สร้างไฟล์ PDF ฝั่งเบราว์เซอ
 - Preview ใช้ `blob:` URL ภายในเบราว์เซอร์และ revoke เมื่อปิดหน้าต่างตัวอย่างหรือออกจากหน้า
 - Content Security Policy อนุญาต `frame-src 'self' blob:` เฉพาะเพื่อแสดง PDF blob ที่สร้างในอุปกรณ์ โดยยังคงปิดกั้น frame จากแหล่งภายนอก
 - ชื่อรายงานและชื่อผู้จัดทำเป็น ephemeral UI state ไม่ persist เพิ่มใน localStorage และไม่อยู่ใน URL
-- ไม่มี API route, server action, upload, analytics, cloud storage, Auth, Excel หรือ CSV
+- ขั้นตอนสร้าง/Preview/ดาวน์โหลด PDF ไม่มี API route, server action, upload หรือ analytics
 - Service Worker ไม่ cache ไฟล์ PDF หรือข้อมูลผู้ใช้
-- ไม่มี tax rate, tax bracket, tax estimate, tax due หรือ refund
-- Tax Rules 2568/2569 ยังคง unverified/not for calculation และ resolver ยังคง fail-closed
+- รายงานมีผลประมาณการจากชุดกฎ `verified / published (v1.0.0)` พร้อม disclaimer ว่าไม่ใช่แบบยื่นภาษี
+- ชุดกฎที่ไม่ผ่าน validation/review ยังคงถูก resolver ปฏิเสธแบบ fail closed
 
 ## การทดสอบ
 

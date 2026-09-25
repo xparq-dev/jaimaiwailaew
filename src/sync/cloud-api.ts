@@ -1,4 +1,5 @@
 import {
+  cloudWorkspaceDeletionSchema,
   cloudWorkspaceDocumentSchema,
   cloudWorkspaceListResponseSchema,
   type CloudSyncTransport,
@@ -55,12 +56,11 @@ export class CloudSyncApi implements CloudSyncTransport {
     return response;
   }
 
-  async listWorkspaces(userId: string) {
+  async listWorkspaceSnapshot(userId: string) {
     const response = await this.request(
       `/api/users/${encodeURIComponent(userId)}/workspaces`,
     );
-    return cloudWorkspaceListResponseSchema.parse(await response.json())
-      .workspaces;
+    return cloudWorkspaceListResponseSchema.parse(await response.json());
   }
 
   async getWorkspace(workspaceId: string) {
@@ -80,6 +80,14 @@ export class CloudSyncApi implements CloudSyncTransport {
         body: JSON.stringify(document),
       },
     );
+  }
+
+  async deleteWorkspace(workspaceId: string) {
+    const response = await this.request(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}`,
+      { method: "DELETE" },
+    );
+    return cloudWorkspaceDeletionSchema.parse(await response.json());
   }
 }
 
@@ -103,8 +111,21 @@ class BrowserMockCloudSyncApi implements CloudSyncTransport {
     localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(documents));
   }
 
-  async listWorkspaces() {
-    return this.read();
+  private readDeletions() {
+    if (typeof localStorage === "undefined") return [];
+    const raw = localStorage.getItem(`${MOCK_STORAGE_KEY}:deletions`);
+    if (!raw) return [];
+    try {
+      return cloudWorkspaceListResponseSchema.shape.deletions.parse(
+        JSON.parse(raw) as unknown,
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  async listWorkspaceSnapshot() {
+    return { workspaces: this.read(), deletions: this.readDeletions() };
   }
 
   async getWorkspace(workspaceId: string) {
@@ -115,10 +136,35 @@ class BrowserMockCloudSyncApi implements CloudSyncTransport {
   }
 
   async putWorkspace(document: CloudWorkspaceDocument) {
+    if (
+      this.readDeletions().some(
+        (deletion) => deletion.workspaceId === document.workspace.id,
+      )
+    ) {
+      throw new Error("Workspace นี้ถูกลบแล้ว");
+    }
     const documents = this.read().filter(
       (item) => item.workspace.id !== document.workspace.id,
     );
     this.write([...documents, cloudWorkspaceDocumentSchema.parse(document)]);
+  }
+
+  async deleteWorkspace(workspaceId: string) {
+    const deletion = {
+      workspaceId,
+      deletedAt: new Date().toISOString(),
+    };
+    this.write(this.read().filter((item) => item.workspace.id !== workspaceId));
+    localStorage.setItem(
+      `${MOCK_STORAGE_KEY}:deletions`,
+      JSON.stringify([
+        ...this.readDeletions().filter(
+          (item) => item.workspaceId !== workspaceId,
+        ),
+        deletion,
+      ]),
+    );
+    return deletion;
   }
 }
 

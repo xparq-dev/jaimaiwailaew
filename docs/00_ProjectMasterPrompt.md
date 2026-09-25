@@ -2,6 +2,11 @@ You are the principal full-stack engineer, product designer, security engineer, 
 
 Your job is to build this product incrementally, with strong correctness, privacy, security, accessibility, maintainability, and testability. Do not rush to implement future phases before the current phase’s acceptance criteria are complete.
 
+> **Historical baseline:** `CURRENT EXECUTION STATUS` และ `CURRENT RELEASE SCOPE` ด้านล่างบันทึก
+> ขอบเขตเริ่มต้นเมื่อ 2026-09-12 ไม่ใช่สถานะ production ปัจจุบัน สถานะล่าสุดหลัง Phase 1E
+> ให้ยึด [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) โดย Local-only mode ยังอยู่ แต่สมาชิกสามารถเลือก
+> Google/GitHub Auth และ opt-in Cloud Sync ผ่าน Worker/R2 ได้
+
 PRODUCT IDENTITY
 - Thai name: จ่ายไม่ไหวแล้ว
 - English name: Jai Mai Wai Laew

@@ -12,11 +12,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { useAuth } from "@/auth/auth-provider";
 import { AccountControls } from "@/components/account-controls";
-import { LanguageToggle } from "@/components/language-toggle";
-import { NetworkStatusBadge, OfflineBanner } from "@/components/network-status";
+import { OfflineBanner } from "@/components/network-status";
 import { useLocale } from "@/components/providers/locale-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserAvatar } from "@/components/user-avatar";
 import { cn } from "@/lib/utils";
 
 interface NavigationItem {
@@ -37,28 +38,46 @@ function isCurrentRoute(pathname: string, href: string) {
   return href === "/" ? pathname === href : pathname.startsWith(href);
 }
 
-function Brand() {
+function Brand({ compact = false }: { compact?: boolean }) {
   const { dictionary, locale } = useLocale();
+  const { user } = useAuth();
 
   return (
     <Link
-      className="focus-visible:ring-focus/35 flex items-center gap-3 rounded-xl focus-visible:ring-3 focus-visible:outline-none"
+      aria-label="จ่ายไม่ไหวแล้ว"
+      className={cn(
+        "focus-visible:ring-focus/35 flex min-w-0 items-center rounded-xl focus-visible:ring-3 focus-visible:outline-none",
+        compact ? "gap-0" : "gap-3",
+      )}
       href="/"
       lang={locale}
     >
-      <span
-        aria-hidden="true"
-        className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-xl text-sm font-bold tracking-tight shadow-sm"
-      >
-        JM
-      </span>
+      {!compact ? (
+        <span
+          aria-hidden="true"
+          className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl text-sm font-bold tracking-tight shadow-sm"
+        >
+          <UserAvatar
+            avatarUrl={user?.avatarUrl ?? null}
+            className="size-10 rounded-xl"
+            fallback="JM"
+          />
+        </span>
+      ) : null}
       <span className="min-w-0">
-        <span className="text-foreground block truncate font-bold">
-          {dictionary.brand.name}
+        <span
+          className={cn(
+            "text-foreground block truncate font-bold",
+            compact && "text-sm whitespace-nowrap sm:text-base",
+          )}
+        >
+          จ่ายไม่ไหวแล้ว
         </span>
-        <span className="text-muted-foreground block truncate text-xs">
-          {dictionary.brand.subtitle}
-        </span>
+        {!compact ? (
+          <span className="text-muted-foreground block truncate text-xs">
+            {dictionary.brand.subtitle}
+          </span>
+        ) : null}
       </span>
     </Link>
   );
@@ -148,7 +167,7 @@ function Footer() {
   return (
     <footer className="border-border bg-card mt-auto border-t px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
       <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-        <p>© {new Date().getFullYear()} Jai Mai Wai Laew · Phase 0</p>
+        <p>© {new Date().getFullYear()} จ่ายไม่ไหวแล้ว</p>
         <nav
           aria-label="ข้อมูลทางกฎหมาย"
           className="flex flex-wrap gap-x-4 gap-y-2"
@@ -182,10 +201,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <DesktopSidebar />
       <div className="flex min-h-dvh min-w-0 flex-col lg:pl-72">
-        <header className="border-border bg-background/90 sticky top-0 z-20 border-b px-4 py-3 backdrop-blur sm:px-6">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+        <header
+          className="border-border bg-background/90 sticky top-0 z-20 border-b px-3 py-2.5 backdrop-blur sm:px-6 sm:py-3"
+          data-testid="app-header"
+        >
+          <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
             <div className="min-w-0 lg:hidden">
-              <Brand />
+              <Brand compact />
             </div>
             <div className="hidden min-w-0 lg:block">
               <p
@@ -195,10 +217,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {dictionary.common.foundation}
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <NetworkStatusBadge />
+            <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <AccountControls />
-              <LanguageToggle />
               <ThemeToggle />
             </div>
           </div>

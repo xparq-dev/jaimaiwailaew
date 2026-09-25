@@ -1,15 +1,10 @@
 "use client";
 
-import {
-  Cloud,
-  CloudAlert,
-  CloudOff,
-  LoaderCircle,
-  UserRound,
-} from "lucide-react";
+import { Cloud, CloudAlert, CloudOff, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 
 import { useAuth } from "@/auth/auth-provider";
+import { UserAvatar } from "@/components/user-avatar";
 import { useCloudSync } from "@/sync/sync-provider";
 
 const syncLabels = {
@@ -36,28 +31,26 @@ export function AccountControls() {
           : Cloud;
 
   return (
-    <div className="flex items-center gap-1">
+    <Link
+      aria-label={
+        user
+          ? `เปิดโปรไฟล์ — สถานะ Cloud Sync: ${syncLabels[syncStatus]}`
+          : "เข้าสู่ระบบ"
+      }
+      className="border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground relative inline-flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full border"
+      href={user ? "/profile" : "/login"}
+    >
+      <UserAvatar avatarUrl={user?.avatarUrl ?? null} className="size-9" />
       {authStatus === "authenticated" ? (
-        <Link
-          aria-label={`สถานะ Cloud Sync: ${syncLabels[syncStatus]}`}
-          className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex min-h-9 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold"
-          href="/settings"
+        <span
+          aria-hidden="true"
+          className="border-background bg-card absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full border-2"
         >
           <SyncIcon
-            aria-hidden="true"
-            className={`size-3.5 ${syncStatus === "syncing" ? "animate-spin" : ""}`}
+            className={`size-2.5 ${syncStatus === "error" ? "text-danger" : "text-success-strong"} ${syncStatus === "syncing" ? "animate-spin" : ""}`}
           />
-          <span className="hidden xl:inline">{syncLabels[syncStatus]}</span>
-        </Link>
+        </span>
       ) : null}
-      <Link
-        aria-label={user ? "เปิดโปรไฟล์" : "เข้าสู่ระบบ"}
-        className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex min-h-9 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold"
-        href={user ? "/profile" : "/login"}
-      >
-        <UserRound aria-hidden="true" className="size-3.5" />
-        <span className="hidden sm:inline">{user?.email ?? "เข้าสู่ระบบ"}</span>
-      </Link>
-    </div>
+    </Link>
   );
 }

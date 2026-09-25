@@ -9,9 +9,20 @@
 
 ## สถานะโครงการ
 
-> สถานะ: Phase 1C Local-only PDF Export merge เข้า main แล้วผ่าน PR #9; Phase 1D Local-only Excel/CSV Export กำลังพัฒนาบน branch `feat/local-excel-csv-export` โดยกฎภาษียังคงเป็น unverified placeholder และบล็อกการคำนวณจริงตาม fail-closed policy
+> สถานะ: Phase 1E — Auth + Local-first Cloud Sync ปิด Release Gate เป็น `PASS` แล้ว
+> Phase 1F — PWA and Offline Completion merge ผ่าน PR #19 และ automated Production gate เป็น `PASS`
+> ส่วน manual device certification ยัง `HOLD` จนกว่าจะบันทึกผลติดตั้งบน Android/iOS/Desktop ครบ
 
-โครงการพัฒนาผ่าน **Phase 0 — Project Foundation**, **Phase 1A — Tax Rule Engine**, **Phase 1B — Calculator UX**, **Phase 1B UX Hotfix** และ Summary Breakdown/Income Month Grouping แล้ว ขณะนี้กำลังเพิ่มรายงาน A4 แบบ local-only แต่ยังไม่มีอัตราภาษีหรือค่าทางกฎหมายจริงที่ยืนยันแล้ว
+โครงการพัฒนาผ่าน Phase 1A–1D, Tax Rules Verification และ Phase 1E แล้ว ปัจจุบันรองรับ
+เครื่องคำนวณแบบ local-first, การประมาณการภาษีจากชุดกฎปี 2568/2569 ที่เผยแพร่เป็นเวอร์ชัน
+`1.0.0`, รายงาน PDF/Excel/CSV ที่สร้างในเบราว์เซอร์, Google/GitHub OAuth และ Cloud Sync
+แบบ opt-in ผ่าน Supabase Auth กับ Cloudflare Worker/R2 โดยยังใช้งานแบบไม่เข้าสู่ระบบได้ตามเดิม
+
+Phase 1F รองรับ installability metadata, public app shell, versioned tax-rule runtime,
+offline Calculator/PDF, offline status และ cache privacy แล้ว PR #20 เพิ่ม multi-workspace,
+cross-device sync และ safe deletion สำหรับสมาชิก โดยยังรักษา local-first/opt-in sync ตามเดิม
+หลักฐาน release hardening อยู่ที่
+[`Phase1GReleaseHardening.md`](./docs/Phase1GReleaseHardening.md)
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
@@ -21,12 +32,14 @@
 ## หลักการสำคัญของ MVP 1
 
 - ใช้งานสาธารณะได้โดยไม่ต้องสมัครสมาชิกหรือเข้าสู่ระบบ
-- ข้อมูลรายการการเงินของผู้เยี่ยมชมประมวลผลภายในอุปกรณ์และไม่ส่งไป backend
+- ข้อมูลรายการการเงินประมวลผลในอุปกรณ์เป็นค่าเริ่มต้น และส่งสำเนาไป R2 เฉพาะผู้ใช้ที่เข้าสู่ระบบ
+  และเปิด Cloud Sync ด้วยตนเอง
 - ไม่ใส่ข้อมูลการเงินใน URL, analytics, log หรือ error tracking
 - Summary Breakdown เป็น arithmetic aggregation ใน browser; Detail Dialog ใช้ ephemeral state และไม่ส่งข้อมูลออกเครือข่าย
 - PDF, Excel และ CSV ต้องสร้างฝั่ง browser และ service worker ต้องไม่ cache ไฟล์ export หรือข้อมูลที่ผู้ใช้กรอก
 - กฎภาษีต้องแยกจาก UI, มี version และผ่าน schema validation
-- ค่ากฎหมายที่ยังไม่ได้ตรวจสอบต้องระบุ `unverified` และห้ามนำไปใช้เป็นค่าจริง
+- ชุดกฎที่ยังไม่ได้ตรวจสอบต้องระบุ `unverified` และ fail closed; ชุดกฎปี 2568/2569 ที่ใช้งาน
+  ปัจจุบันระบุ `verified / published (v1.0.0)` แต่ผลลัพธ์ยังเป็นเพียงประมาณการ ไม่ใช่แบบยื่นภาษี
 
 ## Technology stack ใน Phase 1A
 
@@ -92,17 +105,22 @@ production CSP, การลงทะเบียน service worker และ of
 
 ## PWA และ caching strategy
 
-`public/sw.js` เป็น service-worker skeleton แบบ allowlist และมีขอบเขตโดยตั้งใจดังนี้:
+`public/sw.js` เป็น service worker แบบ allow-list และมีขอบเขตโดยตั้งใจดังนี้:
 
-- precache เฉพาะหน้า offline fallback และไอคอนสาธารณะ
-- cache-on-demand เฉพาะ `/_next/static/`, `/icons/` และ manifest/favicon ที่ระบุชัด
-- navigation ใช้ network ก่อน และแสดง static offline fallback เมื่อเชื่อมต่อไม่ได้
-- ไม่บันทึก page response, API response, เส้นทาง calculator/start/export/download หรือไฟล์ PDF/CSV/Excel
-- cache มี version และลบเฉพาะ cache รุ่นเก่าที่ใช้ namespace ของแอปนี้
+- precache เฉพาะ offline fallback, manifest และ PNG install icons สาธารณะ
+- warm เฉพาะหน้า public Calculator ที่อยู่ใน `SAFE_NAVIGATION_PATHS` และ asset graph ใต้
+  `/_next/static/`; หน้า Auth/Account/Settings/API/Sync ไม่อยู่ใน allow-list
+- navigation ที่ปลอดภัยใช้ network ก่อน แล้ว fallback ไปยัง shell ที่เตรียมไว้หรือ static offline fallback
+- เตรียม PDF runtime ขณะออนไลน์เพื่อให้สร้าง PDF ภายใน browser ได้เมื่อออฟไลน์
+- ไม่ cache API response, เส้นทาง export/download/upload หรือไฟล์ PDF/CSV/Excel; ข้อมูลการเงินยังอยู่ใน
+  localStorage และไม่ถูกเขียนลง Cache Storage
+- cache name ผูกกับ app cache version และ tax-rule version; activation ลบเฉพาะ cache รุ่นเก่าที่ใช้
+  namespace ของแอปนี้
+- Offline banner แสดง tax-rule version และ cached timestamp โดยไม่มีข้อมูลผู้ใช้
 
-Phase นี้ยังไม่ cache calculator shell หรือ tax-rule bundle การรองรับ offline calculation
-ต้องเพิ่มภายหลังพร้อม allowlist, rule version, cached timestamp และการทดสอบที่ตรวจว่าไม่มีข้อมูลการเงินหรือ
-PDF หลุดเข้า Cache Storage
+Phase 1F implementation และ automated Production gate ปิดเป็น `PASS` แล้ว แต่ manual device
+certification สำหรับ install UI, standalone launch และ icon/safe-area ยัง `HOLD` ตาม
+[`docs/Phase1FManualAcceptance.md`](./docs/Phase1FManualAcceptance.md)
 
 เมื่อต้องเปลี่ยนสิ่งที่ precache ให้แก้ `CACHE_VERSION` ใน `public/sw.js`
 เพื่อให้ service worker ลบ cache รุ่นเก่าหลัง activate
@@ -127,7 +145,7 @@ PDF หลุดเข้า Cache Storage
 [`docs/Checklist ก่อน Deploy.md`](./docs/Checklist%20ก่อน%20Deploy.md) และตรวจว่าไม่มี secret
 หรือข้อมูลการเงินของผู้ใช้ใน source, build log หรือ public cache
 
-สถานะ deployment ที่ตรวจล่าสุดเมื่อ 2026-09-12:
+สถานะ deployment ที่ตรวจล่าสุดเมื่อ 2026-09-25:
 
 - GitHub: <https://github.com/xparq-dev/jaimaiwailaew>
 - Production: <https://jaimaiwailaew.vercel.app>
@@ -141,9 +159,9 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 
 ## สิ่งที่ยังไม่อยู่ในขอบเขต
 
-- Auth, login, Supabase persistence และ cloud document storage
+- Email/password authentication, password reset และ account deletion
 - OCR, อัปโหลดใบเสร็จ, LINE Bot และการเชื่อมต่อธนาคาร
-- ระบบสมาชิก การชำระเงิน dashboard และ AI chatbot
+- ระบบชำระเงิน, admin, audit log, consent management และ AI chatbot
 - การยื่นภาษีอย่างเป็นทางการหรือคำรับรองว่าผลลัพธ์ถูกต้องตามกฎหมาย
 - การอัปเดตกฎหมายอัตโนมัติโดยไม่มี reviewed publish workflow
 
@@ -151,11 +169,11 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 
 ## ข้อจำกัดที่ยังต้องดำเนินการภายนอก
 
-- กฎภาษีปี 2568/2569 ยังไม่มีค่าจริงและต้องผ่านผู้เชี่ยวชาญก่อนเปิดการคำนวณ
 - Privacy, Terms และ Disclaimer เป็นร่าง ต้องเติมผู้ควบคุมข้อมูล ช่องทางติดต่อ และตรวจด้านกฎหมาย
-- ยังไม่ได้กำหนด branch protection หรือ ruleset สำหรับ `main` ใน GitHub
-- ยังไม่มี Lighthouse report อย่างเป็นทางการสำหรับ mobile และ desktop
-- Cloudflare DNS/WAF/Analytics ยังไม่ได้เชื่อม โดยต้องตัดสินใจเรื่อง custom domain ก่อน
+- เปิด GitHub ruleset `Protect main` แล้ว โดยบังคับ PR, CI, Browser tests และป้องกัน force-push/ลบ `main`
+- มี Lighthouse 13.5.0 lab baseline สำหรับ 4 routes ทั้ง mobile/desktop ใน
+  [`Phase1GReleaseHardening.md`](./docs/Phase1GReleaseHardening.md); mobile performance ยังเป็น follow-up
+- Cloudflare Worker/R2 ใช้งานกับ Cloud Sync แล้ว แต่ custom domain และ DNS/WAF/Analytics ยังต้องตัดสินใจแยก
 - หน้าเว็บตั้ง `noindex` ไว้ใน Foundation โดยตั้งใจ ต้องทบทวนหลังเนื้อหาและกฎผ่านการอนุมัติ
-- PWA ใช้ SVG icon แบบ regular/maskable ใน skeleton; ควรเพิ่ม PNG หลายขนาดและตรวจการติดตั้งบนอุปกรณ์จริงก่อน production
+- PWA มี PNG regular/maskable icons แล้ว แต่ยังต้องบันทึกผลการติดตั้งและการแสดงไอคอนบนอุปกรณ์จริงก่อนให้ manual device certification เป็น `PASS`
 - CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ก่อนเปิดรับข้อมูลจริงควรประเมิน nonce-based CSP เทียบกับต้นทุน dynamic rendering

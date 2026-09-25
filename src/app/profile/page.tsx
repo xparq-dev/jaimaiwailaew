@@ -6,7 +6,7 @@ export default function ProfilePage() {
     <div className="space-y-8">
       <PageHeader
         description="ตรวจสอบบัญชีและจัดการการตั้งค่า Cloud Sync โดยข้อมูลในเครื่องจะยังคงใช้งานได้แม้ไม่ได้เชื่อมต่อ Cloud"
-        eyebrow="Phase 1E · Account"
+        eyebrow="ข้อมูลบัญชี"
         title="โปรไฟล์"
       />
       <ProfileCard />

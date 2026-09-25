@@ -1,10 +1,12 @@
 # Phase 1B — Calculator UX (Local-only)
 
-> สถานะ: Phase 1C Local-only PDF Export merge เข้า main แล้วผ่าน PR #9; Phase 1D Local-only Excel/CSV Export กำลังพัฒนาบน branch `feat/local-excel-csv-export`
+> สถานะปัจจุบัน: Phase 1B–1F และ multi-workspace sync/delete hotfix merge เข้า `main` แล้ว เอกสารนี้เก็บรายละเอียด
+> Calculator UX; สถานะ release ล่าสุดให้ยึด [`PROJECT_STATUS.md`](./PROJECT_STATUS.md)
 
 สร้างและปรับปรุง UI เครื่องคำนวณของ Jai Mai Wai Laew สำหรับ MVP 1 โดยใช้ Local-only state และห้ามส่งข้อมูลรายการการเงินไป backend
 
 ## หน้าและความสามารถที่สร้างและปรับปรุงแล้ว:
+
 - `/start`: หน้านำทางเริ่มต้น อธิบายความเป็นส่วนตัวและการจัดเก็บข้อมูลในอุปกรณ์ 100% พร้อมแสดง Workspace เดิมให้เปิดต่อได้ และแจ้งข้อจำกัดก่อนเริ่ม Workspace ใหม่
 - `/start/income-type`: Wizard ให้เลือก Persona (ขายออนไลน์/ธุรกิจ, ฟรีแลนซ์, พนักงานประจำ, หลายรายได้, ยังไม่แน่ใจ พร้อมคำถามช่วยประเมินเบื้องต้น)
 - `/start/pnd94`: Wizard ตั้งค่าปีภาษี (2568/2569) และช่วง ม.ค.–มิ.ย. สำหรับ ภ.ง.ด.94
@@ -15,12 +17,13 @@
 - `/calculator/expenses`: ตารางและรายการการ์ดบนมือถือสำหรับ เพิ่ม/แก้ไข/ลบ รายจ่าย (พร้อมสถานะ likely related, needs review) รองรับทั้งแบบระบุวันและรายเดือน
 - `/calculator/withholding-tax`: ตารางและรายการการ์ดสำหรับบันทึกภาษีหัก ณ ที่จ่ายตามเอกสารอ้างอิงภาษีหัก ณ ที่จ่ายที่มี รองรับทั้งแบบระบุวันและรายเดือน
 - `/calculator/allowances`: แบบฟอร์มค่าลดหย่อนแบบร่าง พร้อมคำเตือนชัดเจนว่าไม่ใช่การอนุมัติสิทธิทางภาษี (ไม่มี entry frequency เพราะเป็นแบบร่างรวม)
-- `/calculator/summary`: Summary cards แสดงยอดรวมเลขคณิต, Summary Breakdown ตามแหล่งที่มา/หมวดบันทึก/สถานะการจัดกลุ่ม, Detail Dialog ของรายการต้นทาง, ตารางแจกแจงรายเดือน, รายการคำเตือน/สมมติฐาน, Tax Estimate Unavailable Card และ PDF/Excel/CSV ที่เปิด Preview ก่อนดาวน์โหลด
+- `/calculator/summary`: Summary cards แสดงยอดรวมเลขคณิต, Summary Breakdown ตามแหล่งที่มา/หมวดบันทึก/สถานะการจัดกลุ่ม, Detail Dialog ของรายการต้นทาง, ตารางแจกแจงรายเดือน, รายการคำเตือน/สมมติฐาน, Tax Estimate Card และ PDF/Excel/CSV ที่เปิด Preview ก่อนดาวน์โหลด
 - **Compact Privacy Indicator:** ปรับจากแบนเนอร์/การ์ดขนาดใหญ่เป็น inline status control กะทัดรัดใต้ heading แสดง “ข้อมูลบันทึกในอุปกรณ์นี้” พร้อมเวลาบันทึกล่าสุด มีปุ่มกดเปิด Dialog ดูรายละเอียดความเป็นส่วนตัว พร้อมปุ่มล้างข้อมูล และลิงก์ไปยังหน้านโยบายความเป็นส่วนตัว
 - **Entry Frequency (ความถี่ของรายการ):** รองรับทั้ง `one_time` (ระบุวัน / รายการครั้งเดียว) และ `monthly` (ระบุเดือน / รายการรายเดือน) ในฟอร์มรายรับ, รายจ่าย และภาษีหัก ณ ที่จ่าย เพื่อให้ผู้ใช้เงินเดือนหรือค่าใช้จ่ายรายเดือนกรอกได้โดยไม่ต้องระบุวัน
 - **Income Month Groups:** หน้า `รายรับ` จัดรายการในช่วงที่เลือกเป็นกลุ่มตามเดือนล่าสุดก่อน ภายในแยก `รายการรายเดือน` และ `รายการระบุวัน` พร้อมยอดรวมของแต่ละกลุ่ม ส่วนรายการนอกช่วงแสดงแยกและไม่รวมในยอด Summary โดยไม่เปลี่ยนข้อมูลต้นทาง
 - **Income Categories & Source Suggestions:** หมวดรายรับ 19 รายการแบ่งเป็นงานประจำ, การขาย/ธุรกิจ, งานบริการ/สื่อ, ทรัพย์สิน/การลงทุน และเกษตร/เกษียณ/อื่น ๆ เมื่อเลือกหมวด ระบบเลือกคำแนะนำแรกที่ตรงกันอัตโนมัติ ผู้ใช้ยกเลิก เลือกคำแนะนำอื่น เลือกแหล่งที่เคยใช้ หรือพิมพ์เองได้ โดยยังบันทึกเป็น `sourceName` เดิม
-- **Workspace Entry:** หน้า `/start` แสดง Workspace เดิมและเปิดกลับเข้าไปได้ โหมดไม่สมัครสมาชิกยังเก็บได้ 1 Workspace; ปุ่มเพิ่มจะแจ้งก่อนพาไป flow ที่ต้องยืนยันการแทนที่ข้อมูลเดิม ระบบหลาย Workspace สำหรับสมาชิกยังไม่เปิดและไม่มี Auth/Cloud ในงานนี้
+- **Workspace Entry:** หน้า `/start` แสดงและสลับ Workspace ที่มีอยู่ได้ โหมดไม่สมัครสมาชิกยังเก็บได้ 1 Workspace และต้องยืนยันก่อนแทนที่ข้อมูลเดิม สมาชิกสร้างได้หลาย Workspace และเลือกเปิด Cloud Sync แยกในแต่ละอุปกรณ์จาก Settings
+- **Workspace Deletion:** ผู้ใช้ต้องยืนยันก่อนลบ; สมาชิกที่เปิด Cloud Sync จะ queue การลบเมื่อออฟไลน์และส่ง owner-scoped tombstone เมื่อกลับออนไลน์ เพื่อป้องกันอุปกรณ์เก่านำ Workspace ที่ลบแล้วกลับมา
 - **Editable Persona:** ประเภทผู้ใช้งานแก้ไขจากหน้า `/calculator` ได้โดยคง Workspace ID และรายการการเงินทั้งหมดไว้
 - **ปุ่ม `ล้างข้อมูลในอุปกรณ์นี้`:** พร้อม modal confirmation สามารถล้างข้อมูลทั้ง v1 และ v2 ออกจากเครื่องได้ทันที
 - Empty states, validation messages ภาษาไทยด้วย React Hook Form + Zod
@@ -46,16 +49,18 @@
 - Dialog รองรับ mouse/touch/keyboard, native modal focus trap, Escape, focus restoration, dark mode และหน้าจอ 320px
 
 ## ข้อกำหนดความปลอดภัยและความเป็นส่วนตัว:
+
 - ใช้ React Hook Form + Zod พร้อมข้อความภาษาไทย
-- ใช้ Zustand local state ที่ persist ได้เฉพาะในเบราว์เซอร์ของผู้ใช้ (`jaimaiwailaew:calculator:v2`) พร้อม Atomic Migration v1 → v2
+- ใช้ Zustand local state (`jaimaiwailaew:calculator:v2`) เป็นแหล่งข้อมูลหลักพร้อม Atomic Migration v1 → v2; การส่งสำเนาไป R2 เกิดเฉพาะบัญชีที่เปิด Cloud Sync แบบ opt-in
 - ห้ามใส่ข้อมูลการเงินใน URL query string หรือ hash
 - ห้ามส่งข้อมูลการเงินเข้า analytics, server logs, error tracking หรือ console logs
 - ห้าม persist selected Summary Breakdown หรือ Detail Dialog state ลง localStorage
 - มี accessibility labels, aria-live, aria-expanded, dialog focus management และ keyboard navigation รองรับครบถ้วน
-- ห้ามแสดงคำว่า “ภาษีที่ต้องจ่ายแน่นอน” หรือตัวเลขภาษีใด ๆ; แสดงเฉพาะ “ยังไม่พร้อมคำนวณภาษีประมาณการ” เนื่องจากกฎภาษียัง unverified
-- ไม่มี Cloud sync; PDF, Excel และ CSV สร้างจากข้อมูลในอุปกรณ์เมื่อผู้ใช้กดเท่านั้นและไม่ upload โดย Excel เป็น OOXML หลาย Sheet ส่วน CSV เป็น ZIP ที่มีไฟล์แยกตามประเภท
+- ห้ามอ้างว่าผลประมาณการเป็น “ภาษีที่ต้องจ่ายแน่นอน” หรือแบบยื่นภาษีอย่างเป็นทางการ
+- ชุดกฎปี 2568/2569 ปัจจุบันเป็น `verified / published (v1.0.0)`; ชุดกฎอื่นที่ไม่ผ่าน validation ต้อง fail closed
+- Cloud Sync เป็น opt-in ผ่าน Supabase Auth และ private R2; PDF, Excel และ CSV ยังคงสร้างจากข้อมูลในอุปกรณ์เมื่อผู้ใช้กดและไม่ upload ไฟล์ export
 
-## Gate ของ Phase 1D:
-1. Local tests, CI และ Vercel Preview ต้องผ่าน
-2. Owner ต้องตรวจ Excel/CSV จาก Vercel Preview ก่อนอนุมัติเปิด PR
-3. ห้ามเริ่ม Phase 1E, Auth หรือ Cloud ระหว่างงานนี้
+## Gate เดิมของ Phase 1D
+
+Gate นี้ผ่านแล้วและเก็บไว้เป็น historical record: Local tests/CI/Preview ผ่าน, Owner ตรวจ Preview แล้ว
+และ Phase 1D merge ก่อนเริ่ม Phase 1E

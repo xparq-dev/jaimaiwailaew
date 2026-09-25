@@ -48,9 +48,30 @@ export function AuthForm({ mode }: { readonly mode: "login" | "signup" }) {
   async function oauth(provider: "google" | "github") {
     setPending(true);
     setError(null);
-    const authError = await signInWithOAuth(provider);
+    const isEmbedded = window.self !== window.top;
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+        true;
+    const needsExternalWindow = isEmbedded || isStandalone;
+    const targetWindow = needsExternalWindow
+      ? window.open("about:blank", "_blank", "popup")
+      : null;
+
+    if (needsExternalWindow && !targetWindow) {
+      setPending(false);
+      setError(
+        "ไม่สามารถเปิดหน้าลงชื่อเข้าใช้ได้ กรุณาอนุญาตหน้าต่างใหม่ หรือเปิดเว็บไซต์ใน Safari หรือ Chrome แล้วลองอีกครั้ง",
+      );
+      return;
+    }
+
+    const authError = await signInWithOAuth(provider, targetWindow);
     setPending(false);
-    if (authError) setError(authError);
+    if (authError) {
+      targetWindow?.close();
+      setError(authError);
+    }
   }
 
   return (

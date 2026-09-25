@@ -197,7 +197,10 @@ describe("Cloudflare Worker API", () => {
       request("/api/users/user-a/workspaces"),
       env,
     );
-    expect(await list.json()).toEqual({ workspaces: [document] });
+    expect(await list.json()).toEqual({
+      workspaces: [document],
+      deletions: [],
+    });
 
     const invalid = await handler.fetch(
       request("/api/workspaces/workspace-a", {
@@ -210,6 +213,63 @@ describe("Cloudflare Worker API", () => {
     expect(invalid.headers.get("Access-Control-Allow-Origin")).toBe(
       "https://jaimaiwailaew.vercel.app",
     );
+  });
+
+  it("writes an owner-scoped tombstone and rejects stale workspace resurrection", async () => {
+    const env = environment();
+    const workspace = {
+      ...createCalculatorWorkspace(
+        getDefaultWorkspaceInput("salaried_employee", 2569, "full_year"),
+      ),
+      id: "workspace-delete",
+    };
+    const document = createCloudWorkspaceDocument(workspace);
+
+    expect(
+      (
+        await handler.fetch(
+          request("/api/workspaces/workspace-delete", {
+            method: "PUT",
+            body: JSON.stringify(document),
+          }),
+          env,
+        )
+      ).status,
+    ).toBe(200);
+
+    const deletionResponse = await handler.fetch(
+      request("/api/workspaces/workspace-delete", { method: "DELETE" }),
+      env,
+    );
+    expect(deletionResponse.status).toBe(200);
+    expect(await deletionResponse.json()).toEqual({
+      workspaceId: "workspace-delete",
+      deletedAt: expect.any(String),
+    });
+
+    const listResponse = await handler.fetch(
+      request("/api/users/user-a/workspaces"),
+      env,
+    );
+    expect(await listResponse.json()).toEqual({
+      workspaces: [],
+      deletions: [
+        {
+          workspaceId: "workspace-delete",
+          deletedAt: expect.any(String),
+        },
+      ],
+    });
+
+    const stalePut = await handler.fetch(
+      request("/api/workspaces/workspace-delete", {
+        method: "PUT",
+        body: JSON.stringify(document),
+      }),
+      env,
+    );
+    expect(stalePut.status).toBe(409);
+    expect(await stalePut.json()).toEqual({ error: "workspace_deleted" });
   });
 
   it("enforces the origin allowlist", async () => {

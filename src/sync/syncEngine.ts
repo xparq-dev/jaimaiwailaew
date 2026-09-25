@@ -54,37 +54,106 @@ export async function syncWorkspace({
   readonly transport: CloudSyncTransport;
   readonly now?: () => Date;
 }): Promise<SyncResult> {
+  return syncWorkspaces({
+    userId,
+    localWorkspaces: localWorkspace ? [localWorkspace] : [],
+    pendingDeletionIds: [],
+    transport,
+    now,
+  });
+}
+
+export async function syncWorkspaces({
+  userId,
+  localWorkspaces,
+  pendingDeletionIds = [],
+  transport,
+  now = () => new Date(),
+}: {
+  readonly userId: string;
+  readonly localWorkspaces: readonly CalculatorWorkspace[];
+  readonly pendingDeletionIds?: readonly string[];
+  readonly transport: CloudSyncTransport;
+  readonly now?: () => Date;
+}): Promise<SyncResult> {
   const syncedAt = now().toISOString();
-
-  if (!localWorkspace) {
-    const remoteWorkspaces = await transport.listWorkspaces(userId);
-    const newest = newestRemoteWorkspace(remoteWorkspaces);
-    return newest
-      ? { action: "pulled", workspace: newest.workspace, syncedAt }
-      : { action: "none", workspace: null, syncedAt };
+  const completedDeletionIds: string[] = [];
+  for (const workspaceId of new Set(pendingDeletionIds)) {
+    await transport.deleteWorkspace(workspaceId);
+    completedDeletionIds.push(workspaceId);
   }
 
-  const remoteDocument = await transport.getWorkspace(localWorkspace.id);
-  if (!remoteDocument) {
-    await transport.putWorkspace(createCloudWorkspaceDocument(localWorkspace));
-    return { action: "pushed", workspace: localWorkspace, syncedAt };
+  const snapshot = await transport.listWorkspaceSnapshot(userId);
+  const deletedIds = new Set(
+    snapshot.deletions.map((deletion) => deletion.workspaceId),
+  );
+  const remoteDocuments = snapshot.workspaces.filter(
+    (document) => !deletedIds.has(document.workspace.id),
+  );
+  const eligibleLocalWorkspaces = localWorkspaces.filter(
+    (workspace) => !deletedIds.has(workspace.id),
+  );
+  const localById = new Map(
+    eligibleLocalWorkspaces.map((item) => [item.id, item]),
+  );
+  const remoteById = new Map(
+    remoteDocuments.map((item) => [item.workspace.id, item]),
+  );
+  const resolved = new Map<string, CalculatorWorkspace>();
+  let pushed = false;
+  let pulled = localWorkspaces.length !== eligibleLocalWorkspaces.length;
+
+  for (const local of eligibleLocalWorkspaces) {
+    const remote = remoteById.get(local.id);
+    if (!remote) {
+      await transport.putWorkspace(createCloudWorkspaceDocument(local));
+      resolved.set(local.id, local);
+      pushed = true;
+      continue;
+    }
+
+    const winner = resolveLastWriteWins(local, remote);
+    if (winner === "remote") {
+      resolved.set(local.id, remote.workspace);
+      pulled = true;
+    } else {
+      resolved.set(local.id, local);
+      if (winner === "local") {
+        await transport.putWorkspace(
+          createCloudWorkspaceDocument(local, remote),
+        );
+        pushed = true;
+      }
+    }
   }
 
-  const winner = resolveLastWriteWins(localWorkspace, remoteDocument);
-  if (winner === "remote") {
-    return {
-      action: "pulled",
-      workspace: remoteDocument.workspace,
-      syncedAt,
-    };
+  for (const remote of remoteDocuments) {
+    if (!localById.has(remote.workspace.id)) {
+      resolved.set(remote.workspace.id, remote.workspace);
+      pulled = true;
+    }
   }
 
-  if (winner === "local") {
-    await transport.putWorkspace(
-      createCloudWorkspaceDocument(localWorkspace, remoteDocument),
-    );
-    return { action: "pushed", workspace: localWorkspace, syncedAt };
-  }
+  const workspaces = [...resolved.values()].sort(
+    (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+  );
+  const newest = newestRemoteWorkspace(
+    workspaces.map((workspace) => createCloudWorkspaceDocument(workspace)),
+  )?.workspace;
+  const action =
+    pushed && pulled
+      ? "merged"
+      : pushed
+        ? "pushed"
+        : pulled
+          ? "pulled"
+          : "none";
 
-  return { action: "none", workspace: localWorkspace, syncedAt };
+  return {
+    action,
+    workspace: newest ?? null,
+    workspaces,
+    completedDeletionIds,
+    syncedAt,
+  };
 }

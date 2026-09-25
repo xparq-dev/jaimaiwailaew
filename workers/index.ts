@@ -2,7 +2,9 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 import { ZodError } from "zod";
 
 import {
+  cloudWorkspaceDeletionSchema,
   cloudWorkspaceDocumentSchema,
+  type CloudWorkspaceDeletion,
   type CloudWorkspaceDocument,
 } from "../src/sync/types";
 
@@ -81,6 +83,14 @@ function workspacePrefix(userId: string) {
 
 function workspaceKey(userId: string, workspaceId: string) {
   return `${workspacePrefix(userId)}${encodeKeySegment(workspaceId)}.json`;
+}
+
+function deletionPrefix(userId: string) {
+  return `users/${encodeKeySegment(userId)}/workspace-deletions/`;
+}
+
+function deletionKey(userId: string, workspaceId: string) {
+  return `${deletionPrefix(userId)}${encodeKeySegment(workspaceId)}.json`;
 }
 
 function matchesOriginPattern(origin: string, pattern: string) {
@@ -179,12 +189,45 @@ async function writeWorkspace(
   userId: string,
   document: CloudWorkspaceDocument,
 ) {
+  const deletion = await readWorkspaceDeletion(
+    bucket,
+    userId,
+    document.workspace.id,
+  );
+  if (deletion) throw new Error("workspace_deleted");
   const validated = cloudWorkspaceDocumentSchema.parse(document);
   await bucket.put(
     workspaceKey(userId, document.workspace.id),
     JSON.stringify(validated),
     { httpMetadata: { contentType: "application/json" } },
   );
+}
+
+async function readWorkspaceDeletion(
+  bucket: R2BucketLike,
+  userId: string,
+  workspaceId: string,
+) {
+  const object = await bucket.get(deletionKey(userId, workspaceId));
+  if (!object) return null;
+  return cloudWorkspaceDeletionSchema.parse(await object.json<unknown>());
+}
+
+async function writeWorkspaceDeletion(
+  bucket: R2BucketLike,
+  userId: string,
+  workspaceId: string,
+) {
+  const existing = await readWorkspaceDeletion(bucket, userId, workspaceId);
+  if (existing) return existing;
+  const deletion: CloudWorkspaceDeletion = {
+    workspaceId,
+    deletedAt: new Date().toISOString(),
+  };
+  await bucket.put(deletionKey(userId, workspaceId), JSON.stringify(deletion), {
+    httpMetadata: { contentType: "application/json" },
+  });
+  return deletion;
 }
 
 async function listWorkspaces(bucket: R2BucketLike, userId: string) {
@@ -204,6 +247,28 @@ async function listWorkspaces(bucket: R2BucketLike, userId: string) {
     cursor = result.truncated ? result.cursor : undefined;
   } while (cursor);
   return documents;
+}
+
+async function listWorkspaceDeletions(bucket: R2BucketLike, userId: string) {
+  const deletions: CloudWorkspaceDeletion[] = [];
+  let cursor: string | undefined;
+  do {
+    const result = await bucket.list({
+      prefix: deletionPrefix(userId),
+      ...(cursor ? { cursor } : {}),
+    });
+    for (const item of result.objects) {
+      if (!item.key.endsWith(".json")) continue;
+      const object = await bucket.get(item.key);
+      if (!object) continue;
+      const parsed = cloudWorkspaceDeletionSchema.safeParse(
+        await object.json<unknown>(),
+      );
+      if (parsed.success) deletions.push(parsed.data);
+    }
+    cursor = result.truncated ? result.cursor : undefined;
+  } while (cursor);
+  return deletions;
 }
 
 function allEntries(document: CloudWorkspaceDocument) {
@@ -274,7 +339,10 @@ export function createWorkerHandler({
             return jsonResponse({ error: "forbidden" }, 403, origin);
           }
           return jsonResponse(
-            { workspaces: await listWorkspaces(env.DATA_BUCKET, userId) },
+            {
+              workspaces: await listWorkspaces(env.DATA_BUCKET, userId),
+              deletions: await listWorkspaceDeletions(env.DATA_BUCKET, userId),
+            },
             200,
             origin,
           );
@@ -299,8 +367,13 @@ export function createWorkerHandler({
             return jsonResponse({ ok: true }, 200, origin);
           }
           if (request.method === "DELETE") {
+            const deletion = await writeWorkspaceDeletion(
+              env.DATA_BUCKET,
+              userId,
+              workspaceId,
+            );
             await env.DATA_BUCKET.delete(workspaceKey(userId, workspaceId));
-            return jsonResponse({ ok: true }, 200, origin);
+            return jsonResponse(deletion, 200, origin);
           }
         }
 
@@ -557,6 +630,9 @@ export function createWorkerHandler({
         }
         if (error instanceof Error && error.message === "payload_too_large") {
           return jsonResponse({ error: "payload_too_large" }, 413, origin);
+        }
+        if (error instanceof Error && error.message === "workspace_deleted") {
+          return jsonResponse({ error: "workspace_deleted" }, 409, origin);
         }
         return jsonResponse({ error: "internal_error" }, 500, origin);
       }

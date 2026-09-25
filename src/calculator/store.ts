@@ -41,10 +41,16 @@ import { migrateLocalStorageV1ToV2 } from "./migration";
 
 interface CalculatorStoreState {
   workspace: CalculatorWorkspace | null;
+  otherWorkspaces: CalculatorWorkspace[];
+  pendingWorkspaceDeletionIds: string[];
   lastSavedAt: string | null;
   hydrationComplete: boolean;
   persistError: string | null;
   initializeWorkspace: (input: CreateWorkspaceInput, replace?: boolean) => void;
+  createAdditionalWorkspace: (input: CreateWorkspaceInput) => void;
+  selectWorkspace: (workspaceId: string) => void;
+  deleteWorkspace: (workspaceId: string, queueCloudDeletion: boolean) => void;
+  acknowledgeWorkspaceDeletions: (workspaceIds: readonly string[]) => void;
   replaceWorkspace: (input: CreateWorkspaceInput) => void;
   updateWorkspacePersona: (persona: CalculatorPersona) => void;
   clearLocalData: () => void;
@@ -79,6 +85,9 @@ interface CalculatorStoreState {
     values: SocialSecuritySettingsFormValues,
   ) => string | null;
   restoreWorkspaceFromSync: (workspace: CalculatorWorkspace) => string | null;
+  restoreWorkspacesFromSync: (
+    workspaces: readonly CalculatorWorkspace[],
+  ) => string | null;
 }
 
 function parseMoneyAmount(amount: string) {
@@ -208,6 +217,8 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
   persist(
     (set, get) => ({
       workspace: null,
+      otherWorkspaces: [],
+      pendingWorkspaceDeletionIds: [],
       lastSavedAt: null,
       hydrationComplete: false,
       persistError: null,
@@ -223,6 +234,84 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
           lastSavedAt: nowIsoTimestamp(),
           persistError: null,
         });
+      },
+
+      createAdditionalWorkspace: (input) => {
+        const current = get().workspace;
+        const next = createCalculatorWorkspace(input);
+        set((state) => ({
+          workspace: next,
+          otherWorkspaces: current
+            ? [
+                current,
+                ...state.otherWorkspaces.filter(
+                  (candidate) => candidate.id !== current.id,
+                ),
+              ]
+            : state.otherWorkspaces,
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        }));
+      },
+
+      selectWorkspace: (workspaceId) => {
+        const current = get().workspace;
+        if (!current || current.id === workspaceId) return;
+        const selected = get().otherWorkspaces.find(
+          (candidate) => candidate.id === workspaceId,
+        );
+        if (!selected) return;
+
+        set((state) => ({
+          workspace: selected,
+          otherWorkspaces: [
+            current,
+            ...state.otherWorkspaces.filter(
+              (candidate) => candidate.id !== workspaceId,
+            ),
+          ],
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        }));
+      },
+
+      deleteWorkspace: (workspaceId, queueCloudDeletion) => {
+        const state = get();
+        const allWorkspaces = [
+          ...(state.workspace ? [state.workspace] : []),
+          ...state.otherWorkspaces,
+        ];
+        if (!allWorkspaces.some((candidate) => candidate.id === workspaceId)) {
+          return;
+        }
+
+        const remaining = allWorkspaces.filter(
+          (candidate) => candidate.id !== workspaceId,
+        );
+        const active =
+          state.workspace?.id === workspaceId
+            ? (remaining[0] ?? null)
+            : state.workspace;
+        set({
+          workspace: active,
+          otherWorkspaces: active
+            ? remaining.filter((candidate) => candidate.id !== active.id)
+            : [],
+          pendingWorkspaceDeletionIds: queueCloudDeletion
+            ? [...new Set([...state.pendingWorkspaceDeletionIds, workspaceId])]
+            : state.pendingWorkspaceDeletionIds,
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        });
+      },
+
+      acknowledgeWorkspaceDeletions: (workspaceIds) => {
+        const completed = new Set(workspaceIds);
+        set((state) => ({
+          pendingWorkspaceDeletionIds: state.pendingWorkspaceDeletionIds.filter(
+            (workspaceId) => !completed.has(workspaceId),
+          ),
+        }));
       },
 
       replaceWorkspace: (input) => {
@@ -249,6 +338,8 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
       clearLocalData: () => {
         set({
           workspace: null,
+          otherWorkspaces: [],
+          pendingWorkspaceDeletionIds: [],
           lastSavedAt: null,
           persistError: null,
         });
@@ -628,12 +719,59 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         });
         return null;
       },
+
+      restoreWorkspacesFromSync: (workspaces) => {
+        const unique = new Map<string, CalculatorWorkspace>();
+        for (const candidate of workspaces) {
+          const parsed = persistedCalculatorStateSchema.safeParse({
+            workspace: candidate,
+            otherWorkspaces: [],
+            pendingWorkspaceDeletionIds: [],
+            lastSavedAt: candidate.updatedAt,
+          });
+          if (!parsed.success || !parsed.data.workspace) {
+            return "ข้อมูลจาก Cloud มีรูปแบบไม่ถูกต้อง จึงยังไม่ได้นำมาใช้";
+          }
+          unique.set(parsed.data.workspace.id, {
+            ...parsed.data.workspace,
+            taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(
+              parsed.data.workspace.taxYearBE,
+            ),
+          });
+        }
+
+        const normalized = [...unique.values()];
+        const pendingDeletions = new Set(get().pendingWorkspaceDeletionIds);
+        const available = normalized.filter(
+          (candidate) => !pendingDeletions.has(candidate.id),
+        );
+        const currentId = get().workspace?.id;
+        const active =
+          available.find((candidate) => candidate.id === currentId) ??
+          [...available].sort(
+            (left, right) =>
+              Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
+          )[0] ??
+          null;
+
+        set({
+          workspace: active,
+          otherWorkspaces: active
+            ? available.filter((candidate) => candidate.id !== active.id)
+            : [],
+          lastSavedAt: active?.updatedAt ?? null,
+          persistError: null,
+        });
+        return null;
+      },
     }),
     {
       name: CALCULATOR_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         workspace: state.workspace,
+        otherWorkspaces: state.otherWorkspaces,
+        pendingWorkspaceDeletionIds: state.pendingWorkspaceDeletionIds,
         lastSavedAt: state.lastSavedAt,
       }),
       onRehydrateStorage: () => (state, error) => {
@@ -658,6 +796,8 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
                   ),
                 };
                 state.lastSavedAt = migrationResult.lastSavedAt;
+                state.otherWorkspaces = [];
+                state.pendingWorkspaceDeletionIds = [];
                 state.persistError = null;
               }
               return;
@@ -681,6 +821,8 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
 
         const parsed = persistedCalculatorStateSchema.safeParse({
           workspace: state.workspace,
+          otherWorkspaces: state.otherWorkspaces,
+          pendingWorkspaceDeletionIds: state.pendingWorkspaceDeletionIds,
           lastSavedAt: state.lastSavedAt,
         });
 
@@ -697,6 +839,16 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
             parsed.data.workspace!.taxYearBE,
           ),
         };
+        state.otherWorkspaces = parsed.data.otherWorkspaces.map(
+          (workspace) => ({
+            ...workspace,
+            taxRuleResolutionSnapshot: createTaxRuleResolutionSnapshot(
+              workspace.taxYearBE,
+            ),
+          }),
+        );
+        state.pendingWorkspaceDeletionIds =
+          parsed.data.pendingWorkspaceDeletionIds;
       },
     },
   ),

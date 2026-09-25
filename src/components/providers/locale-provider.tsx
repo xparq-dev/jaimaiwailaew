@@ -1,61 +1,24 @@
 "use client";
 
-import {
-  useCallback,
-  createContext,
-  type ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useSyncExternalStore,
-} from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 
-import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
 import { dictionaries, type Dictionary } from "@/i18n/dictionaries";
-
-const LOCALE_STORAGE_KEY = "jmwl-locale";
-const LOCALE_CHANGE_EVENT = "jmwl-locale-change";
-
-function getLocaleSnapshot(): Locale {
-  const savedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  return isLocale(savedLocale) ? savedLocale : defaultLocale;
-}
-
-function getServerLocaleSnapshot(): Locale {
-  return defaultLocale;
-}
-
-function subscribeToLocale(onStoreChange: () => void) {
-  window.addEventListener("storage", onStoreChange);
-  window.addEventListener(LOCALE_CHANGE_EVENT, onStoreChange);
-
-  return () => {
-    window.removeEventListener("storage", onStoreChange);
-    window.removeEventListener(LOCALE_CHANGE_EVENT, onStoreChange);
-  };
-}
 
 interface LocaleContextValue {
   dictionary: Dictionary;
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
+  locale: "th";
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
+const thaiLocale: LocaleContextValue = {
+  dictionary: dictionaries.th,
+  locale: "th",
+};
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const locale = useSyncExternalStore(
-    subscribeToLocale,
-    getLocaleSnapshot,
-    getServerLocaleSnapshot,
-  );
-
-  const setLocale = useCallback((nextLocale: Locale) => {
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
-    window.dispatchEvent(new Event(LOCALE_CHANGE_EVENT));
-  }, []);
-
   useEffect(() => {
+    window.localStorage.removeItem("jmwl-locale");
+    document.documentElement.lang = "th";
     document.documentElement.dataset.localeReady = "true";
 
     return () => {
@@ -63,13 +26,10 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const value = useMemo(
-    () => ({ dictionary: dictionaries[locale], locale, setLocale }),
-    [locale, setLocale],
-  );
-
   return (
-    <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
+    <LocaleContext.Provider value={thaiLocale}>
+      {children}
+    </LocaleContext.Provider>
   );
 }
 

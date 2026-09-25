@@ -56,6 +56,43 @@ test("renders the responsive foundation shell and legal access", async ({
   }
 });
 
+test("uses the signed-in provider avatar in the desktop brand", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name.includes("mobile"));
+
+  const avatarUrl = "https://lh3.googleusercontent.com/a/e2e-avatar=s96-c";
+  await page.route(avatarUrl, async (route) => {
+    await route.fulfill({
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#0e8f68"/></svg>',
+      contentType: "image/svg+xml",
+      status: 200,
+    });
+  });
+  await page.addInitScript(
+    ({ url }) => {
+      localStorage.setItem(
+        "jaimaiwailaew:e2e:auth-user",
+        JSON.stringify({
+          id: "avatar-user",
+          email: "avatar@example.com",
+          provider: "google",
+          avatarUrl: url,
+        }),
+      );
+    },
+    { url: avatarUrl },
+  );
+
+  await page.goto("/");
+  const desktopBrand = page
+    .getByRole("navigation", { name: "เมนูหลัก", exact: true })
+    .locator("xpath=preceding-sibling::div")
+    .getByRole("link", { name: "จ่ายไม่ไหวแล้ว" });
+  await expect(desktopBrand.locator("img")).toBeVisible();
+  await expect(desktopBrand.getByText("JM", { exact: true })).toHaveCount(0);
+});
+
 test("serves a scoped PWA manifest and baseline security headers", async ({
   page,
   request,
@@ -166,9 +203,9 @@ test("keeps unstarted learning content honest and publishes offline guidance", a
   ).toBeVisible();
 });
 
-test("switches language and theme without putting state in the URL", async ({
+test("keeps the interface Thai-only and switches theme without changing the URL", async ({
   page,
-}, testInfo) => {
+}) => {
   await page.goto("/");
 
   await expect(page.locator("html")).toHaveAttribute(
@@ -176,13 +213,10 @@ test("switches language and theme without putting state in the URL", async ({
     "true",
   );
 
-  await page.getByRole("button", { name: "เปลี่ยนภาษา EN" }).click();
-  const navigationName = testInfo.project.name.includes("mobile")
-    ? "เมนูหลักบนมือถือ"
-    : "เมนูหลัก";
-  await expect(
-    page.getByRole("navigation", { name: navigationName, exact: true }),
-  ).toContainText("Overview");
+  await expect(page.getByRole("button", { name: /เปลี่ยนภาษา/ })).toHaveCount(
+    0,
+  );
+  await expect(page.getByText("EN", { exact: true })).toHaveCount(0);
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await expect(page).toHaveURL(/\/$/);
 
@@ -190,7 +224,7 @@ test("switches language and theme without putting state in the URL", async ({
   const wasDark = await html.evaluate((element) =>
     element.classList.contains("dark"),
   );
-  await page.getByRole("button", { name: "Change theme" }).click();
+  await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
   await expect
     .poll(() => html.evaluate((element) => element.classList.contains("dark")))
     .toBe(!wasDark);

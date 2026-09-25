@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  Cloud,
-  CloudAlert,
-  CloudOff,
-  LoaderCircle,
-  UserRound,
-} from "lucide-react";
-import Image from "next/image";
+import { Cloud, CloudAlert, CloudOff, LoaderCircle } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 import { useAuth } from "@/auth/auth-provider";
+import { UserAvatar } from "@/components/user-avatar";
 import { useCloudSync } from "@/sync/sync-provider";
 
 const syncLabels = {
@@ -28,9 +21,6 @@ const syncLabels = {
 export function AccountControls() {
   const { status: authStatus, user } = useAuth();
   const { status: syncStatus } = useCloudSync();
-  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
-  const avatarUrl = user?.avatarUrl ?? null;
-  const showAvatar = avatarUrl !== null && avatarUrl !== failedAvatarUrl;
   const SyncIcon =
     syncStatus === "syncing"
       ? LoaderCircle
@@ -50,20 +40,7 @@ export function AccountControls() {
       className="border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground relative inline-flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full border"
       href={user ? "/profile" : "/login"}
     >
-      {showAvatar ? (
-        <Image
-          alt=""
-          className="size-9 rounded-full object-cover"
-          height={36}
-          onError={() => setFailedAvatarUrl(avatarUrl)}
-          referrerPolicy="no-referrer"
-          src={avatarUrl}
-          unoptimized
-          width={36}
-        />
-      ) : (
-        <UserRound aria-hidden="true" className="size-3.5" />
-      )}
+      <UserAvatar avatarUrl={user?.avatarUrl ?? null} className="size-9" />
       {authStatus === "authenticated" ? (
         <span
           aria-hidden="true"

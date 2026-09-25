@@ -37,7 +37,10 @@ interface AuthContextValue {
   readonly configured: boolean;
   signInWithPassword(email: string, password: string): Promise<string | null>;
   signUpWithPassword(email: string, password: string): Promise<string | null>;
-  signInWithOAuth(provider: OAuthProvider): Promise<string | null>;
+  signInWithOAuth(
+    provider: OAuthProvider,
+    targetWindow?: Window | null,
+  ): Promise<string | null>;
   logout(): Promise<void>;
   getAccessToken(): Promise<string | null>;
 }
@@ -166,20 +169,38 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     [signInWithPassword],
   );
 
-  const signInWithOAuth = useCallback(async (provider: OAuthProvider) => {
-    if (isSupabaseTestMode) {
-      return "โหมดทดสอบรองรับการเข้าสู่ระบบด้วยอีเมลเท่านั้น";
-    }
-    const client = getSupabaseClient();
-    if (!client) return "ยังไม่ได้ตั้งค่า Supabase Auth";
-    const { error } = await client.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    return error?.message ?? null;
-  }, []);
+  const signInWithOAuth = useCallback(
+    async (provider: OAuthProvider, targetWindow?: Window | null) => {
+      if (isSupabaseTestMode) {
+        return "โหมดทดสอบรองรับการเข้าสู่ระบบด้วยอีเมลเท่านั้น";
+      }
+      const client = getSupabaseClient();
+      if (!client) return "ยังไม่ได้ตั้งค่า Supabase Auth";
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) return error.message;
+      if (!data.url) return "ไม่พบ URL สำหรับเข้าสู่ระบบ กรุณาลองอีกครั้ง";
+
+      try {
+        if (targetWindow && !targetWindow.closed) {
+          targetWindow.opener = null;
+          targetWindow.location.replace(data.url);
+        } else {
+          window.location.assign(data.url);
+        }
+        return null;
+      } catch {
+        targetWindow?.close();
+        return "เบราว์เซอร์ไม่อนุญาตให้เปิดหน้าลงชื่อเข้าใช้ กรุณาเปิดเว็บไซต์นี้ใน Safari หรือ Chrome แล้วลองอีกครั้ง";
+      }
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     if (isSupabaseTestMode) {

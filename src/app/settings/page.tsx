@@ -6,7 +6,7 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <PageHeader
         description="จัดการการตั้งค่าบัญชีและ Cloud Sync โดยข้อมูลในเครื่องจะยังคงใช้งานได้แม้ไม่ได้เชื่อมต่อ Cloud"
-        eyebrow="Phase 1E · Privacy controls"
+        eyebrow="ความเป็นส่วนตัวและการซิงก์"
         title="การตั้งค่าบัญชีและ Cloud Sync"
       />
       <SettingsPanel />

@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "จ่ายไม่ไหวแล้ว — Jai Mai Wai Laew",
+    name: "จ่ายไม่ไหวแล้ว",
     short_name: "จ่ายไม่ไหวแล้ว",
     description:
       "เครื่องมือช่วยเตรียมข้อมูลและประมาณการภาษีที่ออกแบบให้ประมวลผลข้อมูลในอุปกรณ์",

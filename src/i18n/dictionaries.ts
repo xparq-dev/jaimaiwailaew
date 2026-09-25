@@ -10,7 +10,6 @@ export interface Dictionary {
     online: string;
     offline: string;
     skipToContent: string;
-    switchLanguage: string;
     theme: string;
   };
   navigation: {
@@ -40,7 +39,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
       online: "ออนไลน์",
       offline: "ออฟไลน์",
       skipToContent: "ข้ามไปยังเนื้อหาหลัก",
-      switchLanguage: "เปลี่ยนภาษา",
       theme: "เปลี่ยนธีม",
     },
     navigation: {
@@ -56,34 +54,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
       terms: "ข้อกำหนดการใช้",
       disclaimer: "ข้อจำกัดความรับผิด",
       accessibility: "การเข้าถึง",
-    },
-  },
-  en: {
-    brand: {
-      name: "จ่ายไม่ไหวแล้ว",
-      subtitle: "Tax preparation companion",
-    },
-    common: {
-      foundation: "Private tax workspace",
-      online: "Online",
-      offline: "Offline",
-      skipToContent: "Skip to main content",
-      switchLanguage: "Change language",
-      theme: "Change theme",
-    },
-    navigation: {
-      home: "Overview",
-      start: "Get started",
-      calculator: "Calculator",
-      learn: "Learn",
-      privacy: "Privacy",
-    },
-    footer: {
-      localProcessing: "Designed to process financial data on your device",
-      privacy: "Privacy",
-      terms: "Terms",
-      disclaimer: "Disclaimer",
-      accessibility: "Accessibility",
     },
   },
 };

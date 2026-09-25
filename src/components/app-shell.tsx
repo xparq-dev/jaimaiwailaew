@@ -12,11 +12,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { useAuth } from "@/auth/auth-provider";
 import { AccountControls } from "@/components/account-controls";
-import { LanguageToggle } from "@/components/language-toggle";
 import { OfflineBanner } from "@/components/network-status";
 import { useLocale } from "@/components/providers/locale-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserAvatar } from "@/components/user-avatar";
 import { cn } from "@/lib/utils";
 
 interface NavigationItem {
@@ -39,6 +40,7 @@ function isCurrentRoute(pathname: string, href: string) {
 
 function Brand({ compact = false }: { compact?: boolean }) {
   const { dictionary, locale } = useLocale();
+  const { user } = useAuth();
 
   return (
     <Link
@@ -53,9 +55,13 @@ function Brand({ compact = false }: { compact?: boolean }) {
       {!compact ? (
         <span
           aria-hidden="true"
-          className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-xl text-sm font-bold tracking-tight shadow-sm"
+          className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl text-sm font-bold tracking-tight shadow-sm"
         >
-          JM
+          <UserAvatar
+            avatarUrl={user?.avatarUrl ?? null}
+            className="size-10 rounded-xl"
+            fallback="JM"
+          />
         </span>
       ) : null}
       <span className="min-w-0">
@@ -161,7 +167,7 @@ function Footer() {
   return (
     <footer className="border-border bg-card mt-auto border-t px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
       <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-        <p>© {new Date().getFullYear()} Jai Mai Wai Laew</p>
+        <p>© {new Date().getFullYear()} จ่ายไม่ไหวแล้ว</p>
         <nav
           aria-label="ข้อมูลทางกฎหมาย"
           className="flex flex-wrap gap-x-4 gap-y-2"
@@ -213,7 +219,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <AccountControls />
-              <LanguageToggle />
               <ThemeToggle />
             </div>
           </div>

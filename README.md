@@ -10,17 +10,19 @@
 ## สถานะโครงการ
 
 > สถานะ: Phase 1E — Auth + Local-first Cloud Sync ปิด Release Gate เป็น `PASS` แล้ว
-> และ Phase 1F — PWA and Offline Completion อยู่ระหว่าง implementation/acceptance
-> บน branch `feat/phase-1f-pwa-offline`
+> Phase 1F — PWA and Offline Completion merge ผ่าน PR #19 และ automated Production gate เป็น `PASS`
+> ส่วน manual device certification ยัง `HOLD` จนกว่าจะบันทึกผลติดตั้งบน Android/iOS/Desktop ครบ
 
 โครงการพัฒนาผ่าน Phase 1A–1D, Tax Rules Verification และ Phase 1E แล้ว ปัจจุบันรองรับ
 เครื่องคำนวณแบบ local-first, การประมาณการภาษีจากชุดกฎปี 2568/2569 ที่เผยแพร่เป็นเวอร์ชัน
 `1.0.0`, รายงาน PDF/Excel/CSV ที่สร้างในเบราว์เซอร์, Google/GitHub OAuth และ Cloud Sync
 แบบ opt-in ผ่าน Supabase Auth กับ Cloudflare Worker/R2 โดยยังใช้งานแบบไม่เข้าสู่ระบบได้ตามเดิม
 
-Phase 1F ได้รับอนุมัติแล้ว โดยจำกัด scope ไว้ที่ installability, public app shell,
-versioned tax-rule runtime, offline Calculator/PDF, offline status และ cache privacy
-ยังไม่ถือว่าปิด Phase จนกว่าจะผ่าน automated checks และ manual acceptance บนอุปกรณ์จริง
+Phase 1F รองรับ installability metadata, public app shell, versioned tax-rule runtime,
+offline Calculator/PDF, offline status และ cache privacy แล้ว PR #20 เพิ่ม multi-workspace,
+cross-device sync และ safe deletion สำหรับสมาชิก โดยยังรักษา local-first/opt-in sync ตามเดิม
+หลักฐาน release hardening อยู่ที่
+[`Phase1GReleaseHardening.md`](./docs/Phase1GReleaseHardening.md)
 
 ขอบเขตและลำดับงานฉบับเต็มอยู่ใน [`docs/`](./docs/) โดยเริ่มจาก
 [`00_ProjectMasterPrompt.md`](./docs/00_ProjectMasterPrompt.md) และ
@@ -116,8 +118,9 @@ production CSP, การลงทะเบียน service worker และ of
   namespace ของแอปนี้
 - Offline banner แสดง tax-rule version และ cached timestamp โดยไม่มีข้อมูลผู้ใช้
 
-Phase 1F ยังไม่ปิด acceptance criteria จนกว่าจะยืนยัน installability และ maskable icon
-บนอุปกรณ์จริงตาม [`docs/Phase1FManualAcceptance.md`](./docs/Phase1FManualAcceptance.md)
+Phase 1F implementation และ automated Production gate ปิดเป็น `PASS` แล้ว แต่ manual device
+certification สำหรับ install UI, standalone launch และ icon/safe-area ยัง `HOLD` ตาม
+[`docs/Phase1FManualAcceptance.md`](./docs/Phase1FManualAcceptance.md)
 
 เมื่อต้องเปลี่ยนสิ่งที่ precache ให้แก้ `CACHE_VERSION` ใน `public/sw.js`
 เพื่อให้ service worker ลบ cache รุ่นเก่าหลัง activate
@@ -142,7 +145,7 @@ Phase 1F ยังไม่ปิด acceptance criteria จนกว่าจ�
 [`docs/Checklist ก่อน Deploy.md`](./docs/Checklist%20ก่อน%20Deploy.md) และตรวจว่าไม่มี secret
 หรือข้อมูลการเงินของผู้ใช้ใน source, build log หรือ public cache
 
-สถานะ deployment ที่ตรวจล่าสุดเมื่อ 2026-09-23:
+สถานะ deployment ที่ตรวจล่าสุดเมื่อ 2026-09-25:
 
 - GitHub: <https://github.com/xparq-dev/jaimaiwailaew>
 - Production: <https://jaimaiwailaew.vercel.app>
@@ -167,9 +170,10 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 ## ข้อจำกัดที่ยังต้องดำเนินการภายนอก
 
 - Privacy, Terms และ Disclaimer เป็นร่าง ต้องเติมผู้ควบคุมข้อมูล ช่องทางติดต่อ และตรวจด้านกฎหมาย
-- ยังไม่ได้กำหนด branch protection หรือ ruleset สำหรับ `main` ใน GitHub
-- ยังไม่มี Lighthouse report อย่างเป็นทางการสำหรับ mobile และ desktop
+- เปิด GitHub ruleset `Protect main` แล้ว โดยบังคับ PR, CI, Browser tests และป้องกัน force-push/ลบ `main`
+- มี Lighthouse 13.5.0 lab baseline สำหรับ 4 routes ทั้ง mobile/desktop ใน
+  [`Phase1GReleaseHardening.md`](./docs/Phase1GReleaseHardening.md); mobile performance ยังเป็น follow-up
 - Cloudflare Worker/R2 ใช้งานกับ Cloud Sync แล้ว แต่ custom domain และ DNS/WAF/Analytics ยังต้องตัดสินใจแยก
 - หน้าเว็บตั้ง `noindex` ไว้ใน Foundation โดยตั้งใจ ต้องทบทวนหลังเนื้อหาและกฎผ่านการอนุมัติ
-- PWA มี PNG regular/maskable icons แล้ว แต่ยังต้องบันทึกผลการติดตั้งและการแสดงไอคอนบนอุปกรณ์จริงก่อนปิด Phase 1F
+- PWA มี PNG regular/maskable icons แล้ว แต่ยังต้องบันทึกผลการติดตั้งและการแสดงไอคอนบนอุปกรณ์จริงก่อนให้ manual device certification เป็น `PASS`
 - CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ก่อนเปิดรับข้อมูลจริงควรประเมิน nonce-based CSP เทียบกับต้นทุน dynamic rendering

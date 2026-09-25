@@ -1,6 +1,6 @@
 # สถานะโครงการ
 
-ตรวจสอบล่าสุด: 2026-09-24 (Asia/Bangkok)
+ตรวจสอบล่าสุด: 2026-09-25 (Asia/Bangkok)
 
 เอกสารนี้เป็น source of truth สำหรับสถานะการดำเนินงานจริง ส่วนข้อกำหนดผลิตภัณฑ์ระยะยาวให้ยึด
 [`ProductRequirementsDocument.md`](./ProductRequirementsDocument.md) โดยต้องอ่านหมายเหตุการ re-scope
@@ -10,10 +10,13 @@
 
 - Phase 1E Release Gate: **PASS / Closed**
 - Branch: `main`
-- Baseline commit ก่อน Phase 1F: `888918b` — Merge PR #18 (documentation reconciliation)
+- Production baseline: `200979963a6ebaaec7f490a45c625d579652a1f4` — Merge PR #20
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
 - PR #17: ลบข้อความ Push/Notification ที่ค้างใน Settings/Profile
+- PR #18: reconcile เอกสารหลัง Phase 1E
+- PR #19: Phase 1F PWA and Offline Completion
+- PR #20: member multi-workspace, cross-device sync และ safe workspace deletion
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -31,6 +34,9 @@
   `verified / published`, `validationStatus: valid` และ `notForCalculation: false`
 - Phase 1E — Supabase Google/GitHub Auth และ Local-first Cloud Sync แบบ opt-in ผ่าน
   Cloudflare Worker กับ private R2
+- Phase 1F implementation และ automated Production gate — PWA install metadata, public offline shell,
+  offline Calculator/PDF, cache privacy และ online recovery เป็น `PASS`; manual device certification
+  ยังติดตามแยกด้านล่าง
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -51,28 +57,33 @@
 
 ### Release / governance
 
-- [ ] ตั้ง GitHub branch protection หรือ ruleset สำหรับ `main`
-- [ ] บันทึก Lighthouse accessibility/performance audit สำหรับ mobile และ desktop
+- [x] ตั้ง GitHub ruleset `Protect main` สำหรับ `main` พร้อม required CI/Browser checks
+- [x] บันทึก Lighthouse 13.5.0 lab audit สำหรับ 4 routes ทั้ง mobile และ desktop
 - [ ] ตัดสินใจเรื่อง custom domain และ Cloudflare DNS/WAF/Analytics แยกจาก Worker/R2 ที่ใช้อยู่
 - [ ] เติมข้อมูลผู้ควบคุมข้อมูล/ช่องทางติดต่อ และตรวจ Privacy/Terms/Disclaimer ด้านกฎหมาย
 - [ ] ประเมิน nonce-based CSP ก่อนเปลี่ยนนโยบายการเปิดใช้งานจริง
 
 ### PWA / Offline Completion
 
-Phase 1F ได้รับอนุมัติและเริ่มบน branch `feat/phase-1f-pwa-offline` แล้ว แต่ยังไม่ถือว่าเสร็จ
-จนกว่า automated checks และ installability/offline acceptance บนอุปกรณ์เป้าหมายจะผ่านครบ:
+Phase 1F merge ผ่าน PR #19 แล้ว และ automated Production gate ผ่านครบ หลักฐานอยู่ใน
+[`Phase1GReleaseHardening.md`](./Phase1GReleaseHardening.md):
 
 - [x] เพิ่ม PNG icons ขนาด 192/512, Apple touch icon และ maskable icon
-- [ ] ตรวจติดตั้งบนอุปกรณ์จริงและ browser ใน product matrix
+- [ ] ตรวจติดตั้งบนอุปกรณ์จริงและ browser ใน product matrix (manual certification follow-up)
 - [x] รองรับ Calculator และ versioned tax-rule runtime หลัง first online visit ใน automated browser test
 - [x] แสดง Offline banner พร้อม tax-rule version และ cached timestamp
 - [x] ตรวจ offline PDF โดยไม่มี user data หรือไฟล์ export ใน Cache Storage ด้วย automated browser test
 - [x] ตรวจ recovery เมื่อกลับ online โดยไม่ทำให้ local data สูญหายใน automated browser test
-- [ ] ผ่าน CI, Vercel Preview และ manual device acceptance ครบ
+- [x] CI, Browser tests, Vercel Preview/Production และ automated Production acceptance ผ่าน
+- [ ] manual device acceptance ครบ Android/iOS/Desktop
+
+สถานะ closeout: **implementation/automated Production gate = PASS** และ
+**manual device certification = HOLD** ห้ามอ้างว่า automated test แทนการติดตั้งจริง
 
 ## Proposed next phase
 
-Phase หลัง 1F ยังไม่มี scope ที่อนุมัติ ห้ามเริ่มงานถัดไปก่อน Phase 1F ผ่าน release gate
+Phase 1G — Release Hardening and Phase 1F Closeout ได้รับอนุมัติและเริ่มบน branch
+`chore/phase-1f-release-closeout` โดยเป็น documentation/governance scope ไม่มี runtime change
 
-Release Hardening, Knowledge Center, account-roadmap follow-ups, reports, admin, payment/LINE และ OCR
-ต้องแยก scope/PR ตาม ownership ไม่ควรรวมกับ PWA/Offline feature PR
+Phase 2 Knowledge Center, account-roadmap follow-ups, reports, admin, payment/LINE และ OCR
+ยังไม่เริ่ม และต้องแยก scope/PR ตาม ownership

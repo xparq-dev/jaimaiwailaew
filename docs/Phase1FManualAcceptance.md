@@ -2,6 +2,16 @@
 
 ใช้ข้อมูลทดสอบเท่านั้น ห้ามใส่ข้อมูลการเงินจริง token หรือข้อมูลบัญชีลง screenshot/log
 
+สถานะล่าสุด 2026-09-25:
+
+- implementation และ automated Production gate: **PASS**
+- Production Playwright desktop/mobile, offline Calculator/PDF, cache privacy และ recovery: ผ่าน
+- Lighthouse accessibility: 100 ทุก route/profile ที่ตรวจ
+- manual install/standalone/device matrix ด้านล่าง: **HOLD / ยังไม่มีหลักฐานครบ**
+
+ผลอัตโนมัติไม่ใช้แทน checkbox ที่ต้องตรวจบนอุปกรณ์จริง ดู baseline เพิ่มเติมที่
+[`Phase1GReleaseHardening.md`](./Phase1GReleaseHardening.md)
+
 ## Android / Chromium
 
 - [ ] เปิด Production/Preview ออนไลน์หนึ่งครั้ง แล้วรอจนหน้า Calculator พร้อมใช้งาน
@@ -48,5 +58,5 @@ Phase 1F Manual Acceptance:
 - Desktop browser/version:
 - Desktop install/cache privacy/update:
 - Accessibility/Dark Mode:
-- Result: PASS / HOLD
+- Result: HOLD (จนกว่าจะกรอก device/browser/version และผลจริงครบ)
 ```

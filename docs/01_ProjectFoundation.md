@@ -1,6 +1,6 @@
-> สถานะตรวจล่าสุด 2026-09-12: โค้ด Foundation, GitHub, CI, Vercel Preview และ Production
-> ผ่านบน deployment baseline commit `7232114` แต่ Phase 0 ยังมี acceptance gates ภายนอกตาม
-> [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) จึงยังไม่ควรประกาศว่าปิด Phase ครบ 100%
+> Historical specification ของ Phase 0 เมื่อ 2026-09-12; Foundation ปิดแล้วและ Production
+> พัฒนาต่อผ่าน Phase 1F สถานะ release ปัจจุบันให้ยึด
+> [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) แทน baseline ในเอกสารนี้
 
 สร้าง Foundation ของโปรเจกต์ Jai Mai Wai Laew (จ่ายไม่ไหวแล้ว) ตามข้อกำหนดต่อไปนี้
 

@@ -40,7 +40,7 @@ export function AccountControls() {
       {authStatus === "authenticated" ? (
         <Link
           aria-label={`สถานะ Cloud Sync: ${syncLabels[syncStatus]}`}
-          className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex min-h-9 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold"
+          className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-11 items-center justify-center gap-1.5 rounded-full border px-0 text-xs font-semibold xl:w-auto xl:px-2.5"
           href="/settings"
         >
           <SyncIcon
@@ -52,11 +52,13 @@ export function AccountControls() {
       ) : null}
       <Link
         aria-label={user ? "เปิดโปรไฟล์" : "เข้าสู่ระบบ"}
-        className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex min-h-9 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold"
+        className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-11 items-center justify-center gap-1.5 rounded-full border px-0 text-xs font-semibold sm:w-auto sm:max-w-40 sm:px-2.5"
         href={user ? "/profile" : "/login"}
       >
         <UserRound aria-hidden="true" className="size-3.5" />
-        <span className="hidden sm:inline">{user?.email ?? "เข้าสู่ระบบ"}</span>
+        <span className="hidden min-w-0 truncate sm:inline">
+          {user?.email ?? "เข้าสู่ระบบ"}
+        </span>
       </Link>
     </div>
   );

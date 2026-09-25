@@ -50,7 +50,7 @@ export function NetworkStatusBadge() {
       ) : (
         <CloudOff aria-hidden="true" className="size-3.5" />
       )}
-      <span className="hidden min-[390px]:inline">
+      <span className="hidden sm:inline">
         {isOnline ? dictionary.common.online : dictionary.common.offline}
       </span>
     </span>

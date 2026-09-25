@@ -36,7 +36,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       subtitle: "ผู้ช่วยเตรียมข้อมูลภาษี",
     },
     common: {
-      foundation: "โครงสร้างระบบ",
+      foundation: "พื้นที่จัดการข้อมูลภาษี",
       online: "ออนไลน์",
       offline: "ออฟไลน์",
       skipToContent: "ข้ามไปยังเนื้อหาหลัก",
@@ -64,7 +64,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       subtitle: "Tax preparation companion",
     },
     common: {
-      foundation: "Project foundation",
+      foundation: "Private tax workspace",
       online: "Online",
       offline: "Offline",
       skipToContent: "Skip to main content",

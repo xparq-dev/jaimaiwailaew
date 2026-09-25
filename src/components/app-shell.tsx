@@ -37,28 +37,37 @@ function isCurrentRoute(pathname: string, href: string) {
   return href === "/" ? pathname === href : pathname.startsWith(href);
 }
 
-function Brand() {
+function Brand({ compact = false }: { compact?: boolean }) {
   const { dictionary, locale } = useLocale();
 
   return (
     <Link
-      className="focus-visible:ring-focus/35 flex items-center gap-3 rounded-xl focus-visible:ring-3 focus-visible:outline-none"
+      aria-label={dictionary.brand.name}
+      className={cn(
+        "focus-visible:ring-focus/35 flex min-w-0 items-center rounded-xl focus-visible:ring-3 focus-visible:outline-none",
+        compact ? "gap-2" : "gap-3",
+      )}
       href="/"
       lang={locale}
     >
       <span
         aria-hidden="true"
-        className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-xl text-sm font-bold tracking-tight shadow-sm"
+        className={cn(
+          "bg-primary text-primary-foreground grid shrink-0 place-items-center text-sm font-bold tracking-tight shadow-sm",
+          compact ? "size-9 rounded-lg" : "size-10 rounded-xl",
+        )}
       >
         JM
       </span>
-      <span className="min-w-0">
+      <span className={cn("min-w-0", compact && "hidden min-[460px]:block")}>
         <span className="text-foreground block truncate font-bold">
           {dictionary.brand.name}
         </span>
-        <span className="text-muted-foreground block truncate text-xs">
-          {dictionary.brand.subtitle}
-        </span>
+        {!compact ? (
+          <span className="text-muted-foreground block truncate text-xs">
+            {dictionary.brand.subtitle}
+          </span>
+        ) : null}
       </span>
     </Link>
   );
@@ -148,7 +157,7 @@ function Footer() {
   return (
     <footer className="border-border bg-card mt-auto border-t px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
       <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-        <p>© {new Date().getFullYear()} Jai Mai Wai Laew · Phase 0</p>
+        <p>© {new Date().getFullYear()} Jai Mai Wai Laew</p>
         <nav
           aria-label="ข้อมูลทางกฎหมาย"
           className="flex flex-wrap gap-x-4 gap-y-2"
@@ -182,10 +191,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <DesktopSidebar />
       <div className="flex min-h-dvh min-w-0 flex-col lg:pl-72">
-        <header className="border-border bg-background/90 sticky top-0 z-20 border-b px-4 py-3 backdrop-blur sm:px-6">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+        <header
+          className="border-border bg-background/90 sticky top-0 z-20 border-b px-3 py-2.5 backdrop-blur sm:px-6 sm:py-3"
+          data-testid="app-header"
+        >
+          <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
             <div className="min-w-0 lg:hidden">
-              <Brand />
+              <Brand compact />
             </div>
             <div className="hidden min-w-0 lg:block">
               <p
@@ -195,7 +207,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {dictionary.common.foundation}
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <NetworkStatusBadge />
               <AccountControls />
               <LanguageToggle />

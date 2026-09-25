@@ -12,12 +12,13 @@ export function LanguageToggle() {
   return (
     <Button
       aria-label={`${dictionary.common.switchLanguage} ${nextLocaleLabel}`}
+      className="px-3 sm:px-4"
       lang={locale}
       onClick={() => setLocale(locale === "th" ? "en" : "th")}
       type="button"
       variant="ghost"
     >
-      <Languages aria-hidden="true" className="size-4" />
+      <Languages aria-hidden="true" className="hidden size-4 sm:block" />
       <span lang={locale === "th" ? "en" : "th"}>{nextLocaleLabel}</span>
     </Button>
   );

@@ -8,10 +8,12 @@ test("renders the responsive foundation shell and legal access", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "เริ่มจากฐานที่ปลอดภัย ก่อนเริ่มคำนวณจริง",
+      name: "จัดข้อมูลการเงินให้เป็นเรื่องที่รับมือได้",
     }),
   ).toBeVisible();
-  await expect(page.getByText("ยังไม่พร้อมเผยแพร่")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "เปิดพื้นที่ข้อมูลของฉัน" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "ข้อจำกัดความรับผิด" }),
   ).toBeVisible();
@@ -30,6 +32,13 @@ test("renders the responsive foundation shell and legal access", async ({
         page.evaluate(
           () => document.documentElement.scrollWidth <= window.innerWidth,
         ),
+      )
+      .toBe(true);
+    await expect
+      .poll(() =>
+        page.getByTestId("app-header").evaluate((header) => {
+          return header.scrollWidth <= header.clientWidth;
+        }),
       )
       .toBe(true);
   } else {

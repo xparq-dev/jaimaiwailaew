@@ -8,19 +8,27 @@
 
 ## Production baseline
 
-- Phase 1E Release Gate: **PASS / Closed**
+- Phase 1G Release Gate: **PASS / Closed**
 - Branch: `main`
-- Production baseline: `200979963a6ebaaec7f490a45c625d579652a1f4` — Merge PR #20
+- Production baseline: `200979963a6ebaaec7f490a45c625d579652a1f4` — Merge PR #20 (last merged)
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
 - PR #17: ลบข้อความ Push/Notification ที่ค้างใน Settings/Profile
 - PR #18: reconcile เอกสารหลัง Phase 1E
 - PR #19: Phase 1F PWA and Offline Completion
 - PR #20: member multi-workspace, cross-device sync และ safe workspace deletion
+- PR #21: Phase 1G release closeout (docs/governance เท่านั้น ไม่มี runtime change)
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
 - `supabase/`: local untracked directory ที่สงวนไว้และยังไม่อยู่ใน version-control scope
+
+## In-flight
+
+- Branch: `feat/mobile-header-home-refresh` — **3 commits ahead of main, PR ยังไม่เปิด**
+  - `64fcb6b` feat: refresh mobile header and home experience
+  - `eb4c646` fix: simplify mobile header and show account avatar
+  - `21d52ca` fix: improve Thai auth experience on mobile
 
 ## Phase ที่ปิดแล้ว
 

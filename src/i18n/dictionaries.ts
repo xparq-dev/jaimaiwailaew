@@ -60,7 +60,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   },
   en: {
     brand: {
-      name: "Jai Mai Wai Laew",
+      name: "จ่ายไม่ไหวแล้ว",
       subtitle: "Tax preparation companion",
     },
     common: {

@@ -17,6 +17,7 @@ import {
   isSupabaseConfigured,
   isSupabaseTestMode,
 } from "@/lib/supabase";
+import { resolveAuthAvatarUrl } from "@/auth/user-profile";
 
 const MOCK_AUTH_KEY = "jaimaiwailaew:e2e:auth-user";
 
@@ -24,6 +25,7 @@ export interface AuthUser {
   readonly id: string;
   readonly email: string | null;
   readonly provider: string | null;
+  readonly avatarUrl: string | null;
 }
 
 type AuthStatus = "loading" | "anonymous" | "authenticated" | "unconfigured";
@@ -50,6 +52,7 @@ function toAuthUser(user: User): AuthUser {
       typeof user.app_metadata.provider === "string"
         ? user.app_metadata.provider
         : null,
+    avatarUrl: resolveAuthAvatarUrl(user.user_metadata),
   };
 }
 
@@ -123,6 +126,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
           id: "e2e-user",
           email,
           provider: "email",
+          avatarUrl: null,
         };
         localStorage.setItem(MOCK_AUTH_KEY, JSON.stringify(mockUser));
         accessTokenRef.current = "e2e-access-token";

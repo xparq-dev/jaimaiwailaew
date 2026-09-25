@@ -7,7 +7,9 @@ import {
   LoaderCircle,
   UserRound,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 import { useAuth } from "@/auth/auth-provider";
 import { useCloudSync } from "@/sync/sync-provider";
@@ -26,6 +28,9 @@ const syncLabels = {
 export function AccountControls() {
   const { status: authStatus, user } = useAuth();
   const { status: syncStatus } = useCloudSync();
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
+  const avatarUrl = user?.avatarUrl ?? null;
+  const showAvatar = avatarUrl !== null && avatarUrl !== failedAvatarUrl;
   const SyncIcon =
     syncStatus === "syncing"
       ? LoaderCircle
@@ -36,30 +41,39 @@ export function AccountControls() {
           : Cloud;
 
   return (
-    <div className="flex items-center gap-1">
+    <Link
+      aria-label={
+        user
+          ? `เปิดโปรไฟล์ — สถานะ Cloud Sync: ${syncLabels[syncStatus]}`
+          : "เข้าสู่ระบบ"
+      }
+      className="border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground relative inline-flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full border"
+      href={user ? "/profile" : "/login"}
+    >
+      {showAvatar ? (
+        <Image
+          alt=""
+          className="size-9 rounded-full object-cover"
+          height={36}
+          onError={() => setFailedAvatarUrl(avatarUrl)}
+          referrerPolicy="no-referrer"
+          src={avatarUrl}
+          unoptimized
+          width={36}
+        />
+      ) : (
+        <UserRound aria-hidden="true" className="size-3.5" />
+      )}
       {authStatus === "authenticated" ? (
-        <Link
-          aria-label={`สถานะ Cloud Sync: ${syncLabels[syncStatus]}`}
-          className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-11 items-center justify-center gap-1.5 rounded-full border px-0 text-xs font-semibold xl:w-auto xl:px-2.5"
-          href="/settings"
+        <span
+          aria-hidden="true"
+          className="border-background bg-card absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full border-2"
         >
           <SyncIcon
-            aria-hidden="true"
-            className={`size-3.5 ${syncStatus === "syncing" ? "animate-spin" : ""}`}
+            className={`size-2.5 ${syncStatus === "error" ? "text-danger" : "text-success-strong"} ${syncStatus === "syncing" ? "animate-spin" : ""}`}
           />
-          <span className="hidden xl:inline">{syncLabels[syncStatus]}</span>
-        </Link>
-      ) : null}
-      <Link
-        aria-label={user ? "เปิดโปรไฟล์" : "เข้าสู่ระบบ"}
-        className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-11 items-center justify-center gap-1.5 rounded-full border px-0 text-xs font-semibold sm:w-auto sm:max-w-40 sm:px-2.5"
-        href={user ? "/profile" : "/login"}
-      >
-        <UserRound aria-hidden="true" className="size-3.5" />
-        <span className="hidden min-w-0 truncate sm:inline">
-          {user?.email ?? "เข้าสู่ระบบ"}
         </span>
-      </Link>
-    </div>
+      ) : null}
+    </Link>
   );
 }

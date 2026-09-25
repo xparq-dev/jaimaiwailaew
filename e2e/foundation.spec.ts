@@ -21,6 +21,11 @@ test("renders the responsive foundation shell and legal access", async ({
   const isMobileProject = testInfo.project.name.includes("mobile");
   if (isMobileProject) {
     await page.setViewportSize({ width: 320, height: 700 });
+    const appHeader = page.getByTestId("app-header");
+    await expect(
+      appHeader.getByRole("link", { name: "จ่ายไม่ไหวแล้ว" }),
+    ).toBeVisible();
+    await expect(appHeader.getByText("JM", { exact: true })).toHaveCount(0);
     await expect(
       page.getByRole("navigation", { name: "เมนูหลักบนมือถือ" }),
     ).toBeVisible();
@@ -68,6 +73,12 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   );
   expect(pageResponse?.headers()["content-security-policy"]).toContain(
     "frame-src 'self' blob:",
+  );
+  expect(pageResponse?.headers()["content-security-policy"]).toContain(
+    "https://lh3.googleusercontent.com",
+  );
+  expect(pageResponse?.headers()["content-security-policy"]).toContain(
+    "https://avatars.githubusercontent.com",
   );
   expect(pageResponse?.headers()["x-content-type-options"]).toBe("nosniff");
 

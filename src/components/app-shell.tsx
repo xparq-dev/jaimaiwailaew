@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 
 import { AccountControls } from "@/components/account-controls";
 import { LanguageToggle } from "@/components/language-toggle";
-import { NetworkStatusBadge, OfflineBanner } from "@/components/network-status";
+import { OfflineBanner } from "@/components/network-status";
 import { useLocale } from "@/components/providers/locale-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -42,26 +42,30 @@ function Brand({ compact = false }: { compact?: boolean }) {
 
   return (
     <Link
-      aria-label={dictionary.brand.name}
+      aria-label="จ่ายไม่ไหวแล้ว"
       className={cn(
         "focus-visible:ring-focus/35 flex min-w-0 items-center rounded-xl focus-visible:ring-3 focus-visible:outline-none",
-        compact ? "gap-2" : "gap-3",
+        compact ? "gap-0" : "gap-3",
       )}
       href="/"
       lang={locale}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "bg-primary text-primary-foreground grid shrink-0 place-items-center text-sm font-bold tracking-tight shadow-sm",
-          compact ? "size-9 rounded-lg" : "size-10 rounded-xl",
-        )}
-      >
-        JM
-      </span>
-      <span className={cn("min-w-0", compact && "hidden min-[460px]:block")}>
-        <span className="text-foreground block truncate font-bold">
-          {dictionary.brand.name}
+      {!compact ? (
+        <span
+          aria-hidden="true"
+          className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-xl text-sm font-bold tracking-tight shadow-sm"
+        >
+          JM
+        </span>
+      ) : null}
+      <span className="min-w-0">
+        <span
+          className={cn(
+            "text-foreground block truncate font-bold",
+            compact && "text-sm whitespace-nowrap sm:text-base",
+          )}
+        >
+          จ่ายไม่ไหวแล้ว
         </span>
         {!compact ? (
           <span className="text-muted-foreground block truncate text-xs">
@@ -208,7 +212,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-              <NetworkStatusBadge />
               <AccountControls />
               <LanguageToggle />
               <ThemeToggle />

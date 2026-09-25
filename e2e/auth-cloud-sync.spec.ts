@@ -133,11 +133,52 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
   await expect(
     page.getByText("พบ 3 Workspace สำหรับบัญชีนี้ในอุปกรณ์"),
   ).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: "ลบ Workspace ฟรีแลนซ์ ปีภาษี 2568",
+    })
+    .click();
+  const deleteDialog = page.getByRole("dialog", {
+    name: "ยืนยันลบ Workspace",
+  });
+  await expect(deleteDialog).toContainText("ฟรีแลนซ์ · ปีภาษี 2568");
+  await deleteDialog
+    .getByRole("button", { name: "ยืนยันลบ Workspace" })
+    .click();
+  await expect(
+    page.getByText("พบ 2 Workspace สำหรับบัญชีนี้ในอุปกรณ์"),
+  ).toBeVisible();
 
   await page.goto("/settings");
+  await page.getByRole("button", { name: /ซิงก์ตอนนี้|ลองอีกครั้ง/ }).click();
   await expect(
     page.locator("#main-content").getByText("ซิงก์แล้ว", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByText("รอส่งคำสั่งลบไปยัง Cloud")).toBeHidden();
+  const deletionState = await page.evaluate(() => ({
+    cloud: localStorage.getItem("jaimaiwailaew:e2e:cloud-workspaces") ?? "",
+    deletions:
+      localStorage.getItem("jaimaiwailaew:e2e:cloud-workspaces:deletions") ??
+      "",
+  }));
+  expect(deletionState.cloud).not.toContain("e2e-cloud-workspace-2568");
+  expect(deletionState.deletions).toContain("e2e-cloud-workspace-2568");
+
+  await page.evaluate(() => {
+    localStorage.removeItem("jaimaiwailaew:calculator:v2");
+  });
+  await page.reload();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = localStorage.getItem("jaimaiwailaew:calculator:v2") ?? "";
+        return (
+          raw.includes("e2e-cloud-workspace") &&
+          !raw.includes("e2e-cloud-workspace-2568")
+        );
+      }),
+    )
+    .toBe(true);
   const cloudSyncSection = page
     .getByRole("heading", { name: "Cloud Sync" })
     .locator("xpath=ancestor::section");

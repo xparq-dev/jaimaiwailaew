@@ -19,13 +19,25 @@ export const cloudWorkspaceDocumentSchema = z.strictObject({
   updatedAt: z.string().datetime({ offset: true }),
 });
 
+export const cloudWorkspaceDeletionSchema = z.strictObject({
+  workspaceId: z.string().trim().min(1).max(120),
+  deletedAt: z.string().datetime({ offset: true }),
+});
+
 export const cloudWorkspaceListResponseSchema = z.strictObject({
   workspaces: z.array(cloudWorkspaceDocumentSchema),
+  deletions: z.array(cloudWorkspaceDeletionSchema).default([]),
 });
 
 export type CustomCategory = z.infer<typeof customCategorySchema>;
 export type CloudWorkspaceDocument = z.infer<
   typeof cloudWorkspaceDocumentSchema
+>;
+export type CloudWorkspaceDeletion = z.infer<
+  typeof cloudWorkspaceDeletionSchema
+>;
+export type CloudWorkspaceSnapshot = z.infer<
+  typeof cloudWorkspaceListResponseSchema
 >;
 
 export type CloudSyncStatus =
@@ -39,14 +51,16 @@ export type CloudSyncStatus =
   | "error";
 
 export interface CloudSyncTransport {
-  listWorkspaces(userId: string): Promise<readonly CloudWorkspaceDocument[]>;
+  listWorkspaceSnapshot(userId: string): Promise<CloudWorkspaceSnapshot>;
   getWorkspace(workspaceId: string): Promise<CloudWorkspaceDocument | null>;
   putWorkspace(document: CloudWorkspaceDocument): Promise<void>;
+  deleteWorkspace(workspaceId: string): Promise<CloudWorkspaceDeletion>;
 }
 
 export interface SyncResult {
   readonly action: "none" | "pushed" | "pulled" | "merged";
   readonly workspace: CalculatorWorkspace | null;
   readonly workspaces: readonly CalculatorWorkspace[];
+  readonly completedDeletionIds: readonly string[];
   readonly syncedAt: string;
 }

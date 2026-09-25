@@ -1,10 +1,11 @@
 "use client";
 
-import { FolderOpen, Plus } from "lucide-react";
+import { FolderOpen, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { useAuth } from "@/auth/auth-provider";
 import { getPersonaLabel } from "@/calculator/categories";
 import { useCalculatorStore } from "@/calculator/store";
 import { formatThaiDate } from "@/calculator/utils";
@@ -19,8 +20,13 @@ export function WorkspaceEntryPanel() {
   const workspace = useCalculatorStore((state) => state.workspace);
   const otherWorkspaces = useCalculatorStore((state) => state.otherWorkspaces);
   const selectWorkspace = useCalculatorStore((state) => state.selectWorkspace);
+  const deleteWorkspace = useCalculatorStore((state) => state.deleteWorkspace);
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const [deletingWorkspaceId, setDeletingWorkspaceId] = useState<string | null>(
+    null,
+  );
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (noticeOpen) {
@@ -28,11 +34,18 @@ export function WorkspaceEntryPanel() {
     }
   }, [noticeOpen]);
 
+  useEffect(() => {
+    if (deletingWorkspaceId) deleteDialogRef.current?.showModal();
+  }, [deletingWorkspaceId]);
+
   if (!hydrated || !workspace) {
     return null;
   }
 
   const allWorkspaces = [workspace, ...otherWorkspaces];
+  const deletingWorkspace = allWorkspaces.find(
+    (candidate) => candidate.id === deletingWorkspaceId,
+  );
 
   const openWorkspace = (workspaceId: string) => {
     selectWorkspace(workspaceId);
@@ -76,23 +89,34 @@ export function WorkspaceEntryPanel() {
                 </p>
               </div>
             </div>
-            {!user && candidate.id === workspace.id ? (
-              <Button asChild>
-                <Link href="/calculator">เปิด Workspace เดิม</Link>
-              </Button>
-            ) : (
+            <div className="flex flex-wrap gap-2">
+              {!user && candidate.id === workspace.id ? (
+                <Button asChild>
+                  <Link href="/calculator">เปิด Workspace เดิม</Link>
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => openWorkspace(candidate.id)}
+                  type="button"
+                  variant={
+                    candidate.id === workspace.id ? "default" : "secondary"
+                  }
+                >
+                  {candidate.id === workspace.id
+                    ? "เปิด Workspace ปัจจุบัน"
+                    : "เปิด Workspace นี้"}
+                </Button>
+              )}
               <Button
-                onClick={() => openWorkspace(candidate.id)}
+                aria-label={`ลบ Workspace ${getPersonaLabel(candidate.persona)} ปีภาษี ${candidate.taxYearBE}`}
+                onClick={() => setDeletingWorkspaceId(candidate.id)}
                 type="button"
-                variant={
-                  candidate.id === workspace.id ? "default" : "secondary"
-                }
+                variant="danger"
               >
-                {candidate.id === workspace.id
-                  ? "เปิด Workspace ปัจจุบัน"
-                  : "เปิด Workspace นี้"}
+                <Trash2 aria-hidden="true" className="size-4" />
+                ลบ
               </Button>
-            )}
+            </div>
           </article>
         ))}
       </div>
@@ -162,7 +186,57 @@ export function WorkspaceEntryPanel() {
           </div>
         </div>
       </dialog>
+
+      <dialog
+        aria-labelledby="delete-workspace-title"
+        className="border-border bg-card text-foreground m-auto w-[min(100%,34rem)] rounded-2xl border p-0 shadow-xl backdrop:bg-black/50"
+        onCancel={(event) => {
+          event.preventDefault();
+          deleteDialogRef.current?.close();
+        }}
+        onClose={() => setDeletingWorkspaceId(null)}
+        ref={deleteDialogRef}
+      >
+        <div className="space-y-4 p-6">
+          <div>
+            <h2 className="text-lg font-bold" id="delete-workspace-title">
+              ยืนยันลบ Workspace
+            </h2>
+            <p className="text-muted-foreground mt-2 text-sm leading-6">
+              {deletingWorkspace
+                ? `${getPersonaLabel(deletingWorkspace.persona)} · ปีภาษี ${deletingWorkspace.taxYearBE}`
+                : "Workspace ที่เลือก"}
+            </p>
+          </div>
+          <p className="border-danger/30 bg-danger/10 text-danger rounded-xl border p-3 text-sm leading-6">
+            การลบจะนำรายการทั้งหมดใน Workspace นี้ออกจากอุปกรณ์
+            {user
+              ? " และส่งคำสั่งลบไปยัง Cloud เมื่อออนไลน์ เพื่อไม่ให้เครื่องอื่นนำข้อมูลเดิมกลับมา"
+              : " การดำเนินการนี้ย้อนกลับไม่ได้"}
+          </p>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              onClick={() => deleteDialogRef.current?.close()}
+              type="button"
+              variant="secondary"
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              onClick={() => {
+                if (!deletingWorkspaceId) return;
+                deleteWorkspace(deletingWorkspaceId, Boolean(user));
+                deleteDialogRef.current?.close();
+              }}
+              type="button"
+              variant="danger"
+            >
+              <Trash2 aria-hidden="true" className="size-4" />
+              ยืนยันลบ Workspace
+            </Button>
+          </div>
+        </div>
+      </dialog>
     </section>
   );
 }
-import { useAuth } from "@/auth/auth-provider";

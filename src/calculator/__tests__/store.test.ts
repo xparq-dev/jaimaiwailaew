@@ -100,6 +100,33 @@ describe("Calculator Zustand Local Store and Migration Safety", () => {
     ]);
   });
 
+  it("deletes locally, switches active workspace, and queues cloud deletion", () => {
+    useCalculatorStore
+      .getState()
+      .initializeWorkspace(
+        getDefaultWorkspaceInput("salaried_employee", 2569, "full_year"),
+      );
+    const firstId = useCalculatorStore.getState().workspace!.id;
+    useCalculatorStore
+      .getState()
+      .createAdditionalWorkspace(
+        getDefaultWorkspaceInput("freelancer", 2569, "full_year"),
+      );
+    const secondId = useCalculatorStore.getState().workspace!.id;
+
+    useCalculatorStore.getState().deleteWorkspace(secondId, true);
+    expect(useCalculatorStore.getState().workspace?.id).toBe(firstId);
+    expect(useCalculatorStore.getState().otherWorkspaces).toEqual([]);
+    expect(useCalculatorStore.getState().pendingWorkspaceDeletionIds).toEqual([
+      secondId,
+    ]);
+
+    useCalculatorStore.getState().acknowledgeWorkspaceDeletions([secondId]);
+    expect(useCalculatorStore.getState().pendingWorkspaceDeletionIds).toEqual(
+      [],
+    );
+  });
+
   it("updates the workspace persona without clearing existing entries", () => {
     useCalculatorStore
       .getState()

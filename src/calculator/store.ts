@@ -42,12 +42,15 @@ import { migrateLocalStorageV1ToV2 } from "./migration";
 interface CalculatorStoreState {
   workspace: CalculatorWorkspace | null;
   otherWorkspaces: CalculatorWorkspace[];
+  pendingWorkspaceDeletionIds: string[];
   lastSavedAt: string | null;
   hydrationComplete: boolean;
   persistError: string | null;
   initializeWorkspace: (input: CreateWorkspaceInput, replace?: boolean) => void;
   createAdditionalWorkspace: (input: CreateWorkspaceInput) => void;
   selectWorkspace: (workspaceId: string) => void;
+  deleteWorkspace: (workspaceId: string, queueCloudDeletion: boolean) => void;
+  acknowledgeWorkspaceDeletions: (workspaceIds: readonly string[]) => void;
   replaceWorkspace: (input: CreateWorkspaceInput) => void;
   updateWorkspacePersona: (persona: CalculatorPersona) => void;
   clearLocalData: () => void;
@@ -215,6 +218,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
     (set, get) => ({
       workspace: null,
       otherWorkspaces: [],
+      pendingWorkspaceDeletionIds: [],
       lastSavedAt: null,
       hydrationComplete: false,
       persistError: null,
@@ -271,6 +275,45 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         }));
       },
 
+      deleteWorkspace: (workspaceId, queueCloudDeletion) => {
+        const state = get();
+        const allWorkspaces = [
+          ...(state.workspace ? [state.workspace] : []),
+          ...state.otherWorkspaces,
+        ];
+        if (!allWorkspaces.some((candidate) => candidate.id === workspaceId)) {
+          return;
+        }
+
+        const remaining = allWorkspaces.filter(
+          (candidate) => candidate.id !== workspaceId,
+        );
+        const active =
+          state.workspace?.id === workspaceId
+            ? (remaining[0] ?? null)
+            : state.workspace;
+        set({
+          workspace: active,
+          otherWorkspaces: active
+            ? remaining.filter((candidate) => candidate.id !== active.id)
+            : [],
+          pendingWorkspaceDeletionIds: queueCloudDeletion
+            ? [...new Set([...state.pendingWorkspaceDeletionIds, workspaceId])]
+            : state.pendingWorkspaceDeletionIds,
+          lastSavedAt: nowIsoTimestamp(),
+          persistError: null,
+        });
+      },
+
+      acknowledgeWorkspaceDeletions: (workspaceIds) => {
+        const completed = new Set(workspaceIds);
+        set((state) => ({
+          pendingWorkspaceDeletionIds: state.pendingWorkspaceDeletionIds.filter(
+            (workspaceId) => !completed.has(workspaceId),
+          ),
+        }));
+      },
+
       replaceWorkspace: (input) => {
         set({
           workspace: createCalculatorWorkspace(input),
@@ -296,6 +339,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         set({
           workspace: null,
           otherWorkspaces: [],
+          pendingWorkspaceDeletionIds: [],
           lastSavedAt: null,
           persistError: null,
         });
@@ -682,6 +726,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
           const parsed = persistedCalculatorStateSchema.safeParse({
             workspace: candidate,
             otherWorkspaces: [],
+            pendingWorkspaceDeletionIds: [],
             lastSavedAt: candidate.updatedAt,
           });
           if (!parsed.success || !parsed.data.workspace) {
@@ -696,10 +741,14 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         }
 
         const normalized = [...unique.values()];
+        const pendingDeletions = new Set(get().pendingWorkspaceDeletionIds);
+        const available = normalized.filter(
+          (candidate) => !pendingDeletions.has(candidate.id),
+        );
         const currentId = get().workspace?.id;
         const active =
-          normalized.find((candidate) => candidate.id === currentId) ??
-          [...normalized].sort(
+          available.find((candidate) => candidate.id === currentId) ??
+          [...available].sort(
             (left, right) =>
               Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
           )[0] ??
@@ -708,7 +757,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         set({
           workspace: active,
           otherWorkspaces: active
-            ? normalized.filter((candidate) => candidate.id !== active.id)
+            ? available.filter((candidate) => candidate.id !== active.id)
             : [],
           lastSavedAt: active?.updatedAt ?? null,
           persistError: null,
@@ -722,6 +771,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
       partialize: (state) => ({
         workspace: state.workspace,
         otherWorkspaces: state.otherWorkspaces,
+        pendingWorkspaceDeletionIds: state.pendingWorkspaceDeletionIds,
         lastSavedAt: state.lastSavedAt,
       }),
       onRehydrateStorage: () => (state, error) => {
@@ -747,6 +797,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
                 };
                 state.lastSavedAt = migrationResult.lastSavedAt;
                 state.otherWorkspaces = [];
+                state.pendingWorkspaceDeletionIds = [];
                 state.persistError = null;
               }
               return;
@@ -771,6 +822,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
         const parsed = persistedCalculatorStateSchema.safeParse({
           workspace: state.workspace,
           otherWorkspaces: state.otherWorkspaces,
+          pendingWorkspaceDeletionIds: state.pendingWorkspaceDeletionIds,
           lastSavedAt: state.lastSavedAt,
         });
 
@@ -795,6 +847,8 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
             ),
           }),
         );
+        state.pendingWorkspaceDeletionIds =
+          parsed.data.pendingWorkspaceDeletionIds;
       },
     },
   ),

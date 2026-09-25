@@ -39,14 +39,18 @@ export function CloudSyncProvider({
   readonly children: ReactNode;
 }) {
   const { status: authStatus, user, getAccessToken } = useAuth();
-  const workspaceUpdatedAt = useCalculatorStore((state) =>
-    [state.workspace, ...state.otherWorkspaces]
-      .filter((workspace) => workspace !== null)
-      .map((workspace) => `${workspace.id}:${workspace.updatedAt}`)
-      .join("|"),
+  const workspaceUpdatedAt = useCalculatorStore(
+    (state) =>
+      [state.workspace, ...state.otherWorkspaces]
+        .filter((workspace) => workspace !== null)
+        .map((workspace) => `${workspace.id}:${workspace.updatedAt}`)
+        .join("|") + `|deleted:${state.pendingWorkspaceDeletionIds.join(",")}`,
   );
   const restoreWorkspacesFromSync = useCalculatorStore(
     (state) => state.restoreWorkspacesFromSync,
+  );
+  const acknowledgeWorkspaceDeletions = useCalculatorStore(
+    (state) => state.acknowledgeWorkspaceDeletions,
   );
   const [enabledOverride, setEnabledOverride] = useState<{
     readonly userId: string;
@@ -96,12 +100,14 @@ export function CloudSyncProvider({
           ...(calculatorState.workspace ? [calculatorState.workspace] : []),
           ...calculatorState.otherWorkspaces,
         ],
+        pendingDeletionIds: calculatorState.pendingWorkspaceDeletionIds,
         transport,
       });
       if (result.action === "pulled" || result.action === "merged") {
         const restoreError = restoreWorkspacesFromSync(result.workspaces);
         if (restoreError) throw new Error(restoreError);
       }
+      acknowledgeWorkspaceDeletions(result.completedDeletionIds);
       setLastSyncedAt(result.syncedAt);
       setStatus("synced");
     } catch (syncError) {
@@ -114,7 +120,14 @@ export function CloudSyncProvider({
     } finally {
       runningRef.current = false;
     }
-  }, [authStatus, enabled, restoreWorkspacesFromSync, transport, user]);
+  }, [
+    acknowledgeWorkspaceDeletions,
+    authStatus,
+    enabled,
+    restoreWorkspacesFromSync,
+    transport,
+    user,
+  ]);
 
   useEffect(() => {
     if (!enabled) return;

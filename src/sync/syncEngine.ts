@@ -57,6 +57,7 @@ export async function syncWorkspace({
   return syncWorkspaces({
     userId,
     localWorkspaces: localWorkspace ? [localWorkspace] : [],
+    pendingDeletionIds: [],
     transport,
     now,
   });
@@ -65,25 +66,44 @@ export async function syncWorkspace({
 export async function syncWorkspaces({
   userId,
   localWorkspaces,
+  pendingDeletionIds = [],
   transport,
   now = () => new Date(),
 }: {
   readonly userId: string;
   readonly localWorkspaces: readonly CalculatorWorkspace[];
+  readonly pendingDeletionIds?: readonly string[];
   readonly transport: CloudSyncTransport;
   readonly now?: () => Date;
 }): Promise<SyncResult> {
   const syncedAt = now().toISOString();
-  const remoteDocuments = await transport.listWorkspaces(userId);
-  const localById = new Map(localWorkspaces.map((item) => [item.id, item]));
+  const completedDeletionIds: string[] = [];
+  for (const workspaceId of new Set(pendingDeletionIds)) {
+    await transport.deleteWorkspace(workspaceId);
+    completedDeletionIds.push(workspaceId);
+  }
+
+  const snapshot = await transport.listWorkspaceSnapshot(userId);
+  const deletedIds = new Set(
+    snapshot.deletions.map((deletion) => deletion.workspaceId),
+  );
+  const remoteDocuments = snapshot.workspaces.filter(
+    (document) => !deletedIds.has(document.workspace.id),
+  );
+  const eligibleLocalWorkspaces = localWorkspaces.filter(
+    (workspace) => !deletedIds.has(workspace.id),
+  );
+  const localById = new Map(
+    eligibleLocalWorkspaces.map((item) => [item.id, item]),
+  );
   const remoteById = new Map(
     remoteDocuments.map((item) => [item.workspace.id, item]),
   );
   const resolved = new Map<string, CalculatorWorkspace>();
   let pushed = false;
-  let pulled = false;
+  let pulled = localWorkspaces.length !== eligibleLocalWorkspaces.length;
 
-  for (const local of localWorkspaces) {
+  for (const local of eligibleLocalWorkspaces) {
     const remote = remoteById.get(local.id);
     if (!remote) {
       await transport.putWorkspace(createCloudWorkspaceDocument(local));
@@ -133,6 +153,7 @@ export async function syncWorkspaces({
     action,
     workspace: newest ?? null,
     workspaces,
+    completedDeletionIds,
     syncedAt,
   };
 }

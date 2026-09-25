@@ -33,6 +33,9 @@ export function SettingsPanel() {
   const workspaceCount = useCalculatorStore(
     (state) => (state.workspace ? 1 : 0) + state.otherWorkspaces.length,
   );
+  const pendingDeletionCount = useCalculatorStore(
+    (state) => state.pendingWorkspaceDeletionIds.length,
+  );
   if (authStatus === "loading") {
     return <p role="status">กำลังโหลดการตั้งค่า…</p>;
   }
@@ -101,6 +104,11 @@ export function SettingsPanel() {
             </p>
           ) : null}
           {syncError ? <p className="text-danger mt-2">{syncError}</p> : null}
+          {pendingDeletionCount > 0 ? (
+            <p className="text-warning-strong mt-2">
+              รอส่งคำสั่งลบไปยัง Cloud: {pendingDeletionCount} Workspace
+            </p>
+          ) : null}
           {!enabled ? (
             <p className="text-warning-strong mt-2">
               อุปกรณ์นี้ยังไม่ส่งหรือดึง Workspace จาก Cloud กรุณาเปิด Cloud

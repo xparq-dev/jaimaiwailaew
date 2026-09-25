@@ -26,9 +26,16 @@ function workspace(id: string, updatedAt: string): CalculatorWorkspace {
 
 function transportFixture(
   documents: readonly CloudWorkspaceDocument[] = [],
+  deletionIds: readonly string[] = [],
 ): CloudSyncTransport {
   return {
-    listWorkspaces: vi.fn().mockResolvedValue(documents),
+    listWorkspaceSnapshot: vi.fn().mockResolvedValue({
+      workspaces: documents,
+      deletions: deletionIds.map((workspaceId) => ({
+        workspaceId,
+        deletedAt: "2026-09-20T12:00:00.000Z",
+      })),
+    }),
     getWorkspace: vi
       .fn()
       .mockImplementation(
@@ -36,6 +43,12 @@ function transportFixture(
           documents.find((item) => item.workspace.id === id) ?? null,
       ),
     putWorkspace: vi.fn().mockResolvedValue(undefined),
+    deleteWorkspace: vi
+      .fn()
+      .mockImplementation(async (workspaceId: string) => ({
+        workspaceId,
+        deletedAt: "2026-09-20T12:00:00.000Z",
+      })),
   };
 }
 
@@ -157,5 +170,27 @@ describe("syncWorkspace Last-Write-Wins", () => {
       "shared",
     ]);
     expect(transport.putWorkspace).toHaveBeenCalledTimes(2);
+  });
+
+  it("propagates queued deletions and never resurrects a tombstoned workspace", async () => {
+    const deleted = workspace("deleted-workspace", "2026-09-20T11:00:00.000Z");
+    const active = workspace("active-workspace", "2026-09-20T12:00:00.000Z");
+    const transport = transportFixture(
+      [createCloudWorkspaceDocument(active)],
+      [deleted.id],
+    );
+
+    const result = await syncWorkspaces({
+      userId: "user-a",
+      localWorkspaces: [active, deleted],
+      pendingDeletionIds: [deleted.id],
+      transport,
+      now,
+    });
+
+    expect(transport.deleteWorkspace).toHaveBeenCalledWith(deleted.id);
+    expect(transport.putWorkspace).not.toHaveBeenCalled();
+    expect(result.completedDeletionIds).toEqual([deleted.id]);
+    expect(result.workspaces.map((item) => item.id)).toEqual([active.id]);
   });
 });

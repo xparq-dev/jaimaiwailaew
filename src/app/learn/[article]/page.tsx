@@ -1,10 +1,30 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { PlaceholderPage } from "@/components/placeholder-page";
-import { learnPlaceholders } from "@/content/route-placeholders";
+import { KnowledgeArticle } from "@/components/knowledge-article";
+import {
+  getKnowledgeArticle,
+  knowledgeArticles,
+} from "@/content/knowledge-center";
 
 export function generateStaticParams() {
-  return Object.keys(learnPlaceholders).map((article) => ({ article }));
+  return knowledgeArticles.map((article) => ({ article: article.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ article: string }>;
+}): Promise<Metadata> {
+  const { article: slug } = await params;
+  const article = getKnowledgeArticle(slug);
+
+  if (!article) return {};
+
+  return {
+    title: article.title,
+    description: article.summary,
+  };
 }
 
 export default async function LearnArticlePage({
@@ -12,10 +32,10 @@ export default async function LearnArticlePage({
 }: {
   params: Promise<{ article: string }>;
 }) {
-  const { article } = await params;
-  const content = learnPlaceholders[article as keyof typeof learnPlaceholders];
+  const { article: slug } = await params;
+  const article = getKnowledgeArticle(slug);
 
-  if (!content) notFound();
+  if (!article) notFound();
 
-  return <PlaceholderPage content={content} />;
+  return <KnowledgeArticle article={article} />;
 }

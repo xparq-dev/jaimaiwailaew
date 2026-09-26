@@ -191,11 +191,33 @@ test("serves a scoped PWA manifest and baseline security headers", async ({
   }
 });
 
-test("keeps unstarted learning content honest and publishes offline guidance", async ({
+test("searches reviewed learning content and publishes offline guidance", async ({
   page,
 }) => {
+  await page.goto("/learn");
+  await page
+    .getByRole("searchbox", { name: "ค้นหาหัวข้อที่ต้องการ" })
+    .fill("50 ทวิ");
+  await expect(
+    page.getByRole("link", { name: /ตรวจภาษีหัก ณ ที่จ่ายจากเอกสาร/ }),
+  ).toBeVisible();
+  await expect(page.getByText("พบ 1 บทความ")).toBeVisible();
+
+  await page.getByRole("button", { name: "ล้างคำค้นหา" }).click();
+  await page.getByRole("button", { name: "แบบภาษี" }).click();
+  await expect(page.getByText("พบ 3 บทความ")).toBeVisible();
+
   await page.goto("/learn/tax-basics");
-  await expect(page.getByText("ยังไม่เปิดใช้การคำนวณ")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "พื้นฐานภาษีเงินได้บุคคลธรรมดา" }),
+  ).toBeVisible();
+  await expect(page.getByText(/ตรวจทาน .*รุ่น 1\.0\.0/)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "แหล่งข้อมูลทางการ" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /ประมวลรัษฎากร มาตรา 38–64/ }),
+  ).toHaveAttribute("href", "https://www.rd.go.th/5937.html");
 
   await page.goto("/offline");
   await expect(

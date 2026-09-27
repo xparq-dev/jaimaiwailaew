@@ -1,11 +1,15 @@
 "use client";
 
 import { Download, FileSearch, X } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import type { CalculatorWorkspace } from "@/calculator/types";
 import type { LocalPdfArtifact } from "@/pdf/download-local-pdf";
 import { buildLocalPdfReportModel } from "@/pdf/local-pdf-report";
+import {
+  buildReportPeriodOptions,
+  createReportWorkspace,
+} from "@/report/report-period";
 
 import { Button } from "../ui/button";
 import { TabularExportButtons } from "./tabular-export-buttons";
@@ -29,9 +33,21 @@ export function PdfExportPanel({
     workspace.reportName ?? DEFAULT_REPORT_TITLE,
   );
   const [displayName, setDisplayName] = useState("");
+  const [selectedPeriodId, setSelectedPeriodId] = useState("workspace");
   const [status, setStatus] = useState<ExportStatus>("idle");
   const [preview, setPreview] = useState<PdfPreview | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const periodOptions = useMemo(
+    () => buildReportPeriodOptions(workspace),
+    [workspace],
+  );
+  const selectedPeriod =
+    periodOptions.find((period) => period.id === selectedPeriodId) ??
+    periodOptions[0]!;
+  const reportWorkspace = useMemo(
+    () => createReportWorkspace(workspace, selectedPeriod),
+    [selectedPeriod, workspace],
+  );
 
   useEffect(() => {
     if (!preview) {
@@ -51,10 +67,11 @@ export function PdfExportPanel({
     setStatus("preparing");
 
     try {
-      const report = buildLocalPdfReportModel(workspace, {
+      const report = buildLocalPdfReportModel(reportWorkspace, {
         generatedAt: new Date(),
         reportName,
         displayName,
+        includeTaxEstimate: selectedPeriod.isWorkspacePeriod,
       });
       const { createLocalPdfArtifact } =
         await import("@/pdf/download-local-pdf");
@@ -108,6 +125,31 @@ export function PdfExportPanel({
       </div>
 
       <form className="mt-4 grid gap-4" onSubmit={handlePreview}>
+        <label className="grid w-full max-w-xl min-w-0 gap-2 text-sm font-medium">
+          ช่วงรายงาน
+          <select
+            className="border-border bg-background focus-visible:ring-focus/35 min-h-11 w-full min-w-0 rounded-xl border px-3 py-2 font-normal focus-visible:ring-3 focus-visible:outline-none"
+            onChange={(event) => setSelectedPeriodId(event.target.value)}
+            value={selectedPeriod.id}
+          >
+            {periodOptions.map((period) => (
+              <option key={period.id} value={period.id}>
+                {period.label}
+              </option>
+            ))}
+          </select>
+          <span className="text-muted-foreground text-xs leading-5 font-normal">
+            PDF, Excel และ CSV จะใช้ช่วงเดียวกัน
+          </span>
+        </label>
+
+        {!selectedPeriod.isWorkspacePeriod ? (
+          <div className="border-border bg-muted/50 rounded-xl border px-4 py-3 text-sm leading-6">
+            รายงานช่วงย่อยจะแสดงเฉพาะรายการและยอดรวมในช่วงที่เลือก
+            โดยไม่แสดงค่าลดหย่อนร่างแบบรวมและประมาณการภาษีของ Workspace
+          </div>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="grid gap-2 text-sm font-medium">
             ชื่อรายงาน (ไม่บังคับ)
@@ -135,7 +177,10 @@ export function PdfExportPanel({
             <FileSearch aria-hidden="true" className="size-4" />
             {status === "preparing" ? "กำลังสร้างตัวอย่าง…" : "ดูตัวอย่าง PDF"}
           </Button>
-          <TabularExportButtons workspace={workspace} />
+          <TabularExportButtons
+            includeTaxEstimate={selectedPeriod.isWorkspacePeriod}
+            workspace={reportWorkspace}
+          />
           <p aria-live="polite" className="text-muted-foreground text-sm">
             {status === "preview-ready"
               ? "สร้างตัวอย่าง PDF เรียบร้อยแล้ว"

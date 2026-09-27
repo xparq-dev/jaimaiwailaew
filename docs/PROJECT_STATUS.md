@@ -1,6 +1,6 @@
 # สถานะโครงการ
 
-ตรวจสอบล่าสุด: 2026-09-27 (Asia/Bangkok)
+ตรวจสอบล่าสุด: 2026-09-28 (Asia/Bangkok)
 
 เอกสารนี้เป็น source of truth สำหรับสถานะการดำเนินงานจริง ส่วนข้อกำหนดผลิตภัณฑ์ระยะยาวให้ยึด
 [`ProductRequirementsDocument.md`](./ProductRequirementsDocument.md) โดยต้องอ่านหมายเหตุการ re-scope
@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `c71e406` — Merge PR #26
+- Production baseline: `530062a` — Merge PR #27
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -24,6 +24,7 @@
 - PR #24: Phase 2A Knowledge Center Foundation
 - PR #25: Phase 2B Persona Learning Paths
 - PR #26: Phase 3A Account Dashboard Foundation
+- PR #27: Phase 3B Cloud Data Controls
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -52,16 +53,18 @@
   และ “อ่านต่อให้ตรงกับคุณ” โดยไม่มี recommendation API
 - Phase 3A (PR #26) — Account Dashboard แสดงบัญชี ตำแหน่งข้อมูล สถานะ Cloud Sync
   และ Workspace ในอุปกรณ์โดยไม่เปิดเผย internal identifiers
+- Phase 3B (PR #27) — ลบสำเนา Workspace ทั้งหมดของบัญชีออกจาก private R2 ได้โดย
+  เก็บข้อมูล local ไว้ ตรวจ ownership แบบ fail closed และปิด Sync หลังลบสำเร็จ
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 3B — Cloud Data Controls เริ่มบน branch `feat/phase-3b-cloud-data-controls`:
+Phase 4A — Report Periods เริ่มบน branch `feat/phase-4a-report-periods`:
 
-- เพิ่มการลบสำเนา Workspace ทั้งหมดของบัญชีออกจาก private R2 โดยเก็บข้อมูล local ไว้
-- ตรวจ JWT ownership แบบ fail closed และปิด Sync เฉพาะเมื่อลบสำเร็จ
-- ไม่ใช่ account deletion และไม่มี retention/scheduler/audit/consent changes
+- เลือกช่วง Workspace, ทั้งปี, ครึ่งปี หรือรายเดือนครั้งเดียวสำหรับ PDF/Excel/CSV
+- ใช้การประมวลผลในอุปกรณ์เดิมและไม่แก้ข้อมูล Workspace จริง
+- ช่วงย่อยไม่แสดงค่าลดหย่อนร่างแบบรวมและประมาณการภาษีของ Workspace
 - ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase3BCloudDataControls.md`](./Phase3BCloudDataControls.md)
+  [`Phase4AReportPeriods.md`](./Phase4AReportPeriods.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -115,7 +118,7 @@ Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (
 - [ ] ประเมิน nonce-based CSP
 - [ ] manual device acceptance ครบ Android/iOS/Desktop (PWA install)
 
-Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 และ Phase 3A Account Dashboard
-ปิดแล้วผ่าน PR #26 ส่วน Phase 3B Cloud Data Controls กำลังดำเนินการ ขณะที่ account
-deletion/retention, audit/consent governance, reports, admin, payment/LINE และ OCR ยังไม่เริ่ม
-และต้องแยก scope/PR ตาม ownership
+Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 ส่วน Phase 3A Account Dashboard
+และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ ขณะนี้ Phase 4A
+Report Periods กำลังดำเนินการ ส่วน account deletion/retention, audit/consent governance,
+report history/templates, admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership

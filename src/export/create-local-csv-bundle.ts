@@ -43,6 +43,7 @@ function buildCsvFiles(
           (row) => [row.label, row.amountBaht] as const,
         ),
         ["", ""],
+        ["ช่วงรายงาน", report.periodLabel],
         ["วันที่/เวลาที่ส่งออก", report.generatedAtLabel],
         ["Tax Rule Status", report.taxRuleStatus],
         ["หมายเหตุ", report.disclaimer],

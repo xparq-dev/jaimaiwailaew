@@ -142,6 +142,7 @@ describe("local tabular report", () => {
       "13 กันยายน 2569 14:55 น. (Asia/Bangkok)",
     );
     expect(report.generatedAtFileStamp).toBe("20260913-1455");
+    expect(report.periodLabel).toBe("1 ม.ค. 2569 – 30 มิ.ย. 2569");
     expect(report.taxRuleStatus).toBe(TABULAR_EXPORT_TAX_RULE_STATUS);
     expect(report.disclaimer).toBe(TABULAR_EXPORT_DISCLAIMER);
     expect(report.summaryRows).toEqual([
@@ -178,6 +179,16 @@ describe("local tabular report", () => {
       /secret-id|private-|CERT-SECRET|ruleSetId|taxDue|refund/i,
     );
     expect(workspace).toEqual(before);
+  });
+
+  it("omits the workspace tax estimate for a partial report period", () => {
+    const report = buildLocalTabularReportModel(createWorkspaceFixture(), {
+      generatedAt: new Date("2026-09-13T07:55:00.000Z"),
+      includeTaxEstimate: false,
+    });
+
+    expect(report.taxEstimateRows).toBeUndefined();
+    expect(report.taxEstimateDisclaimer).toBeUndefined();
   });
 });
 

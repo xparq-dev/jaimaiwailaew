@@ -124,4 +124,35 @@ describe("PdfExportPanel", () => {
     expect(storageSpy).not.toHaveBeenCalled();
     expect(window.location.href).toBe(initialUrl);
   }, 15_000);
+
+  it("uses one selected period for PDF and tabular exports", async () => {
+    const user = userEvent.setup();
+    const artifact = {
+      blob: new Blob(["%PDF-test"], { type: "application/pdf" }),
+      fileName: "รายงาน.pdf",
+    };
+    createLocalPdfArtifactMock.mockResolvedValue(artifact);
+    const workspace = createCalculatorWorkspace(
+      getDefaultWorkspaceInput("multiple_income", 2569, "first_half"),
+    );
+
+    render(<PdfExportPanel workspace={workspace} />);
+
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: /ช่วงรายงาน/u }),
+      "month-2026-02",
+    );
+    expect(
+      screen.getByText(/รายงานช่วงย่อยจะแสดงเฉพาะรายการและยอดรวม/u),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "ดูตัวอย่าง PDF" }));
+
+    await waitFor(() =>
+      expect(createLocalPdfArtifactMock).toHaveBeenCalledOnce(),
+    );
+    expect(createLocalPdfArtifactMock.mock.calls[0]?.[0]).toMatchObject({
+      periodLabel: "1 ก.พ. 2569 – 28 ก.พ. 2569",
+      taxEstimate: undefined,
+    });
+  });
 });

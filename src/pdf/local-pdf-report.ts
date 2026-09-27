@@ -36,6 +36,7 @@ export interface LocalPdfReportOptions {
   readonly generatedAt: Date;
   readonly reportName?: string | undefined;
   readonly displayName?: string | undefined;
+  readonly includeTaxEstimate?: boolean | undefined;
 }
 
 export interface LocalPdfEntryRow {
@@ -235,6 +236,7 @@ export function buildLocalPdfReportModel(
     totals: computeArithmeticTotals(workspace),
     socialSecurityContributionSatang: socialSecurity.contributionSatang,
     taxEstimate:
+      options.includeTaxEstimate !== false &&
       workspace.taxRuleResolutionSnapshot.availability === "available"
         ? calculateWorkspacePIT(workspace)
         : undefined,

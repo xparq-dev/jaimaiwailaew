@@ -572,12 +572,36 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(shopeeDialog).toBeHidden();
     await expect(shopeeTrigger).toBeFocused();
 
-    // 6b. Local PDF previews before download without leaking financial data.
-    const requestCountBeforePdf = requestedUrls.length;
-    const pdfUrl = page.url();
+    // 6b. One report-period selection is shared by all local export formats.
     const pdfPanel = page.getByRole("region", {
       name: "ดาวน์โหลดรายงาน PDF",
     });
+    const reportPeriodSelect = pdfPanel.getByRole("combobox", {
+      name: /ช่วงรายงาน/,
+    });
+    await reportPeriodSelect.selectOption("month-2026-03");
+    await expect(
+      pdfPanel.getByText(/รายงานช่วงย่อยจะแสดงเฉพาะรายการและยอดรวม/),
+    ).toBeVisible();
+    await pdfPanel.getByRole("button", { name: "ส่งออก Excel" }).click();
+    const partialExcelPreview = page.getByRole("dialog", {
+      name: "ตัวอย่างรายงาน Excel",
+    });
+    await expect(partialExcelPreview).toBeVisible();
+    await expect(
+      partialExcelPreview.getByText("1 มี.ค. 2569 – 31 มี.ค. 2569"),
+    ).toBeVisible();
+    await expect(
+      partialExcelPreview.getByRole("tab", { name: "Tax Estimate" }),
+    ).toHaveCount(0);
+    await partialExcelPreview
+      .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
+      .click();
+    await reportPeriodSelect.selectOption("workspace");
+
+    // 6c. Local PDF previews before download without leaking financial data.
+    const requestCountBeforePdf = requestedUrls.length;
+    const pdfUrl = page.url();
     await pdfPanel
       .getByRole("textbox", {
         name: "ชื่อผู้จัดทำ (ไม่บังคับ)",
@@ -624,7 +648,7 @@ test.describe("Calculator UX (Local-only)", () => {
       .click();
     await expect(pdfPreviewDialog).toBeHidden();
 
-    // 6c. Excel export is generated locally with editable numeric cells and all required sheets.
+    // 6d. Excel export is generated locally with editable numeric cells and all required sheets.
     const requestCountBeforeExcel = requestedUrls.length;
     await pdfPanel.getByRole("button", { name: "ส่งออก Excel" }).click();
     const excelPreviewDialog = page.getByRole("dialog", {

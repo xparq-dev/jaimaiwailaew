@@ -43,4 +43,3 @@ Workspace ดังนั้นเมื่อเลือกช่วงอื�
 - ช่วงรายงานปรากฏใน preview และไฟล์ที่ดาวน์โหลด
 - ไม่มี network request, Local Storage write หรือ URL mutation จากการเลือก/สร้างรายงาน
 - unit/component/browser tests, lint, typecheck และ build ผ่าน
-

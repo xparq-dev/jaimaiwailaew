@@ -49,6 +49,7 @@ function transportFixture(
         workspaceId,
         deletedAt: "2026-09-20T12:00:00.000Z",
       })),
+    deleteAllCloudData: vi.fn().mockResolvedValue({ deletedObjects: 0 }),
   };
 }
 

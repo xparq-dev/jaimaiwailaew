@@ -29,6 +29,7 @@ interface CloudSyncContextValue {
   readonly error: string | null;
   setEnabled(enabled: boolean): void;
   syncNow(): Promise<void>;
+  deleteCloudData(): Promise<void>;
 }
 
 const CloudSyncContext = createContext<CloudSyncContextValue | null>(null);
@@ -157,6 +158,39 @@ export function CloudSyncProvider({
     [user],
   );
 
+  const deleteCloudData = useCallback(async () => {
+    if (runningRef.current) {
+      throw new Error("กรุณารอให้การซิงก์ปัจจุบันเสร็จก่อน");
+    }
+    if (!isCloudSyncConfigured) {
+      throw new Error("Cloud Sync ยังไม่พร้อมใช้งาน");
+    }
+    if (authStatus !== "authenticated" || !user) {
+      throw new Error("กรุณาเข้าสู่ระบบอีกครั้ง");
+    }
+    if (!navigator.onLine) {
+      setStatus("offline");
+      throw new Error("ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อลบสำเนา Cloud");
+    }
+
+    runningRef.current = true;
+    setError(null);
+    try {
+      await transport.deleteAllCloudData(user.id);
+      persistCloudSyncEnabled(user.id, false);
+      setEnabledOverride({ userId: user.id, enabled: false });
+      setLastSyncedAt(null);
+      setStatus("disabled");
+    } catch {
+      const message = "ไม่สามารถลบสำเนา Cloud ได้ กรุณาลองอีกครั้ง";
+      setError(message);
+      setStatus("error");
+      throw new Error(message);
+    } finally {
+      runningRef.current = false;
+    }
+  }, [authStatus, transport, user]);
+
   const value = useMemo<CloudSyncContextValue>(
     () => ({
       status: enabled ? status : "disabled",
@@ -165,8 +199,17 @@ export function CloudSyncProvider({
       error,
       setEnabled,
       syncNow,
+      deleteCloudData,
     }),
-    [enabled, error, lastSyncedAt, setEnabled, status, syncNow],
+    [
+      deleteCloudData,
+      enabled,
+      error,
+      lastSyncedAt,
+      setEnabled,
+      status,
+      syncNow,
+    ],
   );
 
   return (

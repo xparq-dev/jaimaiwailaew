@@ -1,4 +1,5 @@
 import {
+  cloudDataDeletionResultSchema,
   cloudWorkspaceDeletionSchema,
   cloudWorkspaceDocumentSchema,
   cloudWorkspaceListResponseSchema,
@@ -89,6 +90,14 @@ export class CloudSyncApi implements CloudSyncTransport {
     );
     return cloudWorkspaceDeletionSchema.parse(await response.json());
   }
+
+  async deleteAllCloudData(userId: string) {
+    const response = await this.request(
+      `/api/users/${encodeURIComponent(userId)}/workspaces`,
+      { method: "DELETE" },
+    );
+    return cloudDataDeletionResultSchema.parse(await response.json());
+  }
 }
 
 class BrowserMockCloudSyncApi implements CloudSyncTransport {
@@ -165,6 +174,13 @@ class BrowserMockCloudSyncApi implements CloudSyncTransport {
       ]),
     );
     return deletion;
+  }
+
+  async deleteAllCloudData() {
+    const deletedObjects = this.read().length + this.readDeletions().length;
+    localStorage.removeItem(MOCK_STORAGE_KEY);
+    localStorage.removeItem(`${MOCK_STORAGE_KEY}:deletions`);
+    return { deletedObjects };
   }
 }
 

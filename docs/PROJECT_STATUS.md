@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `b34d572` — Merge PR #25
+- Production baseline: `c71e406` — Merge PR #26
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -23,6 +23,7 @@
 - PR #13: อัปเดต `jsdom` เป็น 30.1.1
 - PR #24: Phase 2A Knowledge Center Foundation
 - PR #25: Phase 2B Persona Learning Paths
+- PR #26: Phase 3A Account Dashboard Foundation
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -49,16 +50,18 @@
   client-side search/filter, review metadata, disclaimer, official sources และ related content
 - Phase 2B (PR #25) — Persona Learning Paths ตาม Workspace พร้อม page-local override
   และ “อ่านต่อให้ตรงกับคุณ” โดยไม่มี recommendation API
+- Phase 3A (PR #26) — Account Dashboard แสดงบัญชี ตำแหน่งข้อมูล สถานะ Cloud Sync
+  และ Workspace ในอุปกรณ์โดยไม่เปิดเผย internal identifiers
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 3A — Account Dashboard Foundation เริ่มบน branch `feat/phase-3a-account-dashboard`:
+Phase 3B — Cloud Data Controls เริ่มบน branch `feat/phase-3b-cloud-data-controls`:
 
-- ปรับ `/profile` ให้แสดงบัญชี ตำแหน่งข้อมูล สถานะ Cloud Sync และ Workspace ในอุปกรณ์
-- เปิด Workspace หรือรายงานที่เลือกจาก dashboard ได้
-- ไม่มี API/Worker/R2/Auth protocol change และไม่แสดง internal ID/token/path
+- เพิ่มการลบสำเนา Workspace ทั้งหมดของบัญชีออกจาก private R2 โดยเก็บข้อมูล local ไว้
+- ตรวจ JWT ownership แบบ fail closed และปิด Sync เฉพาะเมื่อลบสำเร็จ
+- ไม่ใช่ account deletion และไม่มี retention/scheduler/audit/consent changes
 - ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase3AAccountDashboard.md`](./Phase3AAccountDashboard.md)
+  [`Phase3BCloudDataControls.md`](./Phase3BCloudDataControls.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -112,6 +115,7 @@ Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (
 - [ ] ประเมิน nonce-based CSP
 - [ ] manual device acceptance ครบ Android/iOS/Desktop (PWA install)
 
-Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 ส่วน Phase 3A Account Dashboard Foundation
-กำลังดำเนินการ ขณะที่ account deletion/retention, audit/consent governance, reports, admin,
-payment/LINE และ OCR ยังไม่เริ่ม และต้องแยก scope/PR ตาม ownership
+Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 และ Phase 3A Account Dashboard
+ปิดแล้วผ่าน PR #26 ส่วน Phase 3B Cloud Data Controls กำลังดำเนินการ ขณะที่ account
+deletion/retention, audit/consent governance, reports, admin, payment/LINE และ OCR ยังไม่เริ่ม
+และต้องแยก scope/PR ตาม ownership

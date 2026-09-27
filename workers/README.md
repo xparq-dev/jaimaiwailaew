@@ -49,6 +49,17 @@ npm run worker:dev
 ```
 
 Cloud Sync is opt-in. With missing configuration the web application remains
-usable in Local-only mode and shows an explicit unavailable status. Account/cloud-data deletion,
-an operational retention policy, and the remaining privacy/legal review are roadmap items that
-require separately approved scope.
+usable in Local-only mode and shows an explicit unavailable status.
+
+## Cloud-copy deletion
+
+`DELETE /api/users/:userId/workspaces` removes every R2 object below the
+authenticated user's prefix. The route requires the same Supabase bearer token
+as the sync routes and rejects a URL user ID that does not match the JWT
+subject. It deletes listed objects in batches of at most 1,000 and returns only
+the number of deleted objects. The frontend disables sync after success and
+keeps all calculator data in Local Storage.
+
+This operation is not Supabase account deletion and has no retention/grace
+period. Account deletion, an operational retention policy, audit/consent
+governance, and the remaining privacy/legal review require separate scope.

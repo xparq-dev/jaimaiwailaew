@@ -29,6 +29,10 @@ export const cloudWorkspaceListResponseSchema = z.strictObject({
   deletions: z.array(cloudWorkspaceDeletionSchema).default([]),
 });
 
+export const cloudDataDeletionResultSchema = z.strictObject({
+  deletedObjects: z.number().int().nonnegative(),
+});
+
 export type CustomCategory = z.infer<typeof customCategorySchema>;
 export type CloudWorkspaceDocument = z.infer<
   typeof cloudWorkspaceDocumentSchema
@@ -38,6 +42,9 @@ export type CloudWorkspaceDeletion = z.infer<
 >;
 export type CloudWorkspaceSnapshot = z.infer<
   typeof cloudWorkspaceListResponseSchema
+>;
+export type CloudDataDeletionResult = z.infer<
+  typeof cloudDataDeletionResultSchema
 >;
 
 export type CloudSyncStatus =
@@ -55,6 +62,7 @@ export interface CloudSyncTransport {
   getWorkspace(workspaceId: string): Promise<CloudWorkspaceDocument | null>;
   putWorkspace(document: CloudWorkspaceDocument): Promise<void>;
   deleteWorkspace(workspaceId: string): Promise<CloudWorkspaceDeletion>;
+  deleteAllCloudData(userId: string): Promise<CloudDataDeletionResult>;
 }
 
 export interface SyncResult {

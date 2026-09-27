@@ -27,7 +27,7 @@ export interface R2BucketLike {
     value: string,
     options?: { httpMetadata?: { contentType?: string } },
   ): Promise<unknown>;
-  delete(key: string): Promise<void>;
+  delete(keys: string | string[]): Promise<void>;
   list(options: { prefix: string; cursor?: string }): Promise<R2ListResultLike>;
 }
 
@@ -91,6 +91,10 @@ function deletionPrefix(userId: string) {
 
 function deletionKey(userId: string, workspaceId: string) {
   return `${deletionPrefix(userId)}${encodeKeySegment(workspaceId)}.json`;
+}
+
+function userDataPrefix(userId: string) {
+  return `users/${encodeKeySegment(userId)}/`;
 }
 
 function matchesOriginPattern(origin: string, pattern: string) {
@@ -271,6 +275,18 @@ async function listWorkspaceDeletions(bucket: R2BucketLike, userId: string) {
   return deletions;
 }
 
+async function deleteAllUserData(bucket: R2BucketLike, userId: string) {
+  let deletedObjects = 0;
+  while (true) {
+    const result = await bucket.list({ prefix: userDataPrefix(userId) });
+    const keys = result.objects.map((item) => item.key);
+    if (keys.length === 0) break;
+    await bucket.delete([...keys]);
+    deletedObjects += keys.length;
+  }
+  return deletedObjects;
+}
+
 function allEntries(document: CloudWorkspaceDocument) {
   return [
     ...document.workspace.incomeEntries,
@@ -333,19 +349,36 @@ export function createWorkerHandler({
         const userWorkspaces = pathname.match(
           /^\/api\/users\/([^/]+)\/workspaces$/,
         );
-        if (userWorkspaces && request.method === "GET") {
+        if (userWorkspaces) {
           const requestedUserId = decodeURIComponent(userWorkspaces[1] ?? "");
           if (requestedUserId !== userId) {
             return jsonResponse({ error: "forbidden" }, 403, origin);
           }
-          return jsonResponse(
-            {
-              workspaces: await listWorkspaces(env.DATA_BUCKET, userId),
-              deletions: await listWorkspaceDeletions(env.DATA_BUCKET, userId),
-            },
-            200,
-            origin,
-          );
+          if (request.method === "GET") {
+            return jsonResponse(
+              {
+                workspaces: await listWorkspaces(env.DATA_BUCKET, userId),
+                deletions: await listWorkspaceDeletions(
+                  env.DATA_BUCKET,
+                  userId,
+                ),
+              },
+              200,
+              origin,
+            );
+          }
+          if (request.method === "DELETE") {
+            return jsonResponse(
+              {
+                deletedObjects: await deleteAllUserData(
+                  env.DATA_BUCKET,
+                  userId,
+                ),
+              },
+              200,
+              origin,
+            );
+          }
         }
 
         const workspaceMatch = pathname.match(/^\/api\/workspaces\/([^/]+)$/);

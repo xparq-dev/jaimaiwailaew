@@ -221,6 +221,44 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
     )
     .toBe(true);
 
+  await page.goto("/settings");
+  await page.getByRole("button", { name: "ลบสำเนา Cloud ทั้งหมด" }).click();
+  const deleteCloudDialog = page.getByRole("dialog", {
+    name: "ยืนยันลบสำเนา Cloud",
+  });
+  await expect(deleteCloudDialog).toContainText(
+    "ไม่ได้ลบบัญชีสมาชิก และไม่ลบ Workspace ในอุปกรณ์นี้",
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
+  await deleteCloudDialog
+    .getByRole("button", { name: "ยืนยันลบสำเนา Cloud" })
+    .click();
+  await expect(
+    page.getByText(
+      /ลบสำเนา Cloud แล้ว ข้อมูล Workspace ในอุปกรณ์นี้ยังอยู่ครบ/,
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("checkbox", { name: "เปิด Cloud Sync สำหรับบัญชีนี้" }),
+  ).not.toBeChecked();
+  const cloudDeletionResult = await page.evaluate(() => ({
+    cloud: localStorage.getItem("jaimaiwailaew:e2e:cloud-workspaces"),
+    deletions: localStorage.getItem(
+      "jaimaiwailaew:e2e:cloud-workspaces:deletions",
+    ),
+    local: localStorage.getItem("jaimaiwailaew:calculator:v2"),
+  }));
+  expect(cloudDeletionResult.cloud).toBeNull();
+  expect(cloudDeletionResult.deletions).toBeNull();
+  expect(cloudDeletionResult.local).toContain("e2e-cloud-workspace");
+
+  await page.goto("/profile");
   await page.getByRole("button", { name: "ออกจากระบบ" }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("link", { name: "เข้าสู่ระบบ" })).toBeVisible();

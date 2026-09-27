@@ -15,6 +15,8 @@ import {
 class MemoryBucket implements R2BucketLike {
   readonly values = new Map<string, string>();
 
+  constructor(private readonly pageSize?: number) {}
+
   async get(key: string) {
     const value = this.values.get(key);
     return value ? { json: async <T>() => JSON.parse(value) as T } : null;
@@ -24,16 +26,22 @@ class MemoryBucket implements R2BucketLike {
     this.values.set(key, value);
   }
 
-  async delete(key: string) {
-    this.values.delete(key);
+  async delete(keys: string | string[]) {
+    for (const key of Array.isArray(keys) ? keys : [keys]) {
+      this.values.delete(key);
+    }
   }
 
   async list({ prefix }: { prefix: string; cursor?: string }) {
+    const matchingKeys = [...this.values.keys()].filter((key) =>
+      key.startsWith(prefix),
+    );
+    const keys = this.pageSize
+      ? matchingKeys.slice(0, this.pageSize)
+      : matchingKeys;
     return {
-      objects: [...this.values.keys()]
-        .filter((key) => key.startsWith(prefix))
-        .map((key) => ({ key })),
-      truncated: false,
+      objects: keys.map((key) => ({ key })),
+      truncated: keys.length < matchingKeys.length,
     };
   }
 }
@@ -270,6 +278,34 @@ describe("Cloudflare Worker API", () => {
     );
     expect(stalePut.status).toBe(409);
     expect(await stalePut.json()).toEqual({ error: "workspace_deleted" });
+  });
+
+  it("deletes every cloud object for the authenticated owner only", async () => {
+    const bucket = new MemoryBucket(1);
+    bucket.values.set("users/user-a/workspaces/one.json", "{}");
+    bucket.values.set("users/user-a/workspace-deletions/two.json", "{}");
+    bucket.values.set("users/user-b/workspaces/private.json", "{}");
+    const env = { ...environment(), DATA_BUCKET: bucket };
+
+    const forbidden = await handler.fetch(
+      request("/api/users/user-b/workspaces", { method: "DELETE" }),
+      env,
+    );
+    expect(forbidden.status).toBe(403);
+    expect(bucket.values.size).toBe(3);
+
+    const response = await handler.fetch(
+      request("/api/users/user-a/workspaces", { method: "DELETE" }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ deletedObjects: 2 });
+    expect([...bucket.values.keys()]).toEqual([
+      "users/user-b/workspaces/private.json",
+    ]);
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
+      "https://jaimaiwailaew.vercel.app",
+    );
   });
 
   it("enforces the origin allowlist", async () => {

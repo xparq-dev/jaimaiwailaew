@@ -4,6 +4,7 @@ import { ArrowRight, BookOpenCheck, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { PersonaLearningPath } from "@/components/persona-learning-path";
 import {
   formatKnowledgeReviewDate,
   knowledgeCategories,
@@ -30,6 +31,8 @@ export function KnowledgeCenterLibrary() {
 
   return (
     <div className="space-y-6">
+      <PersonaLearningPath />
+
       <section
         aria-label="ค้นหาและกรองบทความ"
         className="border-border bg-card rounded-2xl border p-4 shadow-sm sm:p-5"

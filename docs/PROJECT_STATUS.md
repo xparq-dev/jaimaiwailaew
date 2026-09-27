@@ -1,6 +1,6 @@
 # สถานะโครงการ
 
-ตรวจสอบล่าสุด: 2026-09-26 (Asia/Bangkok)
+ตรวจสอบล่าสุด: 2026-09-27 (Asia/Bangkok)
 
 เอกสารนี้เป็น source of truth สำหรับสถานะการดำเนินงานจริง ส่วนข้อกำหนดผลิตภัณฑ์ระยะยาวให้ยึด
 [`ProductRequirementsDocument.md`](./ProductRequirementsDocument.md) โดยต้องอ่านหมายเหตุการ re-scope
@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `9ec6287` — Merge PR #13
+- Production baseline: `44fac1f` — Merge PR #24
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -21,6 +21,7 @@
 - PR #23: อัปเดตเอกสาร production baseline หลัง PR #22
 - PR #14: อัปเดต `@types/node` เป็น 26.6.2
 - PR #13: อัปเดต `jsdom` เป็น 30.1.1
+- PR #24: Phase 2A Knowledge Center Foundation
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -43,17 +44,19 @@
   ยังติดตามแยกด้านล่าง
 - Phase 1H (PR #22) — Mobile header refresh, `UserAvatar` component, whitelist-only avatar URL resolver,
   Thai OAuth UX บน PWA/embedded/iOS context
+- Phase 2A (PR #24) — Knowledge Center Foundation พร้อมบทความ static/local-first 9 หัวข้อ,
+  client-side search/filter, review metadata, disclaimer, official sources และ related content
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 2A — Knowledge Center Foundation เริ่มบน branch `feat/phase-2a-knowledge-center`:
+Phase 2B — Persona Learning Paths เริ่มบน branch `feat/phase-2b-persona-learning-paths`:
 
-- เปลี่ยน `/learn` จาก placeholder เป็นคลังบทความ static/local-first 9 หัวข้อ
-- เพิ่ม typed content model, client-side search/filter, review metadata, disclaimer, official source links
-  และ related content
-- ไม่มี CMS, analytics, runtime content fetch หรือการเปลี่ยน tax calculation
+- จัดลำดับบทความแนะนำตาม `workspace.persona` ที่มีอยู่แล้ว
+- แสดงเส้นทางแนะนำบน `/learn` และบทความถัดไปตาม persona ในหน้าบทความ
+- ผู้ใช้เปลี่ยนสถานการณ์สำหรับการอ่านได้โดยไม่แก้ข้อมูล Workspace
+- ไม่มี profiling, analytics, recommendation API หรือการเปลี่ยน tax calculation
 - ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase2AKnowledgeCenter.md`](./Phase2AKnowledgeCenter.md)
+  [`Phase2BPersonaLearningPaths.md`](./Phase2BPersonaLearningPaths.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -107,5 +110,6 @@ Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (
 - [ ] ประเมิน nonce-based CSP
 - [ ] manual device acceptance ครบ Android/iOS/Desktop (PWA install)
 
-Phase 2A Knowledge Center Foundation เริ่มแล้ว ส่วน content expansion, account-roadmap follow-ups,
-reports, admin, payment/LINE และ OCR ยังไม่เริ่ม และต้องแยก scope/PR ตาม ownership
+Phase 2A Knowledge Center Foundation ปิดแล้วผ่าน PR #24 และ Phase 2B Persona Learning Paths
+กำลังดำเนินการ ส่วน content expansion, account-roadmap follow-ups, reports, admin, payment/LINE
+และ OCR ยังไม่เริ่ม และต้องแยก scope/PR ตาม ownership

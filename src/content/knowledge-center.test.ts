@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   getKnowledgeArticle,
+  getKnowledgeLearningPath,
+  getKnowledgePathArticles,
   knowledgeArticles,
+  knowledgeLearningPaths,
   searchKnowledgeArticles,
 } from "./knowledge-center";
 
@@ -41,5 +44,35 @@ describe("knowledge center content", () => {
       searchKnowledgeArticles("", "แบบภาษี").map((item) => item.slug),
     ).toEqual(["pnd94", "pnd91", "tax-calendar"]);
     expect(searchKnowledgeArticles("คำที่ไม่มีในบทความ")).toEqual([]);
+  });
+
+  it("publishes a complete, valid learning path for every calculator persona", () => {
+    expect(Object.keys(knowledgeLearningPaths)).toEqual([
+      "online_seller_business",
+      "freelancer",
+      "salaried_employee",
+      "multiple_income",
+      "unsure",
+    ]);
+
+    for (const path of Object.values(knowledgeLearningPaths)) {
+      expect(path.articleSlugs.length).toBeGreaterThanOrEqual(4);
+      expect(new Set(path.articleSlugs).size).toBe(path.articleSlugs.length);
+      expect(
+        path.articleSlugs.every((slug) => Boolean(getKnowledgeArticle(slug))),
+      ).toBe(true);
+    }
+  });
+
+  it("orders persona recommendations and excludes the current article", () => {
+    expect(getKnowledgeLearningPath("salaried_employee").articleSlugs[0]).toBe(
+      "tax-basics",
+    );
+    expect(
+      getKnowledgePathArticles("salaried_employee", {
+        excludeSlug: "tax-basics",
+        limit: 3,
+      }).map((article) => article.slug),
+    ).toEqual(["withholding-tax", "allowances", "pnd91"]);
   });
 });

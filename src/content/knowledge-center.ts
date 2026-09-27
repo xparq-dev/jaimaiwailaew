@@ -1,3 +1,5 @@
+import type { CalculatorPersona } from "@/calculator/types";
+
 export type KnowledgeCategory =
   "พื้นฐาน" | "แบบภาษี" | "เตรียมข้อมูล" | "การใช้งานเว็บ";
 
@@ -25,6 +27,13 @@ export interface KnowledgeArticle {
   readonly sections: readonly KnowledgeSection[];
   readonly sources: readonly KnowledgeSource[];
   readonly relatedSlugs: readonly string[];
+}
+
+export interface KnowledgeLearningPath {
+  readonly persona: CalculatorPersona;
+  readonly title: string;
+  readonly description: string;
+  readonly articleSlugs: readonly string[];
 }
 
 const revenueCodeSource: KnowledgeSource = {
@@ -368,8 +377,92 @@ export const knowledgeCategories: readonly KnowledgeCategory[] = [
   "การใช้งานเว็บ",
 ];
 
+export const knowledgeLearningPaths: Readonly<
+  Record<CalculatorPersona, KnowledgeLearningPath>
+> = {
+  online_seller_business: {
+    persona: "online_seller_business",
+    title: "เส้นทางสำหรับผู้ขายออนไลน์และเจ้าของธุรกิจ",
+    description:
+      "เริ่มจากแยกประเภทรายได้ แล้วค่อยตรวจรายจ่าย ภาษีหัก ณ ที่จ่าย และข้อมูลครึ่งปีที่อาจเกี่ยวข้อง",
+    articleSlugs: [
+      "income-types",
+      "expenses",
+      "withholding-tax",
+      "pnd94",
+      "tax-calendar",
+    ],
+  },
+  freelancer: {
+    persona: "freelancer",
+    title: "เส้นทางสำหรับฟรีแลนซ์",
+    description:
+      "จัดแหล่งรายได้และเอกสารรับเงินให้ครบ ก่อนทบทวนรายจ่าย ภาษีหัก ณ ที่จ่าย และแบบที่เกี่ยวข้อง",
+    articleSlugs: [
+      "income-types",
+      "withholding-tax",
+      "expenses",
+      "pnd94",
+      "pnd91",
+    ],
+  },
+  salaried_employee: {
+    persona: "salaried_employee",
+    title: "เส้นทางสำหรับพนักงานประจำ",
+    description:
+      "ทบทวนรายได้เงินเดือน หนังสือรับรองภาษีหัก ณ ที่จ่าย ค่าลดหย่อน และการเตรียมข้อมูลประจำปี",
+    articleSlugs: [
+      "tax-basics",
+      "withholding-tax",
+      "allowances",
+      "pnd91",
+      "tax-calendar",
+    ],
+  },
+  multiple_income: {
+    persona: "multiple_income",
+    title: "เส้นทางสำหรับผู้มีรายได้หลายทาง",
+    description:
+      "เริ่มจากแยกรายได้แต่ละประเภทและช่วงเวลา แล้วตรวจเอกสารหัก ณ ที่จ่าย รายจ่าย และแบบที่อาจเกี่ยวข้อง",
+    articleSlugs: [
+      "income-types",
+      "withholding-tax",
+      "expenses",
+      "pnd94",
+      "pnd91",
+    ],
+  },
+  unsure: {
+    persona: "unsure",
+    title: "เส้นทางเริ่มต้นเมื่อยังไม่แน่ใจ",
+    description:
+      "อ่านภาพรวมก่อน แล้วใช้คู่มือประเภทรายได้และคำถามที่พบบ่อยเพื่อเลือกหัวข้อถัดไปอย่างไม่เร่งรีบ",
+    articleSlugs: ["tax-basics", "income-types", "faq", "tax-calendar"],
+  },
+};
+
 export function getKnowledgeArticle(slug: string) {
   return knowledgeArticles.find((article) => article.slug === slug);
+}
+
+export function getKnowledgeLearningPath(persona: CalculatorPersona) {
+  return knowledgeLearningPaths[persona];
+}
+
+export function getKnowledgePathArticles(
+  persona: CalculatorPersona,
+  options: {
+    readonly excludeSlug?: string;
+    readonly limit?: number;
+  } = {},
+) {
+  const { excludeSlug, limit } = options;
+  const articles = knowledgeLearningPaths[persona].articleSlugs
+    .filter((slug) => slug !== excludeSlug)
+    .map(getKnowledgeArticle)
+    .filter((article): article is KnowledgeArticle => Boolean(article));
+
+  return typeof limit === "number" ? articles.slice(0, limit) : articles;
 }
 
 export function searchKnowledgeArticles(

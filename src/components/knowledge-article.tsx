@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { PersonaLearningPath } from "@/components/persona-learning-path";
 import {
   formatKnowledgeReviewDate,
   getKnowledgeArticle,
@@ -134,8 +135,10 @@ export function KnowledgeArticle({
         </ul>
       </section>
 
+      <PersonaLearningPath currentArticleSlug={article.slug} />
+
       <section>
-        <h2 className="text-xl font-bold">อ่านต่อ</h2>
+        <h2 className="text-xl font-bold">บทความที่เกี่ยวข้อง</h2>
         <ul className="mt-4 grid gap-3 sm:grid-cols-3">
           {relatedArticles.map((related) => (
             <li key={related.slug}>

@@ -1,15 +1,15 @@
-import { ProfileCard } from "@/components/account/profile-card";
+import { AccountDashboard } from "@/components/account/account-dashboard";
 import { PageHeader } from "@/components/page-header";
 
 export default function ProfilePage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        description="ตรวจสอบบัญชีและจัดการการตั้งค่า Cloud Sync โดยข้อมูลในเครื่องจะยังคงใช้งานได้แม้ไม่ได้เชื่อมต่อ Cloud"
+        description="ดูบัญชี สถานะข้อมูล และ Workspace ในอุปกรณ์นี้ พร้อมกลับไปทำงานต่อหรือจัดการ Cloud Sync ได้จากที่เดียว"
         eyebrow="ข้อมูลบัญชี"
-        title="โปรไฟล์"
+        title="ภาพรวมบัญชีและข้อมูล"
       />
-      <ProfileCard />
+      <AccountDashboard />
     </div>
   );
 }

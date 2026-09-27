@@ -197,6 +197,30 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
   expect(calculatorStorageBeforeLogout).toContain("e2e-cloud-workspace");
 
   await page.goto("/profile");
+  await expect(
+    page.getByRole("heading", { name: "ภาพรวมบัญชีและข้อมูล" }),
+  ).toBeVisible();
+  await expect(page.getByText("เข้าสู่ระบบด้วย อีเมล")).toBeVisible();
+  await expect(page.getByText(/ซิงก์แล้ว · ล่าสุด/)).toBeVisible();
+  const workspaceRegion = page.getByRole("region", { name: "Workspace" });
+  await expect(workspaceRegion).toBeVisible();
+  await expect(
+    workspaceRegion.getByRole("button", { name: /เปิด Workspace/ }).first(),
+  ).toBeVisible();
+  await expect(
+    workspaceRegion.getByRole("button", { name: /เปิดรายงาน/ }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByText("e2e-cloud-workspace", { exact: false }),
+  ).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
+
   await page.getByRole("button", { name: "ออกจากระบบ" }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("link", { name: "เข้าสู่ระบบ" })).toBeVisible();
@@ -209,4 +233,22 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
       ),
     )
     .toBe(true);
+});
+
+test("account dashboard keeps local-first recovery clear before login", async ({
+  page,
+}) => {
+  await page.goto("/profile");
+  await expect(
+    page.getByRole("heading", { name: "ภาพรวมบัญชีและข้อมูล" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "เข้าสู่ระบบเพื่อดูภาพรวมบัญชี" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/ข้อมูลเครื่องคำนวณในอุปกรณ์นี้ยังอยู่ตามเดิม/),
+  ).toBeVisible();
+  await expect(
+    page.locator("#main-content").getByRole("link", { name: "เข้าสู่ระบบ" }),
+  ).toBeVisible();
 });

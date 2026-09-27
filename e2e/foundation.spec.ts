@@ -225,6 +225,111 @@ test("searches reviewed learning content and publishes offline guidance", async 
   ).toBeVisible();
 });
 
+test("recommends a local-first learning path from the active workspace persona", async ({
+  page,
+}) => {
+  const recommendationRequests: string[] = [];
+  let captureRecommendationRequests = false;
+  page.on("request", (request) => {
+    if (captureRecommendationRequests) {
+      recommendationRequests.push(request.url());
+    }
+  });
+
+  await page.addInitScript(() => {
+    const timestamp = "2026-09-26T04:00:00.000Z";
+    localStorage.setItem(
+      "jaimaiwailaew:calculator:v2",
+      JSON.stringify({
+        state: {
+          workspace: {
+            id: "knowledge-path-workspace",
+            schemaVersion: 2,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            taxYearBE: 2569,
+            persona: "salaried_employee",
+            calculationMode: "pnd91",
+            periodStart: "2026-01-01",
+            periodEnd: "2026-12-31",
+            incomeEntries: [],
+            expenseEntries: [],
+            withholdingEntries: [],
+            allowanceDraftEntries: [],
+            socialSecuritySettings: { mode: "auto_m33" },
+            taxRuleResolutionSnapshot: {
+              taxYearBE: 2569,
+              ruleSetId: "thai-pit-2569",
+              ruleSetVersion: "1.0.0",
+              availability: "available",
+              status: "verified",
+              resolvedAt: timestamp,
+            },
+            localOnly: true,
+          },
+          otherWorkspaces: [],
+          pendingWorkspaceDeletionIds: [],
+          lastSavedAt: timestamp,
+        },
+        version: 0,
+      }),
+    );
+  });
+
+  await page.goto("/learn");
+  await expect(
+    page.getByRole("heading", { name: "เส้นทางสำหรับพนักงานประจำ" }),
+  ).toBeVisible();
+  await expect(page.getByText(/อิงจาก Workspace ปัจจุบัน/)).toContainText(
+    "พนักงานประจำ",
+  );
+  const libraryPath = page.getByRole("region", {
+    name: "เส้นทางสำหรับพนักงานประจำ",
+  });
+  await expect(
+    libraryPath.getByRole("link", {
+      name: /พื้นฐานภาษีเงินได้บุคคลธรรมดา/,
+    }),
+  ).toBeVisible();
+
+  captureRecommendationRequests = true;
+  await page
+    .getByLabel("เลือกสถานการณ์สำหรับการอ่าน")
+    .selectOption("freelancer");
+  await expect(
+    page.getByRole("heading", { name: "เส้นทางสำหรับฟรีแลนซ์" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("เปลี่ยนเฉพาะคำแนะนำหน้านี้ ไม่แก้ประเภทผู้ใช้ใน Workspace"),
+  ).toBeVisible();
+  expect(recommendationRequests.filter((url) => url.includes("/api/"))).toEqual(
+    [],
+  );
+  expect(
+    await page.evaluate(() => {
+      const persisted = JSON.parse(
+        localStorage.getItem("jaimaiwailaew:calculator:v2") ?? "{}",
+      ) as { state?: { workspace?: { persona?: string } } };
+      return persisted.state?.workspace?.persona;
+    }),
+  ).toBe("salaried_employee");
+
+  captureRecommendationRequests = false;
+  await page.goto("/learn/tax-basics");
+  await expect(
+    page.getByText("อ่านต่อให้ตรงกับคุณ", { exact: true }),
+  ).toBeVisible();
+  const personalizedPath = page.getByRole("region", {
+    name: "เส้นทางสำหรับพนักงานประจำ",
+  });
+  await expect(personalizedPath).toBeVisible();
+  await expect(
+    personalizedPath.getByRole("link", {
+      name: /ตรวจภาษีหัก ณ ที่จ่ายจากเอกสาร/,
+    }),
+  ).toBeVisible();
+});
+
 test("keeps the interface Thai-only and switches theme without changing the URL", async ({
   page,
 }) => {

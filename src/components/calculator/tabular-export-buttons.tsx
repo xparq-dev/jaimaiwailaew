@@ -140,8 +140,10 @@ function buildPreviewSections(
 
 export function TabularExportButtons({
   workspace,
+  includeTaxEstimate = true,
 }: {
   readonly workspace: CalculatorWorkspace;
+  readonly includeTaxEstimate?: boolean | undefined;
 }) {
   const [preview, setPreview] = useState<PreviewState | null>(null);
   const [activeSectionId, setActiveSectionId] = useState("summary");
@@ -173,6 +175,7 @@ export function TabularExportButtons({
     try {
       const report = buildLocalTabularReportModel(workspace, {
         generatedAt: new Date(),
+        includeTaxEstimate,
       });
       const artifact =
         format === "excel"
@@ -355,6 +358,8 @@ export function TabularExportButtons({
 
                 {activeSection.id === "summary" && preview ? (
                   <dl className="border-border grid gap-2 border-t px-4 py-3 text-xs sm:grid-cols-[max-content_1fr]">
+                    <dt className="font-semibold">ช่วงรายงาน</dt>
+                    <dd>{preview.report.periodLabel}</dd>
                     <dt className="font-semibold">วันที่/เวลาที่ส่งออก</dt>
                     <dd>{preview.report.generatedAtLabel}</dd>
                     <dt className="font-semibold">Tax Rule Status</dt>

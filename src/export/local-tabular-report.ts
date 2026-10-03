@@ -15,6 +15,7 @@ import {
   getIncomeCategoryLabel,
 } from "@/calculator/categories";
 import type { CalculatorWorkspace, EntryFrequency } from "@/calculator/types";
+import { formatThaiDate } from "@/calculator/utils";
 import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
 import { calculateWorkspacePIT } from "@/tax/engine/workspacePitAdapter";
@@ -27,6 +28,7 @@ export const TABULAR_EXPORT_DISCLAIMER =
 
 export interface LocalTabularReportOptions {
   readonly generatedAt: Date;
+  readonly includeTaxEstimate?: boolean | undefined;
 }
 
 export interface LocalTabularSummaryRow {
@@ -68,6 +70,7 @@ export interface LocalTabularBreakdownRow {
 
 export interface LocalTabularReportModel {
   readonly taxYearBE: number;
+  readonly periodLabel: string;
   readonly generatedAtLabel: string;
   readonly generatedAtFileStamp: string;
   readonly taxRuleStatus: typeof TABULAR_EXPORT_TAX_RULE_STATUS;
@@ -194,7 +197,10 @@ export function buildLocalTabularReportModel(
   let taxEstimateRows: LocalTabularSummaryRow[] | undefined = undefined;
   let taxEstimateDisclaimer: string | undefined = undefined;
 
-  if (workspace.taxRuleResolutionSnapshot.availability === "available") {
+  if (
+    options.includeTaxEstimate !== false &&
+    workspace.taxRuleResolutionSnapshot.availability === "available"
+  ) {
     const pit = calculateWorkspacePIT(workspace);
     const finalLabel =
       pit.outcome === "refund"
@@ -247,6 +253,7 @@ export function buildLocalTabularReportModel(
 
   return {
     taxYearBE: workspace.taxYearBE,
+    periodLabel: `${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`,
     generatedAtLabel: formatBangkokDateTime(options.generatedAt),
     generatedAtFileStamp: formatBangkokFileStamp(options.generatedAt),
     taxRuleStatus: TABULAR_EXPORT_TAX_RULE_STATUS,

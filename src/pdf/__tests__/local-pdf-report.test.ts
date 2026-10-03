@@ -161,4 +161,13 @@ describe("buildLocalPdfReportModel", () => {
     expect(report).not.toHaveProperty("taxDueSatang");
     expect(report).not.toHaveProperty("refundSatang");
   });
+
+  it("omits the workspace tax estimate when the selected report period is partial", () => {
+    const report = buildLocalPdfReportModel(createWorkspaceFixture(), {
+      generatedAt: new Date("2026-09-13T07:55:00.000Z"),
+      includeTaxEstimate: false,
+    });
+
+    expect(report.taxEstimate).toBeUndefined();
+  });
 });

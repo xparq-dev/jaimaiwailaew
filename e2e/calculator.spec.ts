@@ -572,14 +572,18 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(shopeeDialog).toBeHidden();
     await expect(shopeeTrigger).toBeFocused();
 
-    // 6b. One report-period selection is shared by all local export formats.
+    // 6b. One report-period and template selection is shared by all local export formats.
     const pdfPanel = page.getByRole("region", {
       name: "ดาวน์โหลดรายงาน PDF",
     });
     const reportPeriodSelect = pdfPanel.getByRole("combobox", {
       name: /ช่วงรายงาน/,
     });
+    const reportTemplateSelect = pdfPanel.getByRole("combobox", {
+      name: /รูปแบบรายงาน/,
+    });
     await reportPeriodSelect.selectOption("month-2026-03");
+    await reportTemplateSelect.selectOption("summary");
     await expect(
       pdfPanel.getByText(/รายงานช่วงย่อยจะแสดงเฉพาะรายการและยอดรวม/),
     ).toBeVisible();
@@ -591,6 +595,19 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(
       partialExcelPreview.getByText("1 มี.ค. 2569 – 31 มี.ค. 2569"),
     ).toBeVisible();
+    await expect(partialExcelPreview.getByText("สรุปยอด")).toBeVisible();
+    await expect(
+      partialExcelPreview.getByRole("tab", { name: "Summary" }),
+    ).toBeVisible();
+    await expect(
+      partialExcelPreview.getByRole("tab", { name: "Breakdown" }),
+    ).toBeVisible();
+    await expect(
+      partialExcelPreview.getByRole("tab", { name: "Income" }),
+    ).toHaveCount(0);
+    await expect(
+      partialExcelPreview.getByRole("tab", { name: "Expense" }),
+    ).toHaveCount(0);
     await expect(
       partialExcelPreview.getByRole("tab", { name: "Tax Estimate" }),
     ).toHaveCount(0);
@@ -598,6 +615,7 @@ test.describe("Calculator UX (Local-only)", () => {
       .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })
       .click();
     await reportPeriodSelect.selectOption("workspace");
+    await reportTemplateSelect.selectOption("full");
 
     // 6c. Local PDF previews before download without leaking financial data.
     const requestCountBeforePdf = requestedUrls.length;

@@ -19,6 +19,7 @@ import {
   TABULAR_EXPORT_DISCLAIMER,
   TABULAR_EXPORT_TAX_RULE_STATUS,
 } from "@/export/local-tabular-report";
+import { getReportTemplate } from "@/report/report-template";
 import { toMoneySatang } from "@/tax/money";
 
 const timestamp = "2026-01-01T00:00:00.000Z";
@@ -190,6 +191,22 @@ describe("local tabular report", () => {
     expect(report.taxEstimateRows).toBeUndefined();
     expect(report.taxEstimateDisclaimer).toBeUndefined();
   });
+
+  it("limits rows and metadata to the selected report template", () => {
+    const report = buildLocalTabularReportModel(createWorkspaceFixture(), {
+      generatedAt: new Date("2026-09-13T07:55:00.000Z"),
+      reportTemplate: getReportTemplate("summary"),
+    });
+
+    expect(report.templateLabel).toBe("สรุปยอด");
+    expect(report.summaryRows).not.toHaveLength(0);
+    expect(report.breakdownRows).not.toHaveLength(0);
+    expect(report.incomeRows).toEqual([]);
+    expect(report.expenseRows).toEqual([]);
+    expect(report.withholdingRows).toEqual([]);
+    expect(report.deductionRows).toEqual([]);
+    expect(report.taxEstimateRows).toBeUndefined();
+  });
 });
 
 describe("local XLSX export", () => {
@@ -238,6 +255,24 @@ describe("local XLSX export", () => {
     expect(workbook).not.toContain('name="Deductions"');
     expect(workbook).toContain('name="Breakdown"');
   });
+
+  it("creates only Summary and Breakdown sheets for the summary template", async () => {
+    const report = buildLocalTabularReportModel(createWorkspaceFixture(), {
+      generatedAt: new Date("2026-09-13T07:55:00.000Z"),
+      reportTemplate: getReportTemplate("summary"),
+    });
+    const files = await unzipBlob(createLocalXlsxArtifact(report).blob);
+    const workbook = decodeUtf8(files["xl/workbook.xml"]!);
+    const allXml = Object.values(files).map(decodeUtf8).join("\n");
+
+    expect(workbook).toContain('name="Summary"');
+    expect(workbook).toContain('name="Breakdown"');
+    expect(workbook).not.toContain('name="Income"');
+    expect(workbook).not.toContain('name="Expense"');
+    expect(workbook).not.toContain('name="Tax Estimate"');
+    expect(allXml).toContain("รูปแบบรายงาน");
+    expect(allXml).toContain("สรุปยอด");
+  });
 });
 
 describe("local CSV export", () => {
@@ -273,5 +308,18 @@ describe("local CSV export", () => {
       /secret-id|private-|CERT-SECRET|income-outside|taxDue|refund|%PDF/i,
     );
     expect(names.every((name) => name.endsWith(".csv"))).toBe(true);
+  });
+
+  it("creates only Summary and Breakdown files for the summary template", async () => {
+    const report = buildLocalTabularReportModel(createWorkspaceFixture(), {
+      generatedAt: new Date("2026-09-13T07:55:00.000Z"),
+      reportTemplate: getReportTemplate("summary"),
+    });
+    const files = await unzipBlob(createLocalCsvBundleArtifact(report).blob);
+    const summary = decodeUtf8(files["01-Summary.csv"]!);
+
+    expect(Object.keys(files)).toEqual(["01-Summary.csv", "06-Breakdown.csv"]);
+    expect(summary).toContain("รูปแบบรายงาน");
+    expect(summary).toContain("สรุปยอด");
   });
 });

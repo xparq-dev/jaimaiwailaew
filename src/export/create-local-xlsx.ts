@@ -122,6 +122,7 @@ function buildSheets(
         ),
         ["", ""],
         ["ช่วงรายงาน", report.periodLabel],
+        ["รูปแบบรายงาน", report.templateLabel],
         ["วันที่/เวลาที่ส่งออก", report.generatedAtLabel],
         ["Tax Rule Status", report.taxRuleStatus],
         ["หมายเหตุ", report.disclaimer],
@@ -130,7 +131,10 @@ function buildSheets(
       amountColumns: [1],
       metadataStartRow: report.summaryRows.length + 2,
     },
-    {
+  ];
+
+  if (report.sections.income) {
+    sheets.push({
       name: "Income",
       rows: [
         ["วันที่", "แหล่งที่มา", "หมวดหมู่", "จำนวนเงิน (บาท)"],
@@ -143,8 +147,11 @@ function buildSheets(
       ],
       columnWidths: [16, 28, 28, 20],
       amountColumns: [3],
-    },
-    {
+    });
+  }
+
+  if (report.sections.expense) {
+    sheets.push({
       name: "Expense",
       rows: [
         ["วันที่", "หมวดหมู่", "จำนวนเงิน (บาท)"],
@@ -156,10 +163,10 @@ function buildSheets(
       ],
       columnWidths: [16, 34, 20],
       amountColumns: [2],
-    },
-  ];
+    });
+  }
 
-  if (report.withholdingRows.length > 0) {
+  if (report.sections.withholding && report.withholdingRows.length > 0) {
     sheets.push({
       name: "Withholding Tax",
       rows: [
@@ -175,7 +182,7 @@ function buildSheets(
     });
   }
 
-  if (report.deductionRows.length > 0) {
+  if (report.sections.deductions && report.deductionRows.length > 0) {
     sheets.push({
       name: "Deductions",
       rows: [
@@ -187,22 +194,24 @@ function buildSheets(
     });
   }
 
-  sheets.push({
-    name: "Breakdown",
-    rows: [
-      ["ประเภท", "กลุ่ม", "จำนวนรายการ", "ยอดรวม (บาท)", "สัดส่วน (%)"],
-      ...report.breakdownRows.map((row) => [
-        row.type,
-        row.group,
-        row.entryCount,
-        row.totalBaht,
-        row.percentage,
-      ]),
-    ],
-    columnWidths: [34, 34, 16, 20, 16],
-    amountColumns: [3],
-    percentageColumns: [4],
-  });
+  if (report.sections.breakdown) {
+    sheets.push({
+      name: "Breakdown",
+      rows: [
+        ["ประเภท", "กลุ่ม", "จำนวนรายการ", "ยอดรวม (บาท)", "สัดส่วน (%)"],
+        ...report.breakdownRows.map((row) => [
+          row.type,
+          row.group,
+          row.entryCount,
+          row.totalBaht,
+          row.percentage,
+        ]),
+      ],
+      columnWidths: [34, 34, 16, 20, 16],
+      amountColumns: [3],
+      percentageColumns: [4],
+    });
+  }
 
   if (report.taxEstimateRows && report.taxEstimateRows.length > 0) {
     sheets.push({

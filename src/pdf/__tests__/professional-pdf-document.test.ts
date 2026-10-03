@@ -9,6 +9,7 @@ import {
   buildProfessionalPdfDocument,
   buildProfessionalPdfFileName,
 } from "@/pdf/professional-pdf-document";
+import { getReportTemplate } from "@/report/report-template";
 
 describe("professional PDF document", () => {
   it("uses the formal Thai audit layout and approved section order", () => {
@@ -52,6 +53,8 @@ describe("professional PDF document", () => {
     expect(document.header).toBeTypeOf("function");
     expect(document.footer).toBeTypeOf("function");
     expect(serialized).toContain("รายงานสำหรับประชุม");
+    expect(serialized).toContain("ช่วงรายงาน:");
+    expect(serialized).toContain("รูปแบบ: ฉบับเต็ม");
     expect(serialized).toContain("ผู้ใช้ตัวอย่าง");
     expect(serialized).toContain("13 กันยายน 2569 14:55 น. (Asia/Bangkok)");
     expect(serialized).toContain(
@@ -87,6 +90,33 @@ describe("professional PDF document", () => {
     expect(serialized).not.toContain("ไม่ระบุแหล่งที่มา");
     expect(serialized).not.toContain("ไม่ระบุผู้จ่าย");
     expect(serialized).not.toContain("http");
+  });
+
+  it("renders only overview and breakdown for the summary template", () => {
+    const workspace = createCalculatorWorkspace(
+      getDefaultWorkspaceInput("multiple_income", 2569, "first_half"),
+    );
+    const report = buildLocalPdfReportModel(workspace, {
+      generatedAt: new Date("2026-09-13T07:55:00.000Z"),
+      reportTemplate: getReportTemplate("summary"),
+    });
+    const serialized = JSON.stringify(
+      buildProfessionalPdfDocument(report).content,
+    );
+
+    expect(serialized).toContain("1. ภาพรวมทางการเงิน");
+    expect(serialized).toContain(
+      "2. Summary Breakdown (แยกตามหมวด / แหล่งที่มา)",
+    );
+    expect(serialized).toContain("รูปแบบ: สรุปยอด");
+    expect(serialized).toContain(
+      "Tax Rules 2568/2569: verified / published (v1.0.0) · ไม่มีผลประมาณการภาษีในรายงานนี้",
+    );
+    expect(serialized).not.toMatch(/\d+\. รายการรายรับ/u);
+    expect(serialized).not.toMatch(/\d+\. รายการรายจ่าย/u);
+    expect(serialized).not.toMatch(/\d+\. ภาษีหัก ณ ที่จ่าย/u);
+    expect(serialized).not.toMatch(/\d+\. ค่าลดหย่อน \/ ค่าลดภาษี/u);
+    expect(serialized).not.toContain("ประมาณการภาษีเงินได้บุคคลธรรมดา");
   });
 
   it("creates a Thai, filesystem-safe download name", () => {

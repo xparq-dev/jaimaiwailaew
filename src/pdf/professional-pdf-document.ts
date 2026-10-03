@@ -38,7 +38,8 @@ const TYPE_SCALE = {
   footer: 9,
 } as const;
 
-const TAX_RULE_STATUS = "Tax Rules 2568/2569: unverified / not for calculation";
+const TAX_RULE_STATUS =
+  "Tax Rules 2568/2569: verified / published (v1.0.0) · ไม่มีผลประมาณการภาษีในรายงานนี้";
 const WATERMARK_TEXT = [
   "JAI MAI WAI LAEW",
   "รายงานเพื่อการจัดระเบียบข้อมูลส่วนตัว",
@@ -453,6 +454,12 @@ export function buildProfessionalPdfDocument(
       margin: [0, 0, 0, 3],
     },
     {
+      text: `ช่วงรายงาน: ${report.periodLabel} · รูปแบบ: ${report.templateLabel}`,
+      alignment: "center",
+      fontSize: TYPE_SCALE.taxStatus,
+      margin: [0, 0, 0, 2],
+    },
+    {
       text: report.generatedAtLabel,
       alignment: "center",
       fontSize: TYPE_SCALE.body,
@@ -497,22 +504,44 @@ export function buildProfessionalPdfDocument(
     content.push(...taxEstimateSection(report.taxEstimate, sectionIndex++));
   }
 
-  content.push(
-    sectionHeading(
-      sectionIndex++,
-      "Summary Breakdown (แยกตามหมวด / แหล่งที่มา)",
-      true,
-    ),
-    ...report.breakdownSections.map(breakdownTable),
-    sectionHeading(sectionIndex++, "รายการรายรับ", true),
-    incomeTable(report),
-    sectionHeading(sectionIndex++, "รายการรายจ่าย", true),
-    expenseTable(report),
-    sectionHeading(sectionIndex++, "ภาษีหัก ณ ที่จ่าย", true),
-    withholdingTable(report),
-    sectionHeading(sectionIndex++, "ค่าลดหย่อน / ค่าลดภาษี", true),
-    allowanceTable(report),
-  );
+  if (report.sections.breakdown) {
+    content.push(
+      sectionHeading(
+        sectionIndex++,
+        "Summary Breakdown (แยกตามหมวด / แหล่งที่มา)",
+        true,
+      ),
+      ...report.breakdownSections.map(breakdownTable),
+    );
+  }
+
+  if (report.sections.income) {
+    content.push(
+      sectionHeading(sectionIndex++, "รายการรายรับ", true),
+      incomeTable(report),
+    );
+  }
+
+  if (report.sections.expense) {
+    content.push(
+      sectionHeading(sectionIndex++, "รายการรายจ่าย", true),
+      expenseTable(report),
+    );
+  }
+
+  if (report.sections.withholding) {
+    content.push(
+      sectionHeading(sectionIndex++, "ภาษีหัก ณ ที่จ่าย", true),
+      withholdingTable(report),
+    );
+  }
+
+  if (report.sections.deductions) {
+    content.push(
+      sectionHeading(sectionIndex++, "ค่าลดหย่อน / ค่าลดภาษี", true),
+      allowanceTable(report),
+    );
+  }
 
   return {
     pageSize: "A4",

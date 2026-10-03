@@ -10,6 +10,11 @@ import {
   buildReportPeriodOptions,
   createReportWorkspace,
 } from "@/report/report-period";
+import {
+  getReportTemplate,
+  REPORT_TEMPLATE_OPTIONS,
+  type ReportTemplateId,
+} from "@/report/report-template";
 
 import { Button } from "../ui/button";
 import { TabularExportButtons } from "./tabular-export-buttons";
@@ -34,6 +39,8 @@ export function PdfExportPanel({
   );
   const [displayName, setDisplayName] = useState("");
   const [selectedPeriodId, setSelectedPeriodId] = useState("workspace");
+  const [selectedTemplateId, setSelectedTemplateId] =
+    useState<ReportTemplateId>("full");
   const [status, setStatus] = useState<ExportStatus>("idle");
   const [preview, setPreview] = useState<PdfPreview | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -48,6 +55,7 @@ export function PdfExportPanel({
     () => createReportWorkspace(workspace, selectedPeriod),
     [selectedPeriod, workspace],
   );
+  const selectedTemplate = getReportTemplate(selectedTemplateId);
 
   useEffect(() => {
     if (!preview) {
@@ -72,6 +80,7 @@ export function PdfExportPanel({
         reportName,
         displayName,
         includeTaxEstimate: selectedPeriod.isWorkspacePeriod,
+        reportTemplate: selectedTemplate,
       });
       const { createLocalPdfArtifact } =
         await import("@/pdf/download-local-pdf");
@@ -125,23 +134,45 @@ export function PdfExportPanel({
       </div>
 
       <form className="mt-4 grid gap-4" onSubmit={handlePreview}>
-        <label className="grid w-full max-w-xl min-w-0 gap-2 text-sm font-medium">
-          ช่วงรายงาน
-          <select
-            className="border-border bg-background focus-visible:ring-focus/35 min-h-11 w-full min-w-0 rounded-xl border px-3 py-2 font-normal focus-visible:ring-3 focus-visible:outline-none"
-            onChange={(event) => setSelectedPeriodId(event.target.value)}
-            value={selectedPeriod.id}
-          >
-            {periodOptions.map((period) => (
-              <option key={period.id} value={period.id}>
-                {period.label}
-              </option>
-            ))}
-          </select>
-          <span className="text-muted-foreground text-xs leading-5 font-normal">
-            PDF, Excel และ CSV จะใช้ช่วงเดียวกัน
-          </span>
-        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="grid min-w-0 gap-2 text-sm font-medium">
+            ช่วงรายงาน
+            <select
+              className="border-border bg-background focus-visible:ring-focus/35 min-h-11 w-full min-w-0 rounded-xl border px-3 py-2 font-normal focus-visible:ring-3 focus-visible:outline-none"
+              onChange={(event) => setSelectedPeriodId(event.target.value)}
+              value={selectedPeriod.id}
+            >
+              {periodOptions.map((period) => (
+                <option key={period.id} value={period.id}>
+                  {period.label}
+                </option>
+              ))}
+            </select>
+            <span className="text-muted-foreground text-xs leading-5 font-normal">
+              PDF, Excel และ CSV จะใช้ช่วงเดียวกัน
+            </span>
+          </label>
+
+          <label className="grid min-w-0 gap-2 text-sm font-medium">
+            รูปแบบรายงาน
+            <select
+              className="border-border bg-background focus-visible:ring-focus/35 min-h-11 w-full min-w-0 rounded-xl border px-3 py-2 font-normal focus-visible:ring-3 focus-visible:outline-none"
+              onChange={(event) =>
+                setSelectedTemplateId(event.target.value as ReportTemplateId)
+              }
+              value={selectedTemplate.id}
+            >
+              {REPORT_TEMPLATE_OPTIONS.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.label}
+                </option>
+              ))}
+            </select>
+            <span className="text-muted-foreground text-xs leading-5 font-normal">
+              {selectedTemplate.description}
+            </span>
+          </label>
+        </div>
 
         {!selectedPeriod.isWorkspacePeriod ? (
           <div className="border-border bg-muted/50 rounded-xl border px-4 py-3 text-sm leading-6">
@@ -179,6 +210,7 @@ export function PdfExportPanel({
           </Button>
           <TabularExportButtons
             includeTaxEstimate={selectedPeriod.isWorkspacePeriod}
+            reportTemplate={selectedTemplate}
             workspace={reportWorkspace}
           />
           <p aria-live="polite" className="text-muted-foreground text-sm">

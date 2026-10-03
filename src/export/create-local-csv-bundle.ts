@@ -44,12 +44,16 @@ function buildCsvFiles(
         ),
         ["", ""],
         ["ช่วงรายงาน", report.periodLabel],
+        ["รูปแบบรายงาน", report.templateLabel],
         ["วันที่/เวลาที่ส่งออก", report.generatedAtLabel],
         ["Tax Rule Status", report.taxRuleStatus],
         ["หมายเหตุ", report.disclaimer],
       ],
     },
-    {
+  ];
+
+  if (report.sections.income) {
+    files.push({
       fileName: "02-Income.csv",
       rows: [
         ["วันที่", "แหล่งที่มา", "หมวดหมู่", "จำนวนเงิน (บาท)"],
@@ -60,8 +64,11 @@ function buildCsvFiles(
           row.amountBaht,
         ]),
       ],
-    },
-    {
+    });
+  }
+
+  if (report.sections.expense) {
+    files.push({
       fileName: "03-Expense.csv",
       rows: [
         ["วันที่", "หมวดหมู่", "จำนวนเงิน (บาท)"],
@@ -71,10 +78,10 @@ function buildCsvFiles(
           row.amountBaht,
         ]),
       ],
-    },
-  ];
+    });
+  }
 
-  if (report.withholdingRows.length > 0) {
+  if (report.sections.withholding && report.withholdingRows.length > 0) {
     files.push({
       fileName: "04-Withholding-Tax.csv",
       rows: [
@@ -88,7 +95,7 @@ function buildCsvFiles(
     });
   }
 
-  if (report.deductionRows.length > 0) {
+  if (report.sections.deductions && report.deductionRows.length > 0) {
     files.push({
       fileName: "05-Deductions.csv",
       rows: [
@@ -98,19 +105,21 @@ function buildCsvFiles(
     });
   }
 
-  files.push({
-    fileName: "06-Breakdown.csv",
-    rows: [
-      ["ประเภท", "กลุ่ม", "จำนวนรายการ", "ยอดรวม (บาท)", "สัดส่วน (%)"],
-      ...report.breakdownRows.map((row) => [
-        row.type,
-        row.group,
-        row.entryCount,
-        row.totalBaht,
-        row.percentage,
-      ]),
-    ],
-  });
+  if (report.sections.breakdown) {
+    files.push({
+      fileName: "06-Breakdown.csv",
+      rows: [
+        ["ประเภท", "กลุ่ม", "จำนวนรายการ", "ยอดรวม (บาท)", "สัดส่วน (%)"],
+        ...report.breakdownRows.map((row) => [
+          row.type,
+          row.group,
+          row.entryCount,
+          row.totalBaht,
+          row.percentage,
+        ]),
+      ],
+    });
+  }
 
   if (report.taxEstimateRows && report.taxEstimateRows.length > 0) {
     files.push({

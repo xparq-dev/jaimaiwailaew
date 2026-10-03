@@ -14,6 +14,10 @@ import {
   buildLocalTabularReportModel,
   type LocalTabularReportModel,
 } from "@/export/local-tabular-report";
+import {
+  getReportTemplate,
+  type ReportTemplateOption,
+} from "@/report/report-template";
 
 import { Button } from "../ui/button";
 
@@ -65,7 +69,10 @@ function buildPreviewSections(
       headers: ["รายการ", "จำนวนเงิน (บาท)"],
       rows: report.summaryRows.map((row) => [row.label, row.amountBaht]),
     },
-    {
+  ];
+
+  if (report.sections.income) {
+    sections.push({
       id: "income",
       title: "Income",
       headers: ["วันที่", "แหล่งที่มา", "หมวดหมู่", "จำนวนเงิน (บาท)"],
@@ -75,8 +82,11 @@ function buildPreviewSections(
         row.category,
         row.amountBaht,
       ]),
-    },
-    {
+    });
+  }
+
+  if (report.sections.expense) {
+    sections.push({
       id: "expense",
       title: "Expense",
       headers: ["วันที่", "หมวดหมู่", "จำนวนเงิน (บาท)"],
@@ -85,10 +95,10 @@ function buildPreviewSections(
         row.category,
         row.amountBaht,
       ]),
-    },
-  ];
+    });
+  }
 
-  if (report.withholdingRows.length > 0) {
+  if (report.sections.withholding && report.withholdingRows.length > 0) {
     sections.push({
       id: "withholding",
       title: "Withholding Tax",
@@ -101,7 +111,7 @@ function buildPreviewSections(
     });
   }
 
-  if (report.deductionRows.length > 0) {
+  if (report.sections.deductions && report.deductionRows.length > 0) {
     sections.push({
       id: "deductions",
       title: "Deductions",
@@ -110,18 +120,26 @@ function buildPreviewSections(
     });
   }
 
-  sections.push({
-    id: "breakdown",
-    title: "Breakdown",
-    headers: ["ประเภท", "กลุ่ม", "จำนวนรายการ", "ยอดรวม (บาท)", "สัดส่วน (%)"],
-    rows: report.breakdownRows.map((row) => [
-      row.type,
-      row.group,
-      row.entryCount,
-      row.totalBaht,
-      row.percentage,
-    ]),
-  });
+  if (report.sections.breakdown) {
+    sections.push({
+      id: "breakdown",
+      title: "Breakdown",
+      headers: [
+        "ประเภท",
+        "กลุ่ม",
+        "จำนวนรายการ",
+        "ยอดรวม (บาท)",
+        "สัดส่วน (%)",
+      ],
+      rows: report.breakdownRows.map((row) => [
+        row.type,
+        row.group,
+        row.entryCount,
+        row.totalBaht,
+        row.percentage,
+      ]),
+    });
+  }
 
   if (report.taxEstimateRows && report.taxEstimateRows.length > 0) {
     sections.push({
@@ -141,9 +159,11 @@ function buildPreviewSections(
 export function TabularExportButtons({
   workspace,
   includeTaxEstimate = true,
+  reportTemplate = getReportTemplate("full"),
 }: {
   readonly workspace: CalculatorWorkspace;
   readonly includeTaxEstimate?: boolean | undefined;
+  readonly reportTemplate?: ReportTemplateOption | undefined;
 }) {
   const [preview, setPreview] = useState<PreviewState | null>(null);
   const [activeSectionId, setActiveSectionId] = useState("summary");
@@ -176,6 +196,7 @@ export function TabularExportButtons({
       const report = buildLocalTabularReportModel(workspace, {
         generatedAt: new Date(),
         includeTaxEstimate,
+        reportTemplate,
       });
       const artifact =
         format === "excel"
@@ -360,6 +381,8 @@ export function TabularExportButtons({
                   <dl className="border-border grid gap-2 border-t px-4 py-3 text-xs sm:grid-cols-[max-content_1fr]">
                     <dt className="font-semibold">ช่วงรายงาน</dt>
                     <dd>{preview.report.periodLabel}</dd>
+                    <dt className="font-semibold">รูปแบบรายงาน</dt>
+                    <dd>{preview.report.templateLabel}</dd>
                     <dt className="font-semibold">วันที่/เวลาที่ส่งออก</dt>
                     <dd>{preview.report.generatedAtLabel}</dd>
                     <dt className="font-semibold">Tax Rule Status</dt>

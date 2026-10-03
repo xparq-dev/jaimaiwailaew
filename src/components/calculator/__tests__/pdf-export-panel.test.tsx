@@ -125,7 +125,7 @@ describe("PdfExportPanel", () => {
     expect(window.location.href).toBe(initialUrl);
   }, 15_000);
 
-  it("uses one selected period for PDF and tabular exports", async () => {
+  it("uses one selected period and template for all exports", async () => {
     const user = userEvent.setup();
     const artifact = {
       blob: new Blob(["%PDF-test"], { type: "application/pdf" }),
@@ -142,6 +142,13 @@ describe("PdfExportPanel", () => {
       screen.getByRole("combobox", { name: /ช่วงรายงาน/u }),
       "month-2026-02",
     );
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: /รูปแบบรายงาน/u }),
+      "summary",
+    );
+    expect(
+      screen.getByText(/ยอดรวมและ Breakdown สำหรับดูภาพรวม/u),
+    ).toBeVisible();
     expect(
       screen.getByText(/รายงานช่วงย่อยจะแสดงเฉพาะรายการและยอดรวม/u),
     ).toBeVisible();
@@ -152,6 +159,12 @@ describe("PdfExportPanel", () => {
     );
     expect(createLocalPdfArtifactMock.mock.calls[0]?.[0]).toMatchObject({
       periodLabel: "1 ก.พ. 2569 – 28 ก.พ. 2569",
+      templateLabel: "สรุปยอด",
+      sections: expect.objectContaining({
+        breakdown: true,
+        income: false,
+        taxEstimate: false,
+      }),
       taxEstimate: undefined,
     });
   });

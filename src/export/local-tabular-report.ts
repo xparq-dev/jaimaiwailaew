@@ -20,6 +20,11 @@ import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
 import { sortEntriesByDateDesc } from "@/calculator/workspace";
 import { calculateWorkspacePIT } from "@/tax/engine/workspacePitAdapter";
 import { satangToBaht, toMoneySatang } from "@/tax/money";
+import {
+  getReportTemplate,
+  type ReportTemplateOption,
+  type ReportTemplateSections,
+} from "@/report/report-template";
 
 export const TABULAR_EXPORT_TAX_RULE_STATUS =
   "Tax Rules 2568/2569: verified / published (v1.0.0)";
@@ -29,6 +34,7 @@ export const TABULAR_EXPORT_DISCLAIMER =
 export interface LocalTabularReportOptions {
   readonly generatedAt: Date;
   readonly includeTaxEstimate?: boolean | undefined;
+  readonly reportTemplate?: ReportTemplateOption | undefined;
 }
 
 export interface LocalTabularSummaryRow {
@@ -70,6 +76,8 @@ export interface LocalTabularBreakdownRow {
 
 export interface LocalTabularReportModel {
   readonly taxYearBE: number;
+  readonly templateLabel: string;
+  readonly sections: ReportTemplateSections;
   readonly periodLabel: string;
   readonly generatedAtLabel: string;
   readonly generatedAtFileStamp: string;
@@ -170,6 +178,7 @@ export function buildLocalTabularReportModel(
   workspace: CalculatorWorkspace,
   options: LocalTabularReportOptions,
 ): LocalTabularReportModel {
+  const template = options.reportTemplate ?? getReportTemplate("full");
   const incomeEntries = sortEntriesByDateDesc(
     filterEntriesByPeriod(
       workspace.incomeEntries,
@@ -198,6 +207,7 @@ export function buildLocalTabularReportModel(
   let taxEstimateDisclaimer: string | undefined = undefined;
 
   if (
+    template.sections.taxEstimate &&
     options.includeTaxEstimate !== false &&
     workspace.taxRuleResolutionSnapshot.availability === "available"
   ) {
@@ -253,6 +263,8 @@ export function buildLocalTabularReportModel(
 
   return {
     taxYearBE: workspace.taxYearBE,
+    templateLabel: template.label,
+    sections: template.sections,
     periodLabel: `${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`,
     generatedAtLabel: formatBangkokDateTime(options.generatedAt),
     generatedAtFileStamp: formatBangkokFileStamp(options.generatedAt),
@@ -288,60 +300,70 @@ export function buildLocalTabularReportModel(
         amountBaht: satangToBaht(totals.netBeforeTaxSatang),
       },
     ],
-    incomeRows: incomeEntries.map((entry) => ({
-      period: formatExportPeriod(entry),
-      source: normalizedOptionalText(entry.sourceName),
-      category: getIncomeCategoryLabel(entry.categoryCode),
-      amountBaht: satangToBaht(entry.amountSatang),
-    })),
-    expenseRows: expenseEntries.map((entry) => ({
-      period: formatExportPeriod(entry),
-      category: getExpenseCategoryLabel(entry.categoryCode),
-      amountBaht: satangToBaht(entry.amountSatang),
-    })),
-    withholdingRows: withholdingEntries.map((entry) => ({
-      period: formatExportPeriod(entry),
-      source: normalizedOptionalText(entry.payerName),
-      amountBaht: satangToBaht(entry.amountSatang),
-    })),
-    deductionRows: [
-      ...(socialSecurity.contributionSatang > 0
-        ? [
-            {
-              type: "เงินสมทบประกันสังคม",
-              amountBaht: satangToBaht(socialSecurity.contributionSatang),
-            },
-          ]
-        : []),
-      ...workspace.allowanceDraftEntries.flatMap((entry) =>
-        entry.declaredAmountSatang === undefined
-          ? []
-          : [
-              {
-                type: getAllowanceCategoryLabel(entry.categoryCode),
-                amountBaht: satangToBaht(entry.declaredAmountSatang),
-              },
-            ],
-      ),
-    ],
-    breakdownRows: [
-      ...breakdownRows(
-        "รายรับ — แหล่งที่มา",
-        buildIncomeSourceBreakdown(workspace),
-      ),
-      ...breakdownRows(
-        "รายรับ — หมวดหมู่",
-        buildIncomeCategoryBreakdown(workspace),
-      ),
-      ...breakdownRows(
-        "รายจ่าย — หมวดหมู่",
-        buildExpenseCategoryBreakdown(workspace),
-      ),
-      ...breakdownRows(
-        "รายจ่าย — สถานะการจัดกลุ่ม",
-        buildExpenseStatusBreakdown(workspace),
-      ),
-    ],
+    incomeRows: template.sections.income
+      ? incomeEntries.map((entry) => ({
+          period: formatExportPeriod(entry),
+          source: normalizedOptionalText(entry.sourceName),
+          category: getIncomeCategoryLabel(entry.categoryCode),
+          amountBaht: satangToBaht(entry.amountSatang),
+        }))
+      : [],
+    expenseRows: template.sections.expense
+      ? expenseEntries.map((entry) => ({
+          period: formatExportPeriod(entry),
+          category: getExpenseCategoryLabel(entry.categoryCode),
+          amountBaht: satangToBaht(entry.amountSatang),
+        }))
+      : [],
+    withholdingRows: template.sections.withholding
+      ? withholdingEntries.map((entry) => ({
+          period: formatExportPeriod(entry),
+          source: normalizedOptionalText(entry.payerName),
+          amountBaht: satangToBaht(entry.amountSatang),
+        }))
+      : [],
+    deductionRows: template.sections.deductions
+      ? [
+          ...(socialSecurity.contributionSatang > 0
+            ? [
+                {
+                  type: "เงินสมทบประกันสังคม",
+                  amountBaht: satangToBaht(socialSecurity.contributionSatang),
+                },
+              ]
+            : []),
+          ...workspace.allowanceDraftEntries.flatMap((entry) =>
+            entry.declaredAmountSatang === undefined
+              ? []
+              : [
+                  {
+                    type: getAllowanceCategoryLabel(entry.categoryCode),
+                    amountBaht: satangToBaht(entry.declaredAmountSatang),
+                  },
+                ],
+          ),
+        ]
+      : [],
+    breakdownRows: template.sections.breakdown
+      ? [
+          ...breakdownRows(
+            "รายรับ — แหล่งที่มา",
+            buildIncomeSourceBreakdown(workspace),
+          ),
+          ...breakdownRows(
+            "รายรับ — หมวดหมู่",
+            buildIncomeCategoryBreakdown(workspace),
+          ),
+          ...breakdownRows(
+            "รายจ่าย — หมวดหมู่",
+            buildExpenseCategoryBreakdown(workspace),
+          ),
+          ...breakdownRows(
+            "รายจ่าย — สถานะการจัดกลุ่ม",
+            buildExpenseStatusBreakdown(workspace),
+          ),
+        ]
+      : [],
     taxEstimateRows,
     taxEstimateDisclaimer,
   };

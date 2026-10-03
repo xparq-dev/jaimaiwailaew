@@ -1,6 +1,6 @@
 # สถานะโครงการ
 
-ตรวจสอบล่าสุด: 2026-09-28 (Asia/Bangkok)
+ตรวจสอบล่าสุด: 2026-10-04 (Asia/Bangkok)
 
 เอกสารนี้เป็น source of truth สำหรับสถานะการดำเนินงานจริง ส่วนข้อกำหนดผลิตภัณฑ์ระยะยาวให้ยึด
 [`ProductRequirementsDocument.md`](./ProductRequirementsDocument.md) โดยต้องอ่านหมายเหตุการ re-scope
@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `530062a` — Merge PR #27
+- Production baseline: `854f1b5` — Merge PR #33
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -25,6 +25,7 @@
 - PR #25: Phase 2B Persona Learning Paths
 - PR #26: Phase 3A Account Dashboard Foundation
 - PR #27: Phase 3B Cloud Data Controls
+- PR #33: Phase 4A Report Periods
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -55,16 +56,18 @@
   และ Workspace ในอุปกรณ์โดยไม่เปิดเผย internal identifiers
 - Phase 3B (PR #27) — ลบสำเนา Workspace ทั้งหมดของบัญชีออกจาก private R2 ได้โดย
   เก็บข้อมูล local ไว้ ตรวจ ownership แบบ fail closed และปิด Sync หลังลบสำเร็จ
+- Phase 4A (PR #33) — เลือกช่วง Workspace, ทั้งปี, ครึ่งปี หรือรายเดือนร่วมกันสำหรับ
+  PDF/Excel/CSV พร้อมป้องกันการนำค่าลดหย่อนและประมาณการภาษีไปแสดงผิดช่วง
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 4A — Report Periods เริ่มบน branch `feat/phase-4a-report-periods`:
+Phase 4B — Report Templates เริ่มบน branch `feat/phase-4b-report-templates`:
 
-- เลือกช่วง Workspace, ทั้งปี, ครึ่งปี หรือรายเดือนครั้งเดียวสำหรับ PDF/Excel/CSV
-- ใช้การประมวลผลในอุปกรณ์เดิมและไม่แก้ข้อมูล Workspace จริง
-- ช่วงย่อยไม่แสดงค่าลดหย่อนร่างแบบรวมและประมาณการภาษีของ Workspace
+- เลือกฉบับเต็ม สรุปยอด หรือรายการเคลื่อนไหวครั้งเดียวสำหรับ PDF/Excel/CSV
+- ไม่สร้าง section, Sheet หรือ CSV file ที่อยู่นอก template
+- ตัวเลือกเป็น page-local state และไม่แก้ข้อมูล Workspace จริง
 - ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase4AReportPeriods.md`](./Phase4AReportPeriods.md)
+  [`Phase4BReportTemplates.md`](./Phase4BReportTemplates.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -119,6 +122,7 @@ Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (
 - [ ] manual device acceptance ครบ Android/iOS/Desktop (PWA install)
 
 Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 ส่วน Phase 3A Account Dashboard
-และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ ขณะนี้ Phase 4A
-Report Periods กำลังดำเนินการ ส่วน account deletion/retention, audit/consent governance,
-report history/templates, admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership
+และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ Phase 4A Report
+Periods ปิดแล้วผ่าน PR #33 ขณะนี้ Phase 4B Report Templates กำลังดำเนินการ ส่วน account
+deletion/retention, audit/consent governance, export history/quota, document/download audit,
+admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership

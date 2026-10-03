@@ -31,12 +31,18 @@ import type { MoneySatang } from "@/tax/money";
 import { safeAddMoney, toMoneySatang } from "@/tax/money";
 import type { PITCalculationResult } from "@/tax/engine/pitCalculator";
 import { calculateWorkspacePIT } from "@/tax/engine/workspacePitAdapter";
+import {
+  getReportTemplate,
+  type ReportTemplateOption,
+  type ReportTemplateSections,
+} from "@/report/report-template";
 
 export interface LocalPdfReportOptions {
   readonly generatedAt: Date;
   readonly reportName?: string | undefined;
   readonly displayName?: string | undefined;
   readonly includeTaxEstimate?: boolean | undefined;
+  readonly reportTemplate?: ReportTemplateOption | undefined;
 }
 
 export interface LocalPdfEntryRow {
@@ -75,6 +81,8 @@ export interface LocalPdfReportModel {
   readonly generatedAtLabel: string;
   readonly generatedAtFileStamp: string;
   readonly taxYearBE: number;
+  readonly templateLabel: string;
+  readonly sections: ReportTemplateSections;
   readonly periodLabel: string;
   readonly totals: ReturnType<typeof computeArithmeticTotals>;
   readonly socialSecurityContributionSatang: MoneySatang;
@@ -205,6 +213,7 @@ export function buildLocalPdfReportModel(
   workspace: CalculatorWorkspace,
   options: LocalPdfReportOptions,
 ): LocalPdfReportModel {
+  const template = options.reportTemplate ?? getReportTemplate("full");
   const incomeInPeriod = filterEntriesByPeriod(
     workspace.incomeEntries,
     workspace.periodStart,
@@ -232,52 +241,65 @@ export function buildLocalPdfReportModel(
     generatedAtLabel: formatBangkokDateTime(options.generatedAt),
     generatedAtFileStamp: formatBangkokFileStamp(options.generatedAt),
     taxYearBE: workspace.taxYearBE,
+    templateLabel: template.label,
+    sections: template.sections,
     periodLabel: `${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`,
     totals: computeArithmeticTotals(workspace),
     socialSecurityContributionSatang: socialSecurity.contributionSatang,
     taxEstimate:
+      template.sections.taxEstimate &&
       options.includeTaxEstimate !== false &&
       workspace.taxRuleResolutionSnapshot.availability === "available"
         ? calculateWorkspacePIT(workspace)
         : undefined,
-    incomeGroups: groupEntryRows(incomeRows(incomeInPeriod)),
-    expenseGroups: groupEntryRows(expenseRows(expensesInPeriod)),
-    withholdingGroups: groupEntryRows(withholdingRows(withholdingInPeriod)),
-    allowanceRows: [
-      ...(socialSecurity.contributionSatang > 0
-        ? [
-            {
-              id: "social-security",
-              label: "เงินสมทบประกันสังคม",
-              amountSatang: socialSecurity.contributionSatang,
-            },
-          ]
-        : []),
-      ...allowanceRows(workspace.allowanceDraftEntries),
-    ],
-    breakdownSections: [
-      {
-        key: "income-source",
-        title: "รายรับตามแหล่งที่มา",
-        details: buildIncomeSourceBreakdown(workspace).filter(
-          ({ group }) => group.label !== MISSING_INCOME_SOURCE_LABEL,
-        ),
-      },
-      {
-        key: "income-category",
-        title: "รายรับตามหมวดบันทึก",
-        details: buildIncomeCategoryBreakdown(workspace),
-      },
-      {
-        key: "expense-category",
-        title: "รายจ่ายตามหมวดบันทึก",
-        details: buildExpenseCategoryBreakdown(workspace),
-      },
-      {
-        key: "expense-status",
-        title: "รายจ่ายตามสถานะการจัดกลุ่ม",
-        details: buildExpenseStatusBreakdown(workspace),
-      },
-    ],
+    incomeGroups: template.sections.income
+      ? groupEntryRows(incomeRows(incomeInPeriod))
+      : [],
+    expenseGroups: template.sections.expense
+      ? groupEntryRows(expenseRows(expensesInPeriod))
+      : [],
+    withholdingGroups: template.sections.withholding
+      ? groupEntryRows(withholdingRows(withholdingInPeriod))
+      : [],
+    allowanceRows: template.sections.deductions
+      ? [
+          ...(socialSecurity.contributionSatang > 0
+            ? [
+                {
+                  id: "social-security",
+                  label: "เงินสมทบประกันสังคม",
+                  amountSatang: socialSecurity.contributionSatang,
+                },
+              ]
+            : []),
+          ...allowanceRows(workspace.allowanceDraftEntries),
+        ]
+      : [],
+    breakdownSections: template.sections.breakdown
+      ? [
+          {
+            key: "income-source",
+            title: "รายรับตามแหล่งที่มา",
+            details: buildIncomeSourceBreakdown(workspace).filter(
+              ({ group }) => group.label !== MISSING_INCOME_SOURCE_LABEL,
+            ),
+          },
+          {
+            key: "income-category",
+            title: "รายรับตามหมวดบันทึก",
+            details: buildIncomeCategoryBreakdown(workspace),
+          },
+          {
+            key: "expense-category",
+            title: "รายจ่ายตามหมวดบันทึก",
+            details: buildExpenseCategoryBreakdown(workspace),
+          },
+          {
+            key: "expense-status",
+            title: "รายจ่ายตามสถานะการจัดกลุ่ม",
+            details: buildExpenseStatusBreakdown(workspace),
+          },
+        ]
+      : [],
   };
 }

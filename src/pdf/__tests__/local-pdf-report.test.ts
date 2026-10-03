@@ -12,6 +12,7 @@ import {
   getDefaultWorkspaceInput,
 } from "@/calculator/workspace";
 import { buildLocalPdfReportModel } from "@/pdf/local-pdf-report";
+import { getReportTemplate } from "@/report/report-template";
 import { toMoneySatang } from "@/tax/money";
 
 const timestamp = "2026-01-01T00:00:00.000Z";
@@ -168,6 +169,20 @@ describe("buildLocalPdfReportModel", () => {
       includeTaxEstimate: false,
     });
 
+    expect(report.taxEstimate).toBeUndefined();
+  });
+
+  it("limits sections to the selected report template", () => {
+    const report = buildLocalPdfReportModel(createWorkspaceFixture(), {
+      generatedAt: new Date("2026-09-13T07:55:00.000Z"),
+      reportTemplate: getReportTemplate("transactions"),
+    });
+
+    expect(report.templateLabel).toBe("รายการเคลื่อนไหว");
+    expect(report.incomeGroups).not.toHaveLength(0);
+    expect(report.expenseGroups).not.toHaveLength(0);
+    expect(report.breakdownSections).toEqual([]);
+    expect(report.allowanceRows).toEqual([]);
     expect(report.taxEstimate).toBeUndefined();
   });
 });

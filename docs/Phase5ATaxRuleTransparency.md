@@ -1,6 +1,6 @@
 # Phase 5A — Tax Rule Transparency & Governance Readiness
 
-สถานะ: กำลังดำเนินการบน branch `feat/phase-5a-tax-rule-transparency`
+สถานะ: ปิดงานแล้ว — merged ผ่าน PR #37
 
 ## เป้าหมาย
 

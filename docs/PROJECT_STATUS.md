@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `6bfceda` — Merge PR #36
+- Production baseline: `883d45f` — Merge PR #37
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -67,17 +67,18 @@
   internal ID, ไม่ persist และไม่ sync ขึ้น Cloud
 - Phase 4D (PR #36) — เก็บประวัติการดาวน์โหลดแบบ metadata-only ใน browser ปัจจุบันเท่านั้น
   ไม่เก็บยอดเงินหรือ identifier และไม่ sync ขึ้น Cloud
+- Phase 5A (PR #37) — แสดงสถานะกฎภาษีและแหล่งอ้างอิงที่ผ่าน local resolver แบบ read-only
+  โดยตัด identifiers ภายในออกและคง fail-closed policy เดิม
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 5A — Tax Rule Transparency & Governance Readiness เริ่มบน branch
-`feat/phase-5a-tax-rule-transparency`:
+Phase 5B — Tax Calendar เริ่มบน branch `feat/phase-5b-tax-calendar`:
 
-- แสดงสถานะกฎภาษีและแหล่งอ้างอิงที่ผ่าน local resolver แบบ read-only
-- ไม่มี admin/editor, API, Cloud Sync หรือการเปลี่ยนอัตรา/สูตรภาษี
-- ตัด identifiers ภายในออกจาก public view และคง fail-closed policy เดิม
+- แสดงกำหนด ภ.ง.ด.94 ปีภาษี 2569 และ ภ.ง.ด.90/91 ปีภาษี 2568 ที่ตรวจสอบแล้ว
+- ทุกกำหนดชี้ไปยังแหล่งอ้างอิงของกรมสรรพากรแบบ read-only
+- ไม่มี reminder, calendar sync, API, Cloud Sync หรือการเปลี่ยนการคำนวณภาษี
 - ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase5ATaxRuleTransparency.md`](./Phase5ATaxRuleTransparency.md)
+  [`Phase5BTaxCalendar.md`](./Phase5BTaxCalendar.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม

@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Info } from "lucide-react";
+import Link from "next/link";
 
 import type { CalculatorWorkspace } from "@/calculator/types";
 import { calculateWorkspaceSocialSecurity } from "@/calculator/social-security";
@@ -39,6 +40,13 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
         คำนวณจากรายได้ ค่าใช้จ่ายตามสัดส่วนกฎหมาย ค่าลดหย่อน และภาษีหัก ณ
         ที่จ่ายตามรอบระยะเวลาที่เลือก
       </p>
+
+      <Link
+        className="text-primary focus-visible:ring-focus/35 mt-3 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold hover:underline focus-visible:ring-3 focus-visible:outline-none"
+        href={`/tax-rules#tax-rule-year-${workspace.taxYearBE}`}
+      >
+        ดูแหล่งอ้างอิงกฎภาษีของปีนี้
+      </Link>
 
       {/* Outcome Highlight Banner */}
       <div className="mt-5">

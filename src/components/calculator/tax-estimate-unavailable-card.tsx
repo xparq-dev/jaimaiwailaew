@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangle, ShieldBan } from "lucide-react";
+import Link from "next/link";
 
 import { useCalculatorStore } from "@/calculator/store";
 
@@ -38,25 +39,21 @@ export function TaxEstimateUnavailableCard() {
           </div>
           <dl className="grid gap-2 text-sm">
             <div>
-              <dt className="text-muted-foreground">Tax Rule Set</dt>
-              <dd className="font-mono text-sm">
-                {snapshot.ruleSetId ?? "ไม่พบ rule set"}
+              <dt className="text-muted-foreground">กฎภาษี</dt>
+              <dd className="font-semibold">ปี {workspace.taxYearBE}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">เวอร์ชันที่พบ</dt>
+              <dd className="font-semibold">
+                {snapshot.ruleSetVersion
+                  ? `v${snapshot.ruleSetVersion}`
+                  : "ยังไม่ระบุ"}
               </dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Version</dt>
-              <dd className="font-mono text-sm">
-                {snapshot.ruleSetVersion ?? "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Availability</dt>
-              <dd className="font-mono text-sm">{snapshot.availability}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Status</dt>
-              <dd className="font-mono text-sm">
-                {snapshot.status ?? "unverified"}
+              <dt className="text-muted-foreground">สถานะการใช้งาน</dt>
+              <dd className="font-semibold">
+                ยังไม่พร้อมใช้สำหรับการประมาณการ
               </dd>
             </div>
           </dl>
@@ -70,6 +67,12 @@ export function TaxEstimateUnavailableCard() {
               จนกว่ากฎจะผ่านการตรวจสอบ
             </span>
           </p>
+          <Link
+            className="focus-visible:ring-focus/35 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold underline underline-offset-4 focus-visible:ring-3 focus-visible:outline-none"
+            href={`/tax-rules#tax-rule-year-${workspace.taxYearBE}`}
+          >
+            ดูสถานะและแหล่งอ้างอิงกฎภาษี
+          </Link>
         </div>
       </div>
     </section>

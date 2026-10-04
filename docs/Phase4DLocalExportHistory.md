@@ -1,6 +1,6 @@
 # Phase 4D — Local Export History
 
-สถานะ: กำลังดำเนินการบน branch `feat/phase-4d-local-export-history`
+สถานะ: ปิดแล้วผ่าน PR #36
 
 ## เป้าหมาย
 

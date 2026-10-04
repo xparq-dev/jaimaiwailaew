@@ -92,6 +92,46 @@ test("publishes a read-only tax rule source registry without private identifiers
     .toBe(true);
 });
 
+test("publishes verified filing dates with official sources only", async ({
+  page,
+}) => {
+  const response = await page.goto("/tax-calendar");
+  expect(response).not.toBeNull();
+
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "กำหนดเวลายื่นแบบที่ตรวจสอบแล้ว",
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("ภ.ง.ด.94", { exact: true })).toBeVisible();
+  await expect(page.getByText("8 ตุลาคม 2569", { exact: true })).toBeVisible();
+  await expect(page.getByText("ภ.ง.ด.90/91", { exact: true })).toBeVisible();
+  await expect(page.getByText("31 มีนาคม 2569", { exact: true })).toBeVisible();
+  await expect(page.getByText("8 เมษายน 2569", { exact: true })).toBeVisible();
+
+  const sourceLink = page.getByRole("link", {
+    name: "เปิดแหล่งอ้างอิงของ ภ.ง.ด.94",
+  });
+  await expect(sourceLink).toHaveAttribute(
+    "href",
+    "https://www.rd.go.th/272.html",
+  );
+  await expect(sourceLink).toHaveAttribute("target", "_blank");
+  await expect(sourceLink).toHaveAttribute("rel", /noopener/);
+  await expect(sourceLink).toHaveAttribute("rel", /noreferrer/);
+  await expect(page.locator("body")).not.toContainText(
+    /workspaceId|entryId|userId|ruleSetId|taxDue|refundAmount/iu,
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
+});
+
 test("uses the signed-in provider avatar in the desktop brand", async ({
   page,
 }, testInfo) => {

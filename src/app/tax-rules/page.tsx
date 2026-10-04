@@ -13,9 +13,14 @@ export default function TaxRulesPage() {
     <div className="space-y-8">
       <PageHeader
         actions={
-          <Button asChild variant="secondary">
-            <Link href="/calculator">กลับไปดูข้อมูลของฉัน</Link>
-          </Button>
+          <>
+            <Button asChild variant="secondary">
+              <Link href="/tax-calendar">ดูปฏิทินกำหนดยื่น</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/calculator">กลับไปดูข้อมูลของฉัน</Link>
+            </Button>
+          </>
         }
         description="ดูสถานะกฎภาษีและแหล่งอ้างอิงที่แอปใช้สำหรับการประมาณการในแต่ละปี ข้อมูลหน้านี้อยู่ในตัวแอปและไม่ส่งข้อมูลส่วนตัวของคุณออกไป"
         eyebrow="ข้อมูลกฎภาษี"

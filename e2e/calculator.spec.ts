@@ -596,6 +596,7 @@ test.describe("Calculator UX (Local-only)", () => {
       partialExcelPreview.getByText("1 มี.ค. 2569 – 31 มี.ค. 2569"),
     ).toBeVisible();
     await expect(partialExcelPreview.getByText("สรุปยอด")).toBeVisible();
+    await expect(partialExcelPreview).toContainText(/JMWL-\d{8}-\d{6}-\d{3}/u);
     await expect(
       partialExcelPreview.getByRole("tab", { name: "Summary" }),
     ).toBeVisible();
@@ -630,6 +631,9 @@ test.describe("Calculator UX (Local-only)", () => {
       name: "ตัวอย่างรายงาน PDF",
     });
     await expect(pdfPreviewDialog).toBeVisible();
+    await expect(pdfPreviewDialog).toContainText(
+      /เลขอ้างอิงรายงาน: JMWL-\d{8}-\d{6}-\d{3}/u,
+    );
     await expect(
       pdfPreviewDialog.getByTitle("ตัวอย่างรายงาน PDF"),
     ).toHaveAttribute("src", /^blob:/);

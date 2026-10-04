@@ -460,6 +460,12 @@ export function buildProfessionalPdfDocument(
       margin: [0, 0, 0, 2],
     },
     {
+      text: `เลขอ้างอิงรายงาน (สร้างในเครื่อง): ${report.reportReference}`,
+      alignment: "center",
+      fontSize: TYPE_SCALE.taxStatus,
+      margin: [0, 0, 0, 2],
+    },
+    {
       text: report.generatedAtLabel,
       alignment: "center",
       fontSize: TYPE_SCALE.body,
@@ -646,7 +652,11 @@ export function buildProfessionalPdfDocument(
         },
         {
           columns: [
-            { text: "", width: 92 },
+            {
+              text: report.reportReference,
+              width: 140,
+              fontSize: TYPE_SCALE.footer,
+            },
             {
               text: report.generatedAtLabel,
               alignment: "center",

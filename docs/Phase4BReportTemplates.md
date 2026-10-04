@@ -1,6 +1,6 @@
 # Phase 4B — Report Templates
 
-สถานะ: กำลังดำเนินการบน branch `feat/phase-4b-report-templates`
+สถานะ: ปิดแล้วผ่าน PR #34
 
 ## เป้าหมาย
 

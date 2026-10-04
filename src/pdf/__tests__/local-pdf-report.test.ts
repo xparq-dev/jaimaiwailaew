@@ -118,6 +118,7 @@ describe("buildLocalPdfReportModel", () => {
       "13 กันยายน 2569 14:55 น. (Asia/Bangkok)",
     );
     expect(report.generatedAtFileStamp).toBe("20260913-1455");
+    expect(report.reportReference).toBe("JMWL-20260913-145500-000");
     expect(report.totals).toMatchObject({
       totalIncomeSatang: toMoneySatang(50_000_00),
       totalExpenseSatang: toMoneySatang(2_000_00),

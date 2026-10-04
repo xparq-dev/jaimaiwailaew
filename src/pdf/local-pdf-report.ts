@@ -36,6 +36,7 @@ import {
   type ReportTemplateOption,
   type ReportTemplateSections,
 } from "@/report/report-template";
+import { createReportDocumentReference } from "@/report/report-document-reference";
 
 export interface LocalPdfReportOptions {
   readonly generatedAt: Date;
@@ -77,6 +78,7 @@ export interface LocalPdfAllowanceRow {
 export interface LocalPdfReportModel {
   readonly title: string;
   readonly displayName?: string | undefined;
+  readonly reportReference: string;
   readonly generatedAt: Date;
   readonly generatedAtLabel: string;
   readonly generatedAtFileStamp: string;
@@ -237,6 +239,7 @@ export function buildLocalPdfReportModel(
       normalizeOptionalLabel(workspace.reportName) ??
       "รายงานสรุปข้อมูลรายได้และค่าใช้จ่าย",
     displayName: normalizeOptionalLabel(options.displayName),
+    reportReference: createReportDocumentReference(options.generatedAt),
     generatedAt: options.generatedAt,
     generatedAtLabel: formatBangkokDateTime(options.generatedAt),
     generatedAtFileStamp: formatBangkokFileStamp(options.generatedAt),

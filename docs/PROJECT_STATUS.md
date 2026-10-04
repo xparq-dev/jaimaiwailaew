@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `854f1b5` — Merge PR #33
+- Production baseline: `be7feb2` — Merge PR #34
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -26,6 +26,7 @@
 - PR #26: Phase 3A Account Dashboard Foundation
 - PR #27: Phase 3B Cloud Data Controls
 - PR #33: Phase 4A Report Periods
+- PR #34: Phase 4B Report Templates
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -58,16 +59,19 @@
   เก็บข้อมูล local ไว้ ตรวจ ownership แบบ fail closed และปิด Sync หลังลบสำเร็จ
 - Phase 4A (PR #33) — เลือกช่วง Workspace, ทั้งปี, ครึ่งปี หรือรายเดือนร่วมกันสำหรับ
   PDF/Excel/CSV พร้อมป้องกันการนำค่าลดหย่อนและประมาณการภาษีไปแสดงผิดช่วง
+- Phase 4B (PR #34) — เลือกฉบับเต็ม สรุปยอด หรือรายการเคลื่อนไหวร่วมกันสำหรับ
+  PDF/Excel/CSV โดยไม่สร้าง section, Sheet หรือ CSV file ที่อยู่นอก template
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 4B — Report Templates เริ่มบน branch `feat/phase-4b-report-templates`:
+Phase 4C — Report Document Identity เริ่มบน branch
+`feat/phase-4c-report-document-identity`:
 
-- เลือกฉบับเต็ม สรุปยอด หรือรายการเคลื่อนไหวครั้งเดียวสำหรับ PDF/Excel/CSV
-- ไม่สร้าง section, Sheet หรือ CSV file ที่อยู่นอก template
-- ตัวเลือกเป็น page-local state และไม่แก้ข้อมูล Workspace จริง
+- สร้างเลขอ้างอิงรายงานภายในอุปกรณ์เมื่อเปิด Preview ของ PDF/Excel/CSV
+- Preview และ Download ของ artifact เดียวกันใช้เลขอ้างอิงเดียวกัน
+- ไม่ใช้ internal ID, ไม่ persist, ไม่ sync และไม่ส่งเลขอ้างอิงออก network
 - ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase4BReportTemplates.md`](./Phase4BReportTemplates.md)
+  [`Phase4CReportDocumentIdentity.md`](./Phase4CReportDocumentIdentity.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -123,6 +127,7 @@ Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (
 
 Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 ส่วน Phase 3A Account Dashboard
 และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ Phase 4A Report
-Periods ปิดแล้วผ่าน PR #33 ขณะนี้ Phase 4B Report Templates กำลังดำเนินการ ส่วน account
+Periods ปิดแล้วผ่าน PR #33 และ Phase 4B Report Templates ปิดแล้วผ่าน PR #34 ขณะนี้ Phase 4C
+Report Document Identity กำลังดำเนินการ ส่วน account
 deletion/retention, audit/consent governance, export history/quota, document/download audit,
 admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership

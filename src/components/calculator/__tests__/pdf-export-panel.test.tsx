@@ -104,6 +104,9 @@ describe("PdfExportPanel", () => {
       name: "ตัวอย่างรายงาน PDF",
     });
     expect(previewDialog).toBeVisible();
+    expect(previewDialog).toHaveTextContent(
+      /เลขอ้างอิงรายงาน: JMWL-\d{8}-\d{6}-\d{3}/u,
+    );
     expect(
       screen.getByTitle<HTMLIFrameElement>("ตัวอย่างรายงาน PDF"),
     ).toHaveAttribute("src", "blob:local-pdf-preview");

@@ -55,6 +55,9 @@ describe("professional PDF document", () => {
     expect(serialized).toContain("รายงานสำหรับประชุม");
     expect(serialized).toContain("ช่วงรายงาน:");
     expect(serialized).toContain("รูปแบบ: ฉบับเต็ม");
+    expect(serialized).toContain(
+      "เลขอ้างอิงรายงาน (สร้างในเครื่อง): JMWL-20260913-145500-000",
+    );
     expect(serialized).toContain("ผู้ใช้ตัวอย่าง");
     expect(serialized).toContain("13 กันยายน 2569 14:55 น. (Asia/Bangkok)");
     expect(serialized).toContain(

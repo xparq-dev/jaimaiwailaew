@@ -26,6 +26,7 @@ type ExportStatus =
 
 interface PdfPreview {
   readonly artifact: LocalPdfArtifact;
+  readonly reportReference: string;
   readonly url: string;
 }
 
@@ -85,7 +86,11 @@ export function PdfExportPanel({
       const { createLocalPdfArtifact } =
         await import("@/pdf/download-local-pdf");
       const artifact = await createLocalPdfArtifact(report);
-      setPreview({ artifact, url: URL.createObjectURL(artifact.blob) });
+      setPreview({
+        artifact,
+        reportReference: report.reportReference,
+        url: URL.createObjectURL(artifact.blob),
+      });
       setStatus("preview-ready");
     } catch {
       setStatus("error");
@@ -256,6 +261,11 @@ export function PdfExportPanel({
               <p className="text-muted-foreground mt-1 text-xs">
                 ตรวจสอบเอกสารจริงก่อนดาวน์โหลด ไฟล์ยังอยู่ในอุปกรณ์นี้เท่านั้น
               </p>
+              {preview ? (
+                <p className="text-muted-foreground mt-1 text-xs tabular-nums">
+                  เลขอ้างอิงรายงาน: {preview.reportReference}
+                </p>
+              ) : null}
             </div>
             <Button
               aria-label="ปิดตัวอย่าง PDF"

@@ -143,6 +143,7 @@ describe("local tabular report", () => {
       "13 กันยายน 2569 14:55 น. (Asia/Bangkok)",
     );
     expect(report.generatedAtFileStamp).toBe("20260913-1455");
+    expect(report.reportReference).toBe("JMWL-20260913-145500-000");
     expect(report.periodLabel).toBe("1 ม.ค. 2569 – 30 มิ.ย. 2569");
     expect(report.taxRuleStatus).toBe(TABULAR_EXPORT_TAX_RULE_STATUS);
     expect(report.disclaimer).toBe(TABULAR_EXPORT_DISCLAIMER);
@@ -234,6 +235,7 @@ describe("local XLSX export", () => {
     expect(allXml).toContain("รายรับรวม");
     expect(allXml).toContain(TABULAR_EXPORT_TAX_RULE_STATUS);
     expect(allXml).toContain(TABULAR_EXPORT_DISCLAIMER);
+    expect(allXml).toContain("JMWL-20260913-145500-000");
     expect(allXml).toContain("<v>50000</v>");
     expect(allXml).not.toMatch(
       /secret-id|private-|CERT-SECRET|income-outside|taxDue|refund|%PDF/i,
@@ -302,6 +304,7 @@ describe("local CSV export", () => {
     expect(Array.from(summaryBytes.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
     expect(summary).toContain(TABULAR_EXPORT_TAX_RULE_STATUS);
     expect(summary).toContain(TABULAR_EXPORT_DISCLAIMER);
+    expect(summary).toContain("JMWL-20260913-145500-000");
     expect(income).toContain('"\'=HYPERLINK(""https://invalid.example"")"');
     expect(breakdown).toContain('"สัดส่วน (%)"');
     expect(allCsv).not.toMatch(

@@ -25,6 +25,7 @@ import {
   type ReportTemplateOption,
   type ReportTemplateSections,
 } from "@/report/report-template";
+import { createReportDocumentReference } from "@/report/report-document-reference";
 
 export const TABULAR_EXPORT_TAX_RULE_STATUS =
   "Tax Rules 2568/2569: verified / published (v1.0.0)";
@@ -76,6 +77,7 @@ export interface LocalTabularBreakdownRow {
 
 export interface LocalTabularReportModel {
   readonly taxYearBE: number;
+  readonly reportReference: string;
   readonly templateLabel: string;
   readonly sections: ReportTemplateSections;
   readonly periodLabel: string;
@@ -263,6 +265,7 @@ export function buildLocalTabularReportModel(
 
   return {
     taxYearBE: workspace.taxYearBE,
+    reportReference: createReportDocumentReference(options.generatedAt),
     templateLabel: template.label,
     sections: template.sections,
     periodLabel: `${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`,

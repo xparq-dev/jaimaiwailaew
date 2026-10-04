@@ -379,6 +379,12 @@ export function TabularExportButtons({
 
                 {activeSection.id === "summary" && preview ? (
                   <dl className="border-border grid gap-2 border-t px-4 py-3 text-xs sm:grid-cols-[max-content_1fr]">
+                    <dt className="font-semibold">
+                      เลขอ้างอิงรายงาน (สร้างในเครื่อง)
+                    </dt>
+                    <dd className="tabular-nums">
+                      {preview.report.reportReference}
+                    </dd>
                     <dt className="font-semibold">ช่วงรายงาน</dt>
                     <dd>{preview.report.periodLabel}</dd>
                     <dt className="font-semibold">รูปแบบรายงาน</dt>

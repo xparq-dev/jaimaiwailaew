@@ -83,6 +83,9 @@ describe("TabularExportButtons", () => {
     expect(excelPreview).toBeVisible();
     expect(excelPreview).toHaveTextContent("รายรับรวม");
     expect(excelPreview).toHaveTextContent(
+      /เลขอ้างอิงรายงาน \(สร้างในเครื่อง\)JMWL-\d{8}-\d{6}-\d{3}/u,
+    );
+    expect(excelPreview).toHaveTextContent(
       "Tax Rules 2568/2569: verified / published (v1.0.0)",
     );
     await user.click(screen.getByRole("tab", { name: "Tax Estimate" }));

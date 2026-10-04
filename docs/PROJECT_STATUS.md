@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `58c9c67` — Merge PR #35
+- Production baseline: `6bfceda` — Merge PR #36
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -28,6 +28,7 @@
 - PR #33: Phase 4A Report Periods
 - PR #34: Phase 4B Report Templates
 - PR #35: Phase 4C Report Document Identity
+- PR #36: Phase 4D Local Export History
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -64,16 +65,19 @@
   PDF/Excel/CSV โดยไม่สร้าง section, Sheet หรือ CSV file ที่อยู่นอก template
 - Phase 4C (PR #35) — เพิ่มเลขอ้างอิงรายงานที่สร้างในเครื่องให้ PDF/Excel/CSV โดยไม่ใช้
   internal ID, ไม่ persist และไม่ sync ขึ้น Cloud
+- Phase 4D (PR #36) — เก็บประวัติการดาวน์โหลดแบบ metadata-only ใน browser ปัจจุบันเท่านั้น
+  ไม่เก็บยอดเงินหรือ identifier และไม่ sync ขึ้น Cloud
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 4D — Local Export History เริ่มบน branch `feat/phase-4d-local-export-history`:
+Phase 5A — Tax Rule Transparency & Governance Readiness เริ่มบน branch
+`feat/phase-5a-tax-rule-transparency`:
 
-- บันทึก metadata หลังผู้ใช้กด Download เท่านั้น และเก็บล่าสุดไม่เกิน 20 รายการใน browser นี้
-- ไม่เก็บยอดเงิน ผู้จัดทำ filename/path หรือ internal ID และไม่อยู่ใน Cloud Sync payload
-- มี empty/error state และล้างประวัติได้หลังยืนยัน โดย storage failure ไม่ขวางการดาวน์โหลด
+- แสดงสถานะกฎภาษีและแหล่งอ้างอิงที่ผ่าน local resolver แบบ read-only
+- ไม่มี admin/editor, API, Cloud Sync หรือการเปลี่ยนอัตรา/สูตรภาษี
+- ตัด identifiers ภายในออกจาก public view และคง fail-closed policy เดิม
 - ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase4DLocalExportHistory.md`](./Phase4DLocalExportHistory.md)
+  [`Phase5ATaxRuleTransparency.md`](./Phase5ATaxRuleTransparency.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -129,8 +133,9 @@ Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (
 
 Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 ส่วน Phase 3A Account Dashboard
 และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ Phase 4A Report
-Periods ปิดแล้วผ่าน PR #33, Phase 4B Report Templates ปิดแล้วผ่าน PR #34 และ Phase 4C
-Report Document Identity ปิดแล้วผ่าน PR #35 ขณะนี้ Phase 4D Local Export History กำลังดำเนินการ
+Periods ปิดแล้วผ่าน PR #33, Phase 4B Report Templates ปิดแล้วผ่าน PR #34, Phase 4C
+Report Document Identity ปิดแล้วผ่าน PR #35 และ Phase 4D Local Export History ปิดแล้วผ่าน PR #36
+ขณะนี้ Phase 5A Tax Rule Transparency & Governance Readiness กำลังดำเนินการ
 ส่วน account
 deletion/retention, audit/consent governance, export history/quota, document/download audit,
 admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership

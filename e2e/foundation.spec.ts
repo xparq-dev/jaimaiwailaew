@@ -56,6 +56,42 @@ test("renders the responsive foundation shell and legal access", async ({
   }
 });
 
+test("publishes a read-only tax rule source registry without private identifiers", async ({
+  page,
+}) => {
+  const response = await page.goto("/tax-rules");
+  expect(response).not.toBeNull();
+
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "ตรวจแหล่งอ้างอิงก่อนใช้ประมาณการ",
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("กฎภาษีปี 2568")).toBeVisible();
+  await expect(page.getByText("กฎภาษีปี 2569")).toBeVisible();
+  await expect(
+    page.getByText("พร้อมใช้สำหรับการประมาณการ").first(),
+  ).toBeVisible();
+
+  const sourceLink = page
+    .getByRole("link", { name: "เปิดแหล่งอ้างอิง" })
+    .first();
+  await expect(sourceLink).toHaveAttribute("target", "_blank");
+  await expect(sourceLink).toHaveAttribute("rel", /noopener/);
+  await expect(sourceLink).toHaveAttribute("rel", /noreferrer/);
+  await expect(page.locator("body")).not.toContainText(
+    /ruleSetId|sourceId|lastReviewedBy|workspaceId/iu,
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
+});
+
 test("uses the signed-in provider avatar in the desktop brand", async ({
   page,
 }, testInfo) => {

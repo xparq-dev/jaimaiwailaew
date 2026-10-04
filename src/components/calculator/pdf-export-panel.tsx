@@ -4,6 +4,13 @@ import { Download, FileSearch, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import type { CalculatorWorkspace } from "@/calculator/types";
+import {
+  clearLocalExportHistory,
+  readLocalExportHistory,
+  recordLocalExportHistory,
+  type LocalExportHistoryCandidate,
+  type LocalExportHistoryRecord,
+} from "@/export/local-export-history";
 import type { LocalPdfArtifact } from "@/pdf/download-local-pdf";
 import { buildLocalPdfReportModel } from "@/pdf/local-pdf-report";
 import {
@@ -17,6 +24,7 @@ import {
 } from "@/report/report-template";
 
 import { Button } from "../ui/button";
+import { LocalExportHistoryPanel } from "./local-export-history-panel";
 import { TabularExportButtons } from "./tabular-export-buttons";
 
 const DEFAULT_REPORT_TITLE = "รายงานสรุปข้อมูลรายได้และค่าใช้จ่าย";
@@ -26,7 +34,9 @@ type ExportStatus =
 
 interface PdfPreview {
   readonly artifact: LocalPdfArtifact;
+  readonly periodLabel: string;
   readonly reportReference: string;
+  readonly templateLabel: string;
   readonly url: string;
 }
 
@@ -44,6 +54,11 @@ export function PdfExportPanel({
     useState<ReportTemplateId>("full");
   const [status, setStatus] = useState<ExportStatus>("idle");
   const [preview, setPreview] = useState<PdfPreview | null>(null);
+  const [exportHistory, setExportHistory] = useState<
+    readonly LocalExportHistoryRecord[]
+  >([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [historyStorageError, setHistoryStorageError] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const periodOptions = useMemo(
     () => buildReportPeriodOptions(workspace),
@@ -57,6 +72,23 @@ export function PdfExportPanel({
     [selectedPeriod, workspace],
   );
   const selectedTemplate = getReportTemplate(selectedTemplateId);
+
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) {
+        return;
+      }
+      const result = readLocalExportHistory(window.localStorage);
+      setExportHistory(result.records);
+      setHistoryStorageError(!result.persisted);
+      setHistoryLoaded(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!preview) {
@@ -88,7 +120,9 @@ export function PdfExportPanel({
       const artifact = await createLocalPdfArtifact(report);
       setPreview({
         artifact,
+        periodLabel: report.periodLabel,
         reportReference: report.reportReference,
+        templateLabel: report.templateLabel,
         url: URL.createObjectURL(artifact.blob),
       });
       setStatus("preview-ready");
@@ -106,6 +140,12 @@ export function PdfExportPanel({
       const { downloadLocalPdfArtifact } =
         await import("@/pdf/download-local-pdf");
       downloadLocalPdfArtifact(preview.artifact);
+      recordDownload({
+        format: "pdf",
+        reportReference: preview.reportReference,
+        periodLabel: preview.periodLabel,
+        templateLabel: preview.templateLabel,
+      });
       setStatus("downloaded");
     } catch {
       setStatus("error");
@@ -114,6 +154,24 @@ export function PdfExportPanel({
 
   function closePreview() {
     dialogRef.current?.close();
+  }
+
+  function recordDownload(candidate: LocalExportHistoryCandidate) {
+    const result = recordLocalExportHistory(
+      window.localStorage,
+      candidate,
+      new Date(),
+    );
+    setExportHistory(result.records);
+    setHistoryStorageError(!result.persisted);
+  }
+
+  function clearExportHistory() {
+    const cleared = clearLocalExportHistory(window.localStorage);
+    if (cleared) {
+      setExportHistory([]);
+    }
+    setHistoryStorageError(!cleared);
   }
 
   return (
@@ -215,6 +273,7 @@ export function PdfExportPanel({
           </Button>
           <TabularExportButtons
             includeTaxEstimate={selectedPeriod.isWorkspacePeriod}
+            onDownload={recordDownload}
             reportTemplate={selectedTemplate}
             workspace={reportWorkspace}
           />
@@ -240,6 +299,13 @@ export function PdfExportPanel({
         ที่มีไฟล์ CSV แยกตามประเภท ข้อมูลทั้งหมดสร้างจาก Local Storage
         ภายในอุปกรณ์นี้โดยไม่ส่งออกเครือข่าย
       </p>
+
+      <LocalExportHistoryPanel
+        loaded={historyLoaded}
+        onClear={clearExportHistory}
+        records={exportHistory}
+        storageError={historyStorageError}
+      />
 
       <dialog
         aria-labelledby="pdf-preview-title"

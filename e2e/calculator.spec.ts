@@ -19,6 +19,8 @@ test.describe("Calculator UX (Local-only)", () => {
   test("complete flow: wizard -> entries CRUD with frequencies -> summary -> persistence -> clear data", async ({
     page,
   }, testInfo) => {
+    test.setTimeout(90_000);
+
     // Track network requests to verify NO financial data is transmitted
     const requestedUrls: string[] = [];
     const contentSecurityPolicyErrors: string[] = [];
@@ -801,6 +803,24 @@ test.describe("Calculator UX (Local-only)", () => {
       .click();
     await expect(csvPreviewDialog).toBeHidden();
 
+    const exportHistory = pdfPanel.locator("details").filter({
+      hasText: "ประวัติการดาวน์โหลดในอุปกรณ์นี้",
+    });
+    await exportHistory.locator("summary").click();
+    await expect(exportHistory.getByText("Excel")).toBeVisible();
+    await expect(exportHistory.getByText("CSV")).toBeVisible();
+    await expect(
+      exportHistory.getByText(/JMWL-\d{8}-\d{6}-\d{3}/u).first(),
+    ).toBeVisible();
+    await expect(exportHistory).not.toContainText(/จำนวนเงิน|ยอดรวม/u);
+    const storedExportHistory = await page.evaluate(() =>
+      localStorage.getItem("jaimaiwailaew:export-history:v1"),
+    );
+    expect(storedExportHistory).not.toMatch(
+      /amount|workspace|entry|user|fileName/iu,
+    );
+    await exportHistory.locator("summary").click();
+
     const requestCountBeforeDarkPdf = requestedUrls.length;
     await pdfPanel.getByRole("button", { name: "ดูตัวอย่าง PDF" }).click();
     await expect(pdfPreviewDialog).toBeVisible();
@@ -871,5 +891,10 @@ test.describe("Calculator UX (Local-only)", () => {
     // After clearing, reload and check that workspace is cleared
     await page.goto("/calculator");
     await expect(page.getByText("ยังไม่ได้เริ่มจัดข้อมูล")).toBeVisible();
+    expect(
+      await page.evaluate(() =>
+        localStorage.getItem("jaimaiwailaew:export-history:v1"),
+      ),
+    ).toBeNull();
   });
 });

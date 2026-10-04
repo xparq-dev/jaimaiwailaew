@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { decimalStringToSatang } from "@/tax/money";
+import { LOCAL_EXPORT_HISTORY_STORAGE_KEY } from "@/export/local-export-history";
 
 import {
   allowanceDraftEntryFormSchema,
@@ -347,6 +348,7 @@ export const useCalculatorStore = create<CalculatorStoreState>()(
           if (typeof localStorage !== "undefined") {
             localStorage.removeItem(CALCULATOR_STORAGE_KEY_V1);
             localStorage.removeItem(CALCULATOR_STORAGE_KEY_V2);
+            localStorage.removeItem(LOCAL_EXPORT_HISTORY_STORAGE_KEY);
           }
         } catch {
           // ignore

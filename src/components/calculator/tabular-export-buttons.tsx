@@ -10,6 +10,7 @@ import {
   downloadLocalArtifact,
   type LocalDownloadArtifact,
 } from "@/export/download-local-artifact";
+import type { LocalExportHistoryCandidate } from "@/export/local-export-history";
 import {
   buildLocalTabularReportModel,
   type LocalTabularReportModel,
@@ -160,10 +161,13 @@ export function TabularExportButtons({
   workspace,
   includeTaxEstimate = true,
   reportTemplate = getReportTemplate("full"),
+  onDownload,
 }: {
   readonly workspace: CalculatorWorkspace;
   readonly includeTaxEstimate?: boolean | undefined;
   readonly reportTemplate?: ReportTemplateOption | undefined;
+  readonly onDownload?:
+    ((candidate: LocalExportHistoryCandidate) => void) | undefined;
 }) {
   const [preview, setPreview] = useState<PreviewState | null>(null);
   const [activeSectionId, setActiveSectionId] = useState("summary");
@@ -217,6 +221,12 @@ export function TabularExportButtons({
 
     try {
       downloadLocalArtifact(preview.artifact);
+      onDownload?.({
+        format: preview.format === "excel" ? "xlsx" : "csv",
+        reportReference: preview.report.reportReference,
+        periodLabel: preview.report.periodLabel,
+        templateLabel: preview.report.templateLabel,
+      });
       setDownloaded(true);
     } catch {
       setError(true);

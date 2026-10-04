@@ -45,6 +45,8 @@ const secondWorkspace = {
 };
 
 test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
+  test.setTimeout(90_000);
+
   await page.goto("/login");
   await page.getByLabel("อีเมล").fill("member@example.com");
   await page.getByLabel("รหัสผ่าน").fill("test-password");

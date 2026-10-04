@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -46,6 +46,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  localStorage.clear();
   createLocalPdfArtifactMock.mockReset();
   downloadLocalPdfArtifactMock.mockReset();
   createObjectUrlMock.mockClear();
@@ -99,6 +100,7 @@ describe("PdfExportPanel", () => {
     });
     expect(downloadLocalPdfArtifactMock).not.toHaveBeenCalled();
     expect(createObjectUrlMock).toHaveBeenCalledWith(artifact.blob);
+    expect(storageSpy).not.toHaveBeenCalled();
 
     const previewDialog = await screen.findByRole("dialog", {
       name: "ตัวอย่างรายงาน PDF",
@@ -113,6 +115,10 @@ describe("PdfExportPanel", () => {
 
     await user.click(screen.getByRole("button", { name: "ดาวน์โหลด PDF" }));
     expect(downloadLocalPdfArtifactMock).toHaveBeenCalledWith(artifact);
+    expect(storageSpy).toHaveBeenCalledWith(
+      "jaimaiwailaew:export-history:v1",
+      expect.stringContaining('"format":"pdf"'),
+    );
     expect(
       screen.getAllByText("ดาวน์โหลดรายงานเรียบร้อยแล้ว"),
     ).not.toHaveLength(0);
@@ -123,8 +129,14 @@ describe("PdfExportPanel", () => {
         "blob:local-pdf-preview",
       ),
     );
+    const history = screen
+      .getByText("ประวัติการดาวน์โหลดในอุปกรณ์นี้")
+      .closest("details")!;
+    await user.click(
+      within(history).getByText("ประวัติการดาวน์โหลดในอุปกรณ์นี้"),
+    );
+    expect(within(history).getByText(/JMWL-\d{8}-\d{6}-\d{3}/u)).toBeVisible();
     expect(fetchSpy).not.toHaveBeenCalled();
-    expect(storageSpy).not.toHaveBeenCalled();
     expect(window.location.href).toBe(initialUrl);
   }, 15_000);
 

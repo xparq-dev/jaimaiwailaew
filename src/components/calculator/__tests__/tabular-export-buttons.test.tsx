@@ -63,9 +63,12 @@ describe("TabularExportButtons", () => {
     createLocalCsvBundleArtifactMock.mockReturnValue(csvArtifact);
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     const storageSpy = vi.spyOn(Storage.prototype, "setItem");
+    const onDownload = vi.fn();
     const initialUrl = window.location.href;
 
-    render(<TabularExportButtons workspace={workspace} />);
+    render(
+      <TabularExportButtons onDownload={onDownload} workspace={workspace} />,
+    );
 
     expect(screen.getByRole("button", { name: "ส่งออก Excel" })).toBeVisible();
     expect(screen.getByRole("button", { name: "ส่งออก CSV" })).toBeVisible();
@@ -95,6 +98,12 @@ describe("TabularExportButtons", () => {
     );
     await user.click(screen.getByRole("button", { name: "ดาวน์โหลด Excel" }));
     expect(downloadLocalArtifactMock).toHaveBeenCalledWith(excelArtifact);
+    expect(onDownload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        format: "xlsx",
+        reportReference: expect.stringMatching(/^JMWL-\d{8}-\d{6}-\d{3}$/u),
+      }),
+    );
     expect(screen.getByText("ดาวน์โหลดไฟล์ Excel เรียบร้อยแล้ว")).toBeVisible();
     await user.click(screen.getByRole("button", { name: /^ปิดตัวอย่าง$/u }));
 
@@ -112,6 +121,9 @@ describe("TabularExportButtons", () => {
     );
     await user.click(screen.getByRole("button", { name: "ดาวน์โหลด CSV" }));
     expect(downloadLocalArtifactMock).toHaveBeenCalledWith(csvArtifact);
+    expect(onDownload).toHaveBeenLastCalledWith(
+      expect.objectContaining({ format: "csv" }),
+    );
     expect(screen.getByText("ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว")).toBeVisible();
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(storageSpy).not.toHaveBeenCalled();

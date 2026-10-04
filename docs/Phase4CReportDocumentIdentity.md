@@ -1,6 +1,6 @@
 # Phase 4C — Report Document Identity
 
-สถานะ: กำลังดำเนินการบน branch `feat/phase-4c-report-document-identity`
+สถานะ: ปิดแล้วผ่าน PR #35
 
 ## เป้าหมาย
 

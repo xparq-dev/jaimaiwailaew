@@ -6,6 +6,7 @@ import {
   CALCULATOR_STORAGE_KEY_V2,
   persistedCalculatorStateSchema,
 } from "@/calculator/schemas";
+import { LOCAL_EXPORT_HISTORY_STORAGE_KEY } from "@/export/local-export-history";
 import { useCalculatorStore } from "@/calculator/store";
 import { getDefaultWorkspaceInput } from "@/calculator/workspace";
 import { migrateLocalStorageV1ToV2 } from "@/calculator/migration";
@@ -283,10 +284,12 @@ describe("Calculator Zustand Local Store and Migration Safety", () => {
   it("clears local data and wipes both v1 and v2 keys on user request", () => {
     localStorage.setItem(CALCULATOR_STORAGE_KEY_V1, JSON.stringify({ old: 1 }));
     localStorage.setItem(CALCULATOR_STORAGE_KEY_V2, JSON.stringify({ new: 2 }));
+    localStorage.setItem(LOCAL_EXPORT_HISTORY_STORAGE_KEY, "history");
 
     useCalculatorStore.getState().clearLocalData();
     expect(localStorage.getItem(CALCULATOR_STORAGE_KEY_V1)).toBeNull();
     expect(localStorage.getItem(CALCULATOR_STORAGE_KEY_V2)).toBeNull();
+    expect(localStorage.getItem(LOCAL_EXPORT_HISTORY_STORAGE_KEY)).toBeNull();
     expect(useCalculatorStore.getState().workspace).toBeNull();
     expect(useCalculatorStore.getState().lastSavedAt).toBeNull();
   });

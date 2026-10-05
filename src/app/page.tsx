@@ -1,177 +1,172 @@
 import {
   ArrowRight,
+  BookOpenText,
   Calculator,
   Cloud,
-  FileDown,
+  FileCheck2,
   HardDrive,
-  ListChecks,
+  ListPlus,
   ShieldCheck,
-  WalletCards,
 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
-const steps = [
+const primaryTasks = [
   {
-    icon: WalletCards,
-    title: "สร้างพื้นที่ข้อมูล",
-    description: "เลือกประเภทผู้ใช้และปีภาษีที่ต้องการจัดการ",
+    href: "/calculator/income",
+    icon: ListPlus,
+    title: "เพิ่มรายรับหรือรายจ่าย",
+    description: "บันทึกรายการใหม่ แล้วกลับมาตรวจยอดรวมได้ทันที",
   },
   {
-    icon: ListChecks,
-    title: "บันทึกรายการสำคัญ",
-    description: "รวมรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย และค่าลดหย่อน",
-  },
-  {
+    href: "/calculator",
     icon: Calculator,
-    title: "ตรวจภาพรวม",
-    description: "ดูยอดสรุปและประมาณการก่อนส่งออกเอกสาร",
+    title: "ดูภาพรวมข้อมูล",
+    description: "ตรวจรายรับ รายจ่าย ค่าลดหย่อน และช่วงเวลาที่ใช้งาน",
+  },
+  {
+    href: "/calculator/summary",
+    icon: FileCheck2,
+    title: "ตรวจสรุปและส่งออก",
+    description: "ทบทวนตัวเลขก่อนดูตัวอย่าง PDF, Excel หรือ CSV",
   },
 ] as const;
 
-const capabilities = [
-  {
-    icon: ListChecks,
-    title: "ข้อมูลครบในที่เดียว",
-    description: "แยกรายรับ รายจ่าย แหล่งรายได้ และค่าลดหย่อนให้ค้นและตรวจง่าย",
-  },
-  {
-    icon: Calculator,
-    title: "เห็นตัวเลขก่อนตัดสินใจ",
-    description: "สรุปยอดคงเหลือ ประกันสังคม และประมาณการภาษีจากข้อมูลที่กรอก",
-  },
-  {
-    icon: FileDown,
-    title: "ตรวจตัวอย่างก่อนดาวน์โหลด",
-    description:
-      "เปิดดูรายงานก่อนส่งออกเป็น PDF, Excel หรือ CSV ได้จากอุปกรณ์ของคุณ",
-  },
+const workflow = [
+  ["01", "บันทึก", "เก็บรายการตามวันที่หรือเดือน"],
+  ["02", "ตรวจสอบ", "ดูยอดรวมและรายการที่ยังไม่ครบ"],
+  ["03", "เตรียมเอกสาร", "ตรวจตัวอย่างก่อนดาวน์โหลด"],
 ] as const;
 
 export default function HomePage() {
   return (
-    <div className="space-y-8 sm:space-y-10">
-      <section className="border-border bg-card relative overflow-hidden rounded-3xl border shadow-sm">
-        <div
-          aria-hidden="true"
-          className="bg-secondary absolute inset-x-0 top-0 h-1"
-        />
-        <div className="grid lg:grid-cols-[minmax(0,1.25fr)_minmax(19rem,0.75fr)]">
-          <div className="p-6 sm:p-10 lg:p-12">
-            <p className="text-success-strong bg-success-soft inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold">
-              <ShieldCheck aria-hidden="true" className="size-4" />
-              เริ่มใช้งานแบบ Local-first
-            </p>
-            <h1 className="text-foreground mt-5 max-w-3xl text-3xl leading-tight font-bold tracking-tight text-balance sm:text-5xl sm:leading-tight">
-              จัดข้อมูลการเงินให้เป็นเรื่องที่รับมือได้
-            </h1>
-            <p className="text-muted-foreground mt-5 max-w-2xl text-base leading-7 text-pretty sm:text-lg sm:leading-8">
-              บันทึกรายรับ รายจ่าย และข้อมูลลดหย่อน แล้วดูภาพรวมภาษีในที่เดียว
-              เพื่อให้คุณตรวจข้อมูลและเตรียมเอกสารได้อย่างมั่นใจขึ้น
-            </p>
+    <div className="space-y-10 lg:space-y-14">
+      <section className="grid gap-8 pt-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(21rem,0.75fr)] lg:items-start lg:gap-14 lg:pt-8">
+        <div className="max-w-3xl">
+          <p className="text-success-strong inline-flex items-center gap-2 text-sm font-semibold">
+            <ShieldCheck aria-hidden="true" className="size-4" />
+            ข้อมูลเริ่มต้นอยู่ในอุปกรณ์ของคุณ
+          </p>
+          <h1 className="text-foreground mt-4 text-4xl leading-[1.15] font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+            จัดข้อมูลการเงินให้เป็นเรื่องที่รับมือได้
+          </h1>
+          <p className="text-muted-foreground mt-5 max-w-2xl text-base leading-7 text-pretty sm:text-lg sm:leading-8">
+            เริ่มจากรายการที่มี แล้วค่อยตรวจภาพรวมภาษีในจังหวะของคุณ
+            ไม่ต้องกรอกทุกอย่างให้เสร็จในครั้งเดียว
+          </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Button asChild className="w-full sm:w-auto">
-                <Link href="/calculator">
-                  เปิดพื้นที่ข้อมูลของฉัน
-                  <ArrowRight aria-hidden="true" className="size-4" />
-                </Link>
-              </Button>
-              <Button asChild className="w-full sm:w-auto" variant="secondary">
-                <Link href="/start">ตั้งค่าครั้งแรก</Link>
-              </Button>
-            </div>
-
-            <ul className="text-muted-foreground mt-7 flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:gap-x-5">
-              <li className="flex items-center gap-2">
-                <HardDrive
-                  aria-hidden="true"
-                  className="text-secondary size-4"
-                />
-                ใช้ได้โดยไม่ต้องสมัครสมาชิก
-              </li>
-              <li className="flex items-center gap-2">
-                <Cloud aria-hidden="true" className="text-secondary size-4" />
-                Cloud Sync เปิดเมื่อคุณเลือกเท่านั้น
-              </li>
-            </ul>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/calculator">
+                เปิดพื้นที่ข้อมูลของฉัน
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild className="w-full sm:w-auto" variant="secondary">
+              <Link href="/start">ตั้งค่าครั้งแรก</Link>
+            </Button>
           </div>
 
-          <aside className="border-border bg-primary text-primary-foreground border-t p-6 sm:p-8 lg:border-t-0 lg:border-l lg:p-10">
-            <p className="text-sm font-semibold tracking-[0.12em] uppercase opacity-70">
-              เริ่มตรงนี้
-            </p>
-            <h2 className="mt-2 text-2xl font-bold">
-              จากข้อมูลกระจัดกระจาย สู่ภาพรวมที่ตรวจได้
-            </h2>
-            <ol className="mt-7 space-y-6">
-              {steps.map(({ icon: Icon, title, description }, index) => (
-                <li className="flex gap-4" key={title}>
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/10">
-                    <Icon aria-hidden="true" className="size-5" />
-                  </span>
-                  <div>
-                    <p className="font-semibold">
-                      <span className="mr-2 opacity-60">{index + 1}.</span>
-                      {title}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 opacity-75">
-                      {description}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </aside>
+          <div className="text-muted-foreground mt-7 flex flex-col gap-2 text-sm sm:flex-row sm:gap-5">
+            <span className="flex items-center gap-2">
+              <HardDrive aria-hidden="true" className="text-secondary size-4" />
+              ใช้งานแบบ Local-first
+            </span>
+            <span className="flex items-center gap-2">
+              <Cloud aria-hidden="true" className="text-secondary size-4" />
+              ซิงก์เมื่อคุณเลือกเท่านั้น
+            </span>
+          </div>
         </div>
+
+        <aside
+          aria-labelledby="next-task-heading"
+          className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm"
+        >
+          <div className="border-border border-b px-5 py-4 sm:px-6">
+            <p className="text-muted-foreground text-xs font-semibold tracking-[0.12em] uppercase">
+              ทำอะไรต่อดี
+            </p>
+            <h2 className="mt-1 text-xl font-bold" id="next-task-heading">
+              เลือกงานที่ต้องการทำ
+            </h2>
+          </div>
+          <div className="divide-border divide-y">
+            {primaryTasks.map(({ href, icon: Icon, title, description }) => (
+              <Link
+                className="focus-visible:ring-focus/35 group hover:bg-muted/60 flex items-start gap-4 px-5 py-4 transition-colors focus-visible:ring-3 focus-visible:outline-none focus-visible:ring-inset sm:px-6"
+                href={href}
+                key={href}
+              >
+                <span className="bg-muted text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+                  <Icon aria-hidden="true" className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{title}</span>
+                  <span className="text-muted-foreground mt-1 block text-sm leading-5">
+                    {description}
+                  </span>
+                </span>
+                <ArrowRight
+                  aria-hidden="true"
+                  className="text-muted-foreground mt-2 size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+                />
+              </Link>
+            ))}
+          </div>
+        </aside>
       </section>
 
-      <section aria-labelledby="capabilities-heading">
-        <div className="max-w-2xl">
-          <p className="text-secondary text-sm font-semibold">
-            ทำงานตามข้อมูลจริงของคุณ
-          </p>
-          <h2
-            className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl"
-            id="capabilities-heading"
+      <section aria-labelledby="workflow-heading">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-secondary text-sm font-semibold">
+              ลำดับที่ชัดเจน
+            </p>
+            <h2 className="mt-1 text-2xl font-bold" id="workflow-heading">
+              จากรายการแรกถึงเอกสารพร้อมตรวจ
+            </h2>
+          </div>
+          <Link
+            className="text-primary focus-visible:ring-focus/35 inline-flex min-h-11 items-center gap-2 self-start rounded-lg text-sm font-semibold hover:underline focus-visible:ring-3 focus-visible:outline-none"
+            href="/learn"
           >
-            จากการบันทึก ไปจนถึงเอกสารที่พร้อมตรวจ
-          </h2>
+            <BookOpenText aria-hidden="true" className="size-4" />
+            อ่านวิธีเตรียมข้อมูล
+          </Link>
         </div>
-        <div className="border-border bg-card mt-6 grid overflow-hidden rounded-2xl border shadow-sm md:grid-cols-3 md:divide-x">
-          {capabilities.map(({ icon: Icon, title, description }, index) => (
-            <article
-              className={`p-5 sm:p-6 ${index > 0 ? "border-border border-t md:border-t-0" : ""}`}
-              key={title}
+
+        <ol className="border-border mt-5 grid border-y sm:grid-cols-3 sm:divide-x">
+          {workflow.map(([number, title, description], index) => (
+            <li
+              className={`py-5 sm:px-6 ${index > 0 ? "border-border border-t sm:border-t-0" : "sm:pl-0"}`}
+              key={number}
             >
-              <span className="bg-muted text-primary grid size-10 place-items-center rounded-xl">
-                <Icon aria-hidden="true" className="size-5" />
+              <span className="text-secondary text-xs font-bold tracking-[0.14em]">
+                {number}
               </span>
-              <h3 className="mt-4 font-semibold">{title}</h3>
-              <p className="text-muted-foreground mt-2 text-sm leading-6">
+              <h3 className="mt-2 font-bold">{title}</h3>
+              <p className="text-muted-foreground mt-1 text-sm leading-6">
                 {description}
               </p>
-            </article>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
-      <section className="border-border bg-card grid gap-6 rounded-2xl border p-5 shadow-sm sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <div className="flex items-start gap-4">
-          <span className="bg-success-soft text-success-strong grid size-11 shrink-0 place-items-center rounded-xl">
-            <HardDrive aria-hidden="true" className="size-5" />
-          </span>
-          <div>
-            <h2 className="text-lg font-bold">
-              ข้อมูลเริ่มต้นอยู่ในอุปกรณ์ของคุณ
-            </h2>
-            <p className="text-muted-foreground mt-2 max-w-3xl text-sm leading-6">
-              เครื่องคำนวณทำงานแบบ Local-first
-              และใช้งานออฟไลน์ได้หลังเตรียมระบบครั้งแรก หากต้องการใช้หลายอุปกรณ์
-              คุณสามารถเข้าสู่ระบบและเปิด Cloud Sync ด้วยตนเองภายหลัง
-            </p>
-          </div>
+      <section className="bg-primary text-primary-foreground grid gap-5 rounded-2xl px-5 py-6 sm:px-7 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
+        <span className="grid size-11 place-items-center rounded-xl bg-white/10">
+          <HardDrive aria-hidden="true" className="size-5" />
+        </span>
+        <div>
+          <h2 className="text-lg font-bold">
+            คุณเป็นผู้เลือกว่าจะเก็บข้อมูลไว้ที่ไหน
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 opacity-75">
+            ใช้งานในอุปกรณ์ได้โดยไม่ต้องสมัครสมาชิก หากต้องการใช้หลายอุปกรณ์
+            จึงค่อยเข้าสู่ระบบและเปิด Cloud Sync ด้วยตนเอง
+          </p>
         </div>
         <Button asChild className="w-full lg:w-auto" variant="secondary">
           <Link href="/privacy">ดูวิธีดูแลข้อมูล</Link>

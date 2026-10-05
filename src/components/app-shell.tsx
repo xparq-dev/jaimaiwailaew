@@ -2,10 +2,11 @@
 
 import {
   BookOpenText,
-  Calculator,
-  Compass,
+  ChartNoAxesCombined,
+  CircleDollarSign,
+  ClipboardList,
   Home,
-  LockKeyhole,
+  ReceiptText,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -23,19 +24,41 @@ import { cn } from "@/lib/utils";
 interface NavigationItem {
   href: string;
   icon: LucideIcon;
-  labelKey: "home" | "start" | "calculator" | "learn" | "privacy";
+  label: string;
+  exact?: boolean;
 }
 
 const navigation: NavigationItem[] = [
-  { href: "/", icon: Home, labelKey: "home" },
-  { href: "/start", icon: Compass, labelKey: "start" },
-  { href: "/calculator", icon: Calculator, labelKey: "calculator" },
-  { href: "/learn", icon: BookOpenText, labelKey: "learn" },
-  { href: "/privacy", icon: LockKeyhole, labelKey: "privacy" },
+  { href: "/", icon: Home, label: "หน้าหลัก", exact: true },
+  {
+    href: "/calculator",
+    icon: ChartNoAxesCombined,
+    label: "ภาพรวมข้อมูล",
+    exact: true,
+  },
+  { href: "/calculator/income", icon: CircleDollarSign, label: "รายรับ" },
+  { href: "/calculator/expenses", icon: ReceiptText, label: "รายจ่าย" },
+  { href: "/calculator/summary", icon: ClipboardList, label: "สรุปและส่งออก" },
+  { href: "/learn", icon: BookOpenText, label: "เรียนรู้" },
 ];
 
-function isCurrentRoute(pathname: string, href: string) {
-  return href === "/" ? pathname === href : pathname.startsWith(href);
+const mobileNavigation: NavigationItem[] = [
+  { href: "/", icon: Home, label: "หน้าหลัก", exact: true },
+  { href: "/calculator", icon: ChartNoAxesCombined, label: "บันทึก" },
+  { href: "/calculator/summary", icon: ClipboardList, label: "สรุป" },
+  { href: "/learn", icon: BookOpenText, label: "เรียนรู้" },
+];
+
+function isCurrentRoute(pathname: string, item: NavigationItem) {
+  return item.exact ? pathname === item.href : pathname.startsWith(item.href);
+}
+
+function getCurrentPageLabel(pathname: string) {
+  const current = [...navigation]
+    .sort((a, b) => b.href.length - a.href.length)
+    .find((item) => isCurrentRoute(pathname, item));
+
+  return current?.label ?? "พื้นที่จัดการข้อมูล";
 }
 
 function Brand({ compact = false }: { compact?: boolean }) {
@@ -88,13 +111,17 @@ function DesktopSidebar() {
   const { dictionary, locale } = useLocale();
 
   return (
-    <aside className="border-border bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-72 border-r lg:flex lg:flex-col">
-      <div className="border-border border-b p-6">
+    <aside className="border-border bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 border-r lg:flex lg:flex-col">
+      <div className="border-border border-b px-5 py-5">
         <Brand />
       </div>
-      <nav aria-label="เมนูหลัก" className="flex-1 space-y-1 p-4">
-        {navigation.map(({ href, icon: Icon, labelKey }) => {
-          const current = isCurrentRoute(pathname, href);
+      <nav aria-label="เมนูหลัก" className="flex-1 space-y-1 px-3 py-5">
+        <p className="text-muted-foreground px-3 pb-2 text-[0.6875rem] font-semibold tracking-[0.14em] uppercase">
+          งานของฉัน
+        </p>
+        {navigation.map((item) => {
+          const { href, icon: Icon, label } = item;
+          const current = isCurrentRoute(pathname, item);
           return (
             <Link
               aria-current={current ? "page" : undefined}
@@ -108,7 +135,7 @@ function DesktopSidebar() {
               key={href}
             >
               <Icon aria-hidden="true" className="size-5" />
-              <span lang={locale}>{dictionary.navigation[labelKey]}</span>
+              <span>{label}</span>
             </Link>
           );
         })}
@@ -125,15 +152,19 @@ function DesktopSidebar() {
 
 function MobileNavigation() {
   const pathname = usePathname();
-  const { dictionary, locale } = useLocale();
 
   return (
     <nav
       aria-label="เมนูหลักบนมือถือ"
-      className="border-border bg-card/95 fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t px-[max(0.25rem,env(safe-area-inset-left))] pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="border-border bg-card/95 fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t px-[max(0.5rem,env(safe-area-inset-left))] pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
     >
-      {navigation.map(({ href, icon: Icon, labelKey }) => {
-        const current = isCurrentRoute(pathname, href);
+      {mobileNavigation.map((item) => {
+        const { href, icon: Icon, label } = item;
+        const current =
+          href === "/calculator"
+            ? pathname.startsWith(href) &&
+              !pathname.startsWith("/calculator/summary")
+            : isCurrentRoute(pathname, item);
         return (
           <Link
             aria-current={current ? "page" : undefined}
@@ -145,9 +176,7 @@ function MobileNavigation() {
             key={href}
           >
             <Icon aria-hidden="true" className="size-5" />
-            <span className="max-w-full truncate" lang={locale}>
-              {dictionary.navigation[labelKey]}
-            </span>
+            <span className="max-w-full truncate">{label}</span>
           </Link>
         );
       })}
@@ -189,6 +218,7 @@ function Footer() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { dictionary, locale } = useLocale();
+  const pathname = usePathname();
 
   return (
     <div className="bg-background min-h-dvh">
@@ -200,7 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {dictionary.common.skipToContent}
       </a>
       <DesktopSidebar />
-      <div className="flex min-h-dvh min-w-0 flex-col lg:pl-72">
+      <div className="flex min-h-dvh min-w-0 flex-col lg:pl-64">
         <header
           className="border-border bg-background/90 sticky top-0 z-20 border-b px-3 py-2.5 backdrop-blur sm:px-6 sm:py-3"
           data-testid="app-header"
@@ -211,10 +241,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="hidden min-w-0 lg:block">
               <p
-                className="text-muted-foreground text-xs font-semibold tracking-[0.16em] uppercase"
+                className="text-muted-foreground text-sm font-medium"
                 lang={locale}
               >
-                {dictionary.common.foundation}
+                {getCurrentPageLabel(pathname)}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
@@ -228,7 +258,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           className="w-full flex-1 px-4 py-6 pb-24 sm:px-6 sm:py-8 lg:pb-8"
           id="main-content"
         >
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+          <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
         <Footer />
       </div>

@@ -3,7 +3,7 @@
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 
-import { formatThaiBaht } from "@/tax/money";
+import { formatThaiBaht, toMoneySatang } from "@/tax/money";
 import {
   buildIncomeMonthGroups,
   buildIncomeMonthGroupsForPeriod,
@@ -117,11 +117,19 @@ export function IncomeSectionPage() {
     return null;
   }
 
+  const inPeriodTotalSatang = toMoneySatang(
+    monthGroups.reduce((total, group) => total + group.totalSatang, 0),
+  );
+  const inPeriodEntryCount = monthGroups.reduce(
+    (total, group) => total + group.entryCount,
+    0,
+  );
+
   return (
     <CalculatorLayout
       actions={
         <Button
-          className="lg:hidden"
+          aria-label="เพิ่มรายการรายรับ"
           onClick={() => {
             setEditingId(null);
             setDialogOpen(true);
@@ -132,39 +140,57 @@ export function IncomeSectionPage() {
           เพิ่มรายการ
         </Button>
       }
-      description="บันทึกรายรับในอุปกรณ์เพื่อสรุปยอดรวมเชิงคณิตศาสตร์เท่านั้น"
+      description="เพิ่มรายการตามวันที่หรือเดือน แล้วตรวจยอดรวมในช่วงที่เลือก"
       title="รายรับ"
     >
       <p aria-live="polite" className="sr-only">
         {announcement}
       </p>
+      <section
+        aria-label="ยอดรายรับในช่วงที่เลือก"
+        className="border-border bg-card grid overflow-hidden rounded-2xl border shadow-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+      >
+        <div className="px-5 py-5 sm:px-6">
+          <p className="text-muted-foreground text-sm">รายรับในช่วงที่เลือก</p>
+          <p className="financial-figures text-primary mt-1 text-3xl font-bold tracking-tight">
+            {formatThaiBaht(inPeriodTotalSatang)}
+          </p>
+        </div>
+        <div className="border-border bg-muted/35 border-t px-5 py-4 sm:min-w-44 sm:border-t-0 sm:border-l sm:px-6">
+          <p className="text-muted-foreground text-xs font-medium">
+            จำนวนรายการ
+          </p>
+          <p className="mt-1 text-lg font-bold tabular-nums">
+            {inPeriodEntryCount} รายการ
+          </p>
+        </div>
+      </section>
+
       <p
         id="income-section-disclaimer"
-        className="text-muted-foreground text-sm leading-6"
+        className="text-muted-foreground border-border border-l-2 pl-3 text-sm leading-6"
       >
-        หมวดนี้ใช้เพื่อจัดระเบียบข้อมูลส่วนตัวเท่านั้น
-        ไม่ใช่การจัดประเภทเงินได้หรือคำวินิจฉัยภาษีตามกฎหมาย
+        ใช้หมวดหมู่เพื่อช่วยจัดระเบียบข้อมูล
+        ไม่ใช่คำวินิจฉัยประเภทเงินได้ตามกฎหมาย
       </p>
 
-      <div className="hidden lg:block">
-        <Button
-          onClick={() => {
-            setEditingId(null);
-            setDialogOpen(true);
-          }}
-          type="button"
-        >
-          <Plus aria-hidden="true" className="size-4" />
-          เพิ่มรายการ
-        </Button>
-      </div>
-
       {workspace.incomeEntries.length === 0 ? (
-        <div className="border-border bg-card rounded-2xl border p-6 text-center">
+        <div className="border-border bg-card rounded-2xl border px-5 py-8 text-center shadow-sm">
           <p className="font-medium">ยังไม่มีรายการรายรับ</p>
           <p className="text-muted-foreground mt-2 text-sm">
             เริ่มเพิ่มรายการแรกเพื่อสรุปยอดรวมในช่วงเวลาที่เลือก
           </p>
+          <Button
+            className="mt-5"
+            onClick={() => {
+              setEditingId(null);
+              setDialogOpen(true);
+            }}
+            type="button"
+          >
+            <Plus aria-hidden="true" className="size-4" />
+            เพิ่มรายการแรก
+          </Button>
         </div>
       ) : (
         <>
@@ -438,21 +464,6 @@ export function IncomeSectionPage() {
           </div>
         </dialog>
       ) : null}
-
-      <div className="fixed right-4 bottom-24 z-30 lg:hidden">
-        <Button
-          aria-label="เพิ่มรายการรายรับ"
-          className="shadow-lg"
-          onClick={() => {
-            setEditingId(null);
-            setDialogOpen(true);
-          }}
-          size="icon"
-          type="button"
-        >
-          <Plus aria-hidden="true" className="size-5" />
-        </Button>
-      </div>
     </CalculatorLayout>
   );
 }
@@ -537,7 +548,7 @@ function IncomeMonthSection({
         </table>
       </div>
 
-      <div className="space-y-5 p-4 lg:hidden">
+      <div className="space-y-5 px-4 lg:hidden">
         {group.frequencyGroups.map((frequencyGroup) => (
           <section
             aria-labelledby={`${titleId}-${frequencyGroup.entryFrequency}`}
@@ -557,7 +568,7 @@ function IncomeMonthSection({
                 </span>
               </p>
             </div>
-            <ul className="space-y-3">
+            <ul className="divide-border divide-y">
               {frequencyGroup.entries.map((entry) => (
                 <IncomeMobileEntryCard
                   entry={entry}
@@ -668,7 +679,7 @@ function IncomeMobileEntryCard({
   const inPeriod = isEntryWithinPeriod(entry, periodStart, periodEnd);
 
   return (
-    <li className="border-border bg-background rounded-xl border p-4">
+    <li className="py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -695,18 +706,18 @@ function IncomeMobileEntryCard({
           {formatThaiBaht(entry.amountSatang)}
         </p>
       </div>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-3 flex justify-end gap-2">
         <Button
-          className="flex-1"
           onClick={() => onEdit(entry.id)}
+          size="sm"
           type="button"
           variant="secondary"
         >
           แก้ไข
         </Button>
         <Button
-          className="flex-1"
           onClick={() => onDelete(entry.id)}
+          size="sm"
           type="button"
           variant="danger"
         >

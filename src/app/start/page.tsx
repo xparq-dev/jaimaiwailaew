@@ -42,7 +42,7 @@ const flows = [
     href: "/start/income-type",
     icon: CircleHelp,
     title: "ยังไม่แน่ใจ",
-    description: "ใช้คำถามช่วยเลือกเพื่อแนะนำเส้นทางที่เหมาะสม",
+    description: "ตอบคำถามสั้น ๆ เพื่อเลือกประเภทข้อมูล",
   },
 ] as const;
 
@@ -50,9 +50,9 @@ export default function StartPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        description="จัดระเบียบข้อมูลรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย และค่าลดหย่อนแบบร่าง โดยข้อมูลทั้งหมดจะถูกประมวลผลและบันทึกในอุปกรณ์นี้เท่านั้น ไม่มีการส่งขึ้นเซิร์ฟเวอร์"
+        description="เลือกประเภทข้อมูลและปีภาษีเพื่อเริ่มบันทึกรายการ"
         eyebrow="เริ่มต้นใช้งาน"
-        title="เตรียมข้อมูลภาษีในอุปกรณ์ของคุณ"
+        title="สร้างชุดข้อมูลใหม่"
       />
 
       <WorkspaceEntryPanel />
@@ -67,15 +67,14 @@ export default function StartPage() {
             <HardDrive aria-hidden="true" className="size-5" />
           </span>
           <div className="space-y-1">
-            <p className="text-sm font-semibold">ข้อมูลทำงานในอุปกรณ์ 100%</p>
+            <p className="text-sm font-semibold">ข้อมูลเก็บในเครื่องนี้</p>
             <p className="text-muted-foreground text-xs leading-5">
-              ไม่ต้องสมัครสมาชิก ข้อมูลการเงินไม่ถูกส่งขึ้นอินเทอร์เน็ต
-              สามารถคำนวณและสรุปยอดเลขคณิตได้ไม่จำกัด
+              เริ่มใช้งานได้โดยไม่ต้องสมัครสมาชิก
             </p>
           </div>
         </div>
         <Button asChild className="shrink-0">
-          <Link href="/start/income-type">เริ่มตั้งค่าทั้งหมด</Link>
+          <Link href="/start/income-type">เริ่มตั้งค่า</Link>
         </Button>
       </section>
 

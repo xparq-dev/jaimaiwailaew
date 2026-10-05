@@ -76,7 +76,7 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
 
   await page.goto("/settings");
   await page
-    .getByRole("checkbox", { name: "เปิด Cloud Sync สำหรับบัญชีนี้" })
+    .getByRole("checkbox", { name: "เปิดการสำรองข้อมูลในอุปกรณ์นี้" })
     .check();
   await expect(
     page.locator("#main-content").getByText("ซิงก์แล้ว", { exact: true }),
@@ -120,43 +120,35 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
     .toBe(true);
 
   await page.goto("/start");
-  await expect(
-    page.getByText("พบ 2 Workspace สำหรับบัญชีนี้ในอุปกรณ์"),
-  ).toBeVisible();
-  await page.getByRole("link", { name: "เพิ่ม Workspace" }).click();
+  await expect(page.getByText("พบ 2 ชุดข้อมูลในอุปกรณ์นี้")).toBeVisible();
+  await page.getByRole("link", { name: "เพิ่มชุดข้อมูล" }).click();
   await page.getByRole("button", { name: /ฟรีแลนซ์/ }).click();
   await page.getByRole("button", { name: "พ.ศ. 2569 (ค.ศ. 2026)" }).click();
   await page.getByRole("button", { name: /ทั้งปี/ }).click();
   await page
-    .getByRole("button", { name: "สร้าง Workspace และเริ่มบันทึกข้อมูล" })
+    .getByRole("button", { name: "สร้างชุดข้อมูลและเริ่มบันทึก" })
     .click();
   await expect(page).toHaveURL(/\/calculator$/);
   await page.goto("/start");
-  await expect(
-    page.getByText("พบ 3 Workspace สำหรับบัญชีนี้ในอุปกรณ์"),
-  ).toBeVisible();
+  await expect(page.getByText("พบ 3 ชุดข้อมูลในอุปกรณ์นี้")).toBeVisible();
   await page
     .getByRole("button", {
-      name: "ลบ Workspace ฟรีแลนซ์ ปีภาษี 2568",
+      name: "ลบชุดข้อมูล ฟรีแลนซ์ ปีภาษี 2568",
     })
     .click();
   const deleteDialog = page.getByRole("dialog", {
-    name: "ยืนยันลบ Workspace",
+    name: "ยืนยันลบชุดข้อมูล",
   });
   await expect(deleteDialog).toContainText("ฟรีแลนซ์ · ปีภาษี 2568");
-  await deleteDialog
-    .getByRole("button", { name: "ยืนยันลบ Workspace" })
-    .click();
-  await expect(
-    page.getByText("พบ 2 Workspace สำหรับบัญชีนี้ในอุปกรณ์"),
-  ).toBeVisible();
+  await deleteDialog.getByRole("button", { name: "ยืนยันลบชุดข้อมูล" }).click();
+  await expect(page.getByText("พบ 2 ชุดข้อมูลในอุปกรณ์นี้")).toBeVisible();
 
   await page.goto("/settings");
   await page.getByRole("button", { name: /ซิงก์ตอนนี้|ลองอีกครั้ง/ }).click();
   await expect(
     page.locator("#main-content").getByText("ซิงก์แล้ว", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("รอส่งคำสั่งลบไปยัง Cloud")).toBeHidden();
+  await expect(page.getByText("รอลบข้อมูลสำรอง")).toBeHidden();
   const deletionState = await page.evaluate(() => ({
     cloud: localStorage.getItem("jaimaiwailaew:e2e:cloud-workspaces") ?? "",
     deletions:
@@ -182,7 +174,7 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
     )
     .toBe(true);
   const cloudSyncSection = page
-    .getByRole("heading", { name: "Cloud Sync" })
+    .getByRole("heading", { name: "สำรองข้อมูลและใช้หลายอุปกรณ์" })
     .locator("xpath=ancestor::section");
   await page.context().setOffline(true);
   await expect(cloudSyncSection.locator("strong")).toHaveText(
@@ -200,14 +192,16 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
 
   await page.goto("/profile");
   await expect(
-    page.getByRole("heading", { name: "ภาพรวมบัญชีและข้อมูล" }),
+    page.getByRole("heading", { name: "บัญชีและข้อมูลของฉัน" }),
   ).toBeVisible();
   await expect(page.getByText("เข้าสู่ระบบด้วย อีเมล")).toBeVisible();
   await expect(page.getByText(/ซิงก์แล้ว · ล่าสุด/)).toBeVisible();
-  const workspaceRegion = page.getByRole("region", { name: "Workspace" });
+  const workspaceRegion = page.getByRole("region", {
+    name: "ชุดข้อมูลของฉัน",
+  });
   await expect(workspaceRegion).toBeVisible();
   await expect(
-    workspaceRegion.getByRole("button", { name: /เปิด Workspace/ }).first(),
+    workspaceRegion.getByRole("button", { name: /เปิดชุดข้อมูล/ }).first(),
   ).toBeVisible();
   await expect(
     workspaceRegion.getByRole("button", { name: /เปิดรายงาน/ }).first(),
@@ -224,12 +218,12 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
     .toBe(true);
 
   await page.goto("/settings");
-  await page.getByRole("button", { name: "ลบสำเนา Cloud ทั้งหมด" }).click();
+  await page.getByRole("button", { name: "ลบข้อมูลสำรองทั้งหมด" }).click();
   const deleteCloudDialog = page.getByRole("dialog", {
-    name: "ยืนยันลบสำเนา Cloud",
+    name: "ยืนยันลบข้อมูลสำรอง",
   });
   await expect(deleteCloudDialog).toContainText(
-    "ไม่ได้ลบบัญชีสมาชิก และไม่ลบ Workspace ในอุปกรณ์นี้",
+    "ไม่ลบบัญชีหรือข้อมูลในอุปกรณ์นี้",
   );
   await expect
     .poll(() =>
@@ -239,15 +233,13 @@ test("login, opt-in sync, restore from cloud, and logout", async ({ page }) => {
     )
     .toBe(true);
   await deleteCloudDialog
-    .getByRole("button", { name: "ยืนยันลบสำเนา Cloud" })
+    .getByRole("button", { name: "ยืนยันลบข้อมูลสำรอง" })
     .click();
   await expect(
-    page.getByText(
-      /ลบสำเนา Cloud แล้ว ข้อมูล Workspace ในอุปกรณ์นี้ยังอยู่ครบ/,
-    ),
+    page.getByText(/ลบข้อมูลสำรองแล้ว ข้อมูลในอุปกรณ์นี้ยังอยู่ครบ/),
   ).toBeVisible();
   await expect(
-    page.getByRole("checkbox", { name: "เปิด Cloud Sync สำหรับบัญชีนี้" }),
+    page.getByRole("checkbox", { name: "เปิดการสำรองข้อมูลในอุปกรณ์นี้" }),
   ).not.toBeChecked();
   const cloudDeletionResult = await page.evaluate(() => ({
     cloud: localStorage.getItem("jaimaiwailaew:e2e:cloud-workspaces"),
@@ -280,7 +272,7 @@ test("account dashboard keeps local-first recovery clear before login", async ({
 }) => {
   await page.goto("/profile");
   await expect(
-    page.getByRole("heading", { name: "ภาพรวมบัญชีและข้อมูล" }),
+    page.getByRole("heading", { name: "บัญชีและข้อมูลของฉัน" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "เข้าสู่ระบบเพื่อดูภาพรวมบัญชี" }),

@@ -16,20 +16,20 @@ const primaryTasks = [
   {
     href: "/calculator/income",
     icon: ListPlus,
-    title: "เพิ่มรายรับหรือรายจ่าย",
-    description: "บันทึกรายการใหม่ แล้วกลับมาตรวจยอดรวมได้ทันที",
+    title: "บันทึกรายการ",
+    description: "เพิ่มรายรับ รายจ่าย หรือภาษีหัก ณ ที่จ่าย",
   },
   {
     href: "/calculator",
     icon: Calculator,
-    title: "ดูภาพรวมข้อมูล",
-    description: "ตรวจรายรับ รายจ่าย ค่าลดหย่อน และช่วงเวลาที่ใช้งาน",
+    title: "ดูยอดรวม",
+    description: "ตรวจรายรับ รายจ่าย และยอดคงเหลือ",
   },
   {
     href: "/calculator/summary",
     icon: FileCheck2,
-    title: "ตรวจสรุปและส่งออก",
-    description: "ทบทวนตัวเลขก่อนดูตัวอย่าง PDF, Excel หรือ CSV",
+    title: "สรุปและส่งออก",
+    description: "ดูตัวอย่างก่อนดาวน์โหลด PDF, Excel หรือ CSV",
   },
 ] as const;
 
@@ -42,24 +42,24 @@ const workflow = [
 export default function HomePage() {
   return (
     <div className="space-y-10 lg:space-y-14">
-      <section className="grid gap-8 pt-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(21rem,0.75fr)] lg:items-start lg:gap-14 lg:pt-8">
+      <section className="grid gap-8 pt-2 lg:grid-cols-[minmax(0,1.08fr)_minmax(21rem,0.72fr)] lg:items-center lg:gap-14 lg:pt-8">
         <div className="max-w-3xl">
           <p className="text-success-strong inline-flex items-center gap-2 text-sm font-semibold">
             <ShieldCheck aria-hidden="true" className="size-4" />
-            ข้อมูลเริ่มต้นอยู่ในอุปกรณ์ของคุณ
+            เก็บข้อมูลในเครื่องนี้เป็นค่าเริ่มต้น
           </p>
           <h1 className="text-foreground mt-4 text-4xl leading-[1.15] font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-            จัดข้อมูลการเงินให้เป็นเรื่องที่รับมือได้
+            รายรับ รายจ่าย และภาษี อยู่ในที่เดียว
           </h1>
           <p className="text-muted-foreground mt-5 max-w-2xl text-base leading-7 text-pretty sm:text-lg sm:leading-8">
-            เริ่มจากรายการที่มี แล้วค่อยตรวจภาพรวมภาษีในจังหวะของคุณ
-            ไม่ต้องกรอกทุกอย่างให้เสร็จในครั้งเดียว
+            บันทึกรายการ ตรวจยอด และเตรียมรายงานจากข้อมูลของคุณ
+            ใช้ต่อได้โดยไม่ต้องสมัครสมาชิก
           </p>
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button asChild className="w-full sm:w-auto">
               <Link href="/calculator">
-                เปิดพื้นที่ข้อมูลของฉัน
+                เปิดข้อมูลของฉัน
                 <ArrowRight aria-hidden="true" className="size-4" />
               </Link>
             </Button>
@@ -71,11 +71,11 @@ export default function HomePage() {
           <div className="text-muted-foreground mt-7 flex flex-col gap-2 text-sm sm:flex-row sm:gap-5">
             <span className="flex items-center gap-2">
               <HardDrive aria-hidden="true" className="text-secondary size-4" />
-              ใช้งานแบบ Local-first
+              เก็บในเครื่องนี้
             </span>
             <span className="flex items-center gap-2">
               <Cloud aria-hidden="true" className="text-secondary size-4" />
-              ซิงก์เมื่อคุณเลือกเท่านั้น
+              สำรองข้อมูลได้เมื่อเข้าสู่ระบบ
             </span>
           </div>
         </div>
@@ -86,10 +86,10 @@ export default function HomePage() {
         >
           <div className="border-border border-b px-5 py-4 sm:px-6">
             <p className="text-muted-foreground text-xs font-semibold tracking-[0.12em] uppercase">
-              ทำอะไรต่อดี
+              ทางลัด
             </p>
             <h2 className="mt-1 text-xl font-bold" id="next-task-heading">
-              เลือกงานที่ต้องการทำ
+              เริ่มทำรายการ
             </h2>
           </div>
           <div className="divide-border divide-y">
@@ -122,10 +122,10 @@ export default function HomePage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-secondary text-sm font-semibold">
-              ลำดับที่ชัดเจน
+              ขั้นตอนใช้งาน
             </p>
             <h2 className="mt-1 text-2xl font-bold" id="workflow-heading">
-              จากรายการแรกถึงเอกสารพร้อมตรวจ
+              บันทึก ตรวจยอด แล้วส่งออก
             </h2>
           </div>
           <Link
@@ -160,12 +160,10 @@ export default function HomePage() {
           <HardDrive aria-hidden="true" className="size-5" />
         </span>
         <div>
-          <h2 className="text-lg font-bold">
-            คุณเป็นผู้เลือกว่าจะเก็บข้อมูลไว้ที่ไหน
-          </h2>
+          <h2 className="text-lg font-bold">ข้อมูลของคุณยังอยู่ในเครื่องนี้</h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 opacity-75">
-            ใช้งานในอุปกรณ์ได้โดยไม่ต้องสมัครสมาชิก หากต้องการใช้หลายอุปกรณ์
-            จึงค่อยเข้าสู่ระบบและเปิด Cloud Sync ด้วยตนเอง
+            ใช้งานได้ทันทีโดยไม่ต้องสมัครสมาชิก
+            หากต้องการใช้ข้อมูลหลายอุปกรณ์จึงค่อยเปิดการสำรองข้อมูล
           </p>
         </div>
         <Button asChild className="w-full lg:w-auto" variant="secondary">
@@ -174,8 +172,7 @@ export default function HomePage() {
       </section>
 
       <p className="text-muted-foreground mx-auto max-w-3xl text-center text-xs leading-5">
-        ผลลัพธ์เป็นการประมาณการเพื่อช่วยจัดระเบียบข้อมูล ไม่ใช่แบบยื่นภาษี
-        คำรับรอง หรือคำแนะนำเฉพาะบุคคล
+        ผลคำนวณเป็นค่าประมาณจากข้อมูลที่บันทึก ไม่ใช่แบบยื่นภาษี
       </p>
     </div>
   );

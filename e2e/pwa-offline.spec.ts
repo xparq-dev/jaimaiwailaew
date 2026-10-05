@@ -74,7 +74,7 @@ test.describe("Phase 1F PWA and offline completion", () => {
     await page.getByRole("button", { name: "พ.ศ. 2569 (ค.ศ. 2026)" }).click();
     await page.getByRole("button", { name: /ทั้งปี/ }).click();
     await page
-      .getByRole("button", { name: "สร้าง Workspace และเริ่มบันทึกข้อมูล" })
+      .getByRole("button", { name: "สร้างชุดข้อมูลและเริ่มบันทึก" })
       .click();
 
     await page.goto("/calculator/summary");

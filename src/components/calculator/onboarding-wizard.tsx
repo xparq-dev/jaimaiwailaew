@@ -90,11 +90,11 @@ export function OnboardingWizard({
       <PageHeader
         description={
           user
-            ? "เลือกรูปแบบเพื่อสร้าง Workspace เพิ่ม ข้อมูลจะบันทึกในอุปกรณ์ก่อนและส่งสำเนาเมื่อคุณเปิด Cloud Sync"
-            : "เลือกรูปแบบเพื่อตั้งค่าพื้นที่จัดระเบียบข้อมูลเบื้องต้น ข้อมูลทั้งหมดจะบันทึกในอุปกรณ์นี้เท่านั้นและไม่ส่งขึ้นเครือข่าย"
+            ? "เลือกประเภทข้อมูล ปีภาษี และช่วงเวลาสำหรับชุดใหม่"
+            : "เลือกประเภทข้อมูล ปีภาษี และช่วงเวลา ข้อมูลจะเก็บในอุปกรณ์นี้"
         }
         eyebrow="เริ่มต้นใช้งาน"
-        title="ตั้งค่าเครื่องคำนวณ"
+        title="ตั้งค่าชุดข้อมูล"
       />
 
       {workspace && confirmReplace ? (
@@ -103,11 +103,9 @@ export function OnboardingWizard({
           className="border-warning/30 bg-warning-soft text-warning-strong space-y-3 rounded-2xl border p-5"
           role="alert"
         >
-          <p className="font-semibold">
-            มีข้อมูล Workspace เดิมอยู่ในอุปกรณ์นี้แล้ว
-          </p>
+          <p className="font-semibold">มีชุดข้อมูลเดิมอยู่ในอุปกรณ์นี้แล้ว</p>
           <p className="text-sm leading-6">
-            หากคุณสร้าง Workspace ใหม่ ข้อมูลรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย
+            หากคุณสร้างชุดข้อมูลใหม่ ข้อมูลรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย
             และค่าลดหย่อนเดิมจะถูกแทนที่ คุณต้องการดำเนินการต่อหรือไม่?
           </p>
           <div className="flex gap-2 pt-2">
@@ -367,7 +365,7 @@ export function OnboardingWizard({
 
       <div className="flex flex-wrap items-center gap-4 pt-4">
         <Button onClick={handleStart} size="default" type="button">
-          สร้าง Workspace และเริ่มบันทึกข้อมูล
+          สร้างชุดข้อมูลและเริ่มบันทึก
         </Button>
         <p className="text-muted-foreground text-xs">
           ข้อมูลจะถูกจัดเก็บบนอุปกรณ์นี้เท่านั้น

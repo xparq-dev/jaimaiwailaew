@@ -50,7 +50,7 @@ export function SettingsPanel() {
     try {
       await deleteCloudData();
       setDeleteNotice(
-        "ลบสำเนา Cloud แล้ว ข้อมูล Workspace ในอุปกรณ์นี้ยังอยู่ครบและ Cloud Sync ถูกปิดแล้ว",
+        "ลบข้อมูลสำรองแล้ว ข้อมูลในอุปกรณ์นี้ยังอยู่ครบและปิดการสำรองข้อมูลแล้ว",
       );
       deleteDialogRef.current?.close();
     } catch (error) {
@@ -71,7 +71,7 @@ export function SettingsPanel() {
     return (
       <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
         <p className="text-muted-foreground leading-7">
-          Cloud Sync เป็นฟีเจอร์สำหรับสมาชิก กรุณาเข้าสู่ระบบก่อนตั้งค่า
+          เข้าสู่ระบบเพื่อสำรองข้อมูลและใช้ข้อมูลร่วมกันหลายอุปกรณ์
         </p>
         <Button asChild className="mt-5">
           <Link href="/login">เข้าสู่ระบบ</Link>
@@ -86,24 +86,23 @@ export function SettingsPanel() {
         <div className="flex items-start gap-3">
           <Cloud aria-hidden="true" className="text-primary mt-0.5 size-5" />
           <div>
-            <h2 className="text-lg font-bold">Cloud Sync</h2>
+            <h2 className="text-lg font-bold">สำรองข้อมูลและใช้หลายอุปกรณ์</h2>
             <p className="text-muted-foreground mt-1 text-sm leading-6">
-              เก็บสำเนา Workspace ใน Cloudflare R2
-              และใช้ข้อมูลล่าสุดตามเวลาแก้ไข ระบบจะซิงก์ Workspace ทั้งหมด
-              ข้อมูลจะไม่ถูกอัปโหลดจนกว่าคุณจะเปิดสวิตช์นี้
+              สำรองชุดข้อมูลทั้งหมดของบัญชีนี้
+              และเรียกใช้ข้อมูลล่าสุดจากอุปกรณ์เครื่องอื่นได้
+              ข้อมูลจะไม่ถูกส่งจนกว่าคุณจะเปิดใช้งาน
             </p>
           </div>
         </div>
 
         {!isCloudSyncConfigured ? (
           <p className="text-warning-strong mt-4 text-sm" role="status">
-            ระบบยังไม่ได้ตั้งค่า Cloud Sync API การใช้งาน Local-only
-            เดิมยังทำงานปกติ
+            การสำรองข้อมูลยังไม่พร้อมใช้งาน แต่ข้อมูลในเครื่องยังใช้งานได้ปกติ
           </p>
         ) : null}
 
         <label className="mt-5 flex min-h-11 cursor-pointer items-center justify-between gap-4">
-          <span className="font-semibold">เปิด Cloud Sync สำหรับบัญชีนี้</span>
+          <span className="font-semibold">เปิดการสำรองข้อมูลในอุปกรณ์นี้</span>
           <input
             checked={enabled}
             className="size-5 accent-current"
@@ -118,7 +117,7 @@ export function SettingsPanel() {
             สถานะ: <strong>{syncLabels[syncStatus]}</strong>
           </p>
           <p className="text-muted-foreground mt-1">
-            Workspace ในอุปกรณ์นี้: {workspaceCount} รายการ
+            ชุดข้อมูลในอุปกรณ์นี้: {workspaceCount} ชุด
           </p>
           {lastSyncedAt ? (
             <p className="text-muted-foreground mt-1">
@@ -133,13 +132,13 @@ export function SettingsPanel() {
           {syncError ? <p className="text-danger mt-2">{syncError}</p> : null}
           {pendingDeletionCount > 0 ? (
             <p className="text-warning-strong mt-2">
-              รอส่งคำสั่งลบไปยัง Cloud: {pendingDeletionCount} Workspace
+              รอลบข้อมูลสำรอง: {pendingDeletionCount} ชุด
             </p>
           ) : null}
           {!enabled ? (
             <p className="text-warning-strong mt-2">
-              อุปกรณ์นี้ยังไม่ส่งหรือดึง Workspace จาก Cloud กรุณาเปิด Cloud
-              Sync บนอุปกรณ์แต่ละเครื่องที่ต้องการใช้งานร่วมกัน
+              อุปกรณ์นี้ยังไม่สำรองหรือดึงข้อมูล
+              เปิดใช้งานบนอุปกรณ์แต่ละเครื่องที่ต้องการใช้ข้อมูลร่วมกัน
             </p>
           ) : null}
         </div>
@@ -163,27 +162,25 @@ export function SettingsPanel() {
         <div className="flex items-start gap-3">
           <Trash2 aria-hidden="true" className="text-danger mt-0.5 size-5" />
           <div>
-            <h2 className="text-lg font-bold">ลบสำเนาข้อมูลบน Cloud</h2>
+            <h2 className="text-lg font-bold">ลบข้อมูลสำรอง</h2>
             <p className="text-muted-foreground mt-1 text-sm leading-6">
-              การปิด Cloud Sync จะหยุดส่งและดึงข้อมูล
-              แต่ไม่ลบสำเนาที่เคยซิงก์ไว้ หากไม่ต้องการเก็บสำเนาบน Cloud แล้ว
-              คุณสามารถลบข้อมูลของบัญชีนี้ได้จากที่นี่
+              การปิดการสำรองข้อมูลจะหยุดส่งและดึงข้อมูล
+              แต่ข้อมูลที่เคยสำรองไว้จะยังอยู่ คุณสามารถลบได้จากที่นี่
             </p>
           </div>
         </div>
 
         <div className="border-border bg-muted/40 mt-4 rounded-xl border p-4 text-sm leading-6">
           <p>
-            ระบบจะลบ Workspace และประวัติคำสั่งลบที่เก็บใน Cloud ของบัญชีนี้
-            พร้อมปิด Cloud Sync บนอุปกรณ์นี้
+            ระบบจะลบชุดข้อมูลที่สำรองไว้ของบัญชีนี้
+            และปิดการสำรองข้อมูลบนอุปกรณ์นี้
           </p>
           <p className="text-muted-foreground mt-1">
-            ข้อมูลในอุปกรณ์นี้จะไม่ถูกลบ และสามารถเปิด Cloud Sync
-            ใหม่ภายหลังเพื่อสร้างสำเนาใหม่ได้
+            ข้อมูลในอุปกรณ์นี้จะไม่ถูกลบ และเปิดสำรองใหม่ภายหลังได้
           </p>
           <p className="text-warning-strong mt-2">
-            หากต้องการให้ Cloud ว่างต่อเนื่อง ควรปิด Cloud Sync
-            บนอุปกรณ์อื่นก่อน เพราะอุปกรณ์ที่ยังเปิด Sync อาจสร้างสำเนาใหม่
+            ปิดการสำรองข้อมูลบนอุปกรณ์อื่นก่อนลบ
+            มิฉะนั้นอุปกรณ์เหล่านั้นอาจสร้างสำเนาใหม่
           </p>
         </div>
 
@@ -207,15 +204,14 @@ export function SettingsPanel() {
           variant="danger"
         >
           <Trash2 aria-hidden="true" className="size-4" />
-          ลบสำเนา Cloud ทั้งหมด
+          ลบข้อมูลสำรองทั้งหมด
         </Button>
       </section>
 
       <aside className="border-border bg-muted/40 rounded-2xl border p-5 text-sm leading-6">
-        <strong>ความเป็นส่วนตัว:</strong> ระบบใช้ Supabase เฉพาะการยืนยันตัวตน
-        และส่งข้อมูล Workspace ไปยัง R2 ผ่าน Worker เฉพาะเมื่อเปิด Cloud Sync
-        เท่านั้น คุณต้องเปิด Cloud Sync แยกในแต่ละอุปกรณ์ และยังใช้งานแบบ
-        Local-only โดยไม่เข้าสู่ระบบได้เสมอ
+        <strong>ข้อมูลของคุณ:</strong> การสำรองข้อมูลปิดไว้เป็นค่าเริ่มต้น
+        และต้องเปิดแยกในแต่ละอุปกรณ์
+        คุณยังใช้งานด้วยข้อมูลในเครื่องได้โดยไม่ต้องเข้าสู่ระบบ
       </aside>
 
       <dialog
@@ -234,16 +230,16 @@ export function SettingsPanel() {
         <div className="space-y-4 p-6">
           <div>
             <h2 className="text-lg font-bold" id="delete-cloud-data-title">
-              ยืนยันลบสำเนา Cloud
+              ยืนยันลบข้อมูลสำรอง
             </h2>
             <p className="text-muted-foreground mt-2 text-sm leading-6">
-              การดำเนินการนี้ลบเฉพาะสำเนาของบัญชีที่เก็บบน Cloud
-              ไม่ได้ลบบัญชีสมาชิก และไม่ลบ Workspace ในอุปกรณ์นี้
+              การดำเนินการนี้ลบเฉพาะข้อมูลที่สำรองไว้
+              ไม่ลบบัญชีหรือข้อมูลในอุปกรณ์นี้
             </p>
           </div>
           <p className="border-danger/30 bg-danger/10 text-danger rounded-xl border p-3 text-sm leading-6">
-            ควรปิด Cloud Sync บนอุปกรณ์อื่นก่อนดำเนินการ อุปกรณ์ที่ยังเปิด Sync
-            อาจอัปโหลดข้อมูลและสร้างสำเนาใหม่หลังการลบ
+            ปิดการสำรองข้อมูลบนอุปกรณ์อื่นก่อน
+            เพื่อป้องกันการสร้างสำเนาใหม่หลังการลบ
           </p>
           {deleteError ? (
             <p className="text-danger text-sm" role="alert">
@@ -266,7 +262,7 @@ export function SettingsPanel() {
               variant="danger"
             >
               <Trash2 aria-hidden="true" className="size-4" />
-              {deletePending ? "กำลังลบสำเนา…" : "ยืนยันลบสำเนา Cloud"}
+              {deletePending ? "กำลังลบ…" : "ยืนยันลบข้อมูลสำรอง"}
             </Button>
           </div>
         </div>

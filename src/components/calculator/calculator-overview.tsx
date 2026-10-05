@@ -51,8 +51,8 @@ export function CalculatorOverview() {
 
   return (
     <CalculatorLayout
-      description="ดูสถานะข้อมูล เลือกงานถัดไป และตรวจยอดรวมของช่วงที่กำลังจัดการ"
-      eyebrow="พื้นที่ข้อมูลของฉัน"
+      description="ยอดรวมจากรายการที่บันทึกในปีภาษีนี้"
+      eyebrow="ข้อมูลของฉัน"
       title="ภาพรวมการเงิน"
     >
       {workspace ? <CalculatorOverviewContent workspace={workspace} /> : null}
@@ -80,12 +80,12 @@ function CalculatorOverviewContent({
   return (
     <>
       <section
-        aria-label="Workspace ปัจจุบัน"
+        aria-label="ชุดข้อมูลที่กำลังใช้"
         className="border-border flex flex-col gap-4 border-y py-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="min-w-0">
           <p className="text-muted-foreground text-xs font-semibold tracking-[0.1em] uppercase">
-            Workspace ปัจจุบัน
+            ชุดข้อมูลที่กำลังใช้
           </p>
           <h2 className="mt-1 truncate text-lg font-bold">
             {workspace.reportName?.trim() || getPersonaLabel(workspace.persona)}{" "}
@@ -109,13 +109,13 @@ function CalculatorOverviewContent({
         <div className="border-border flex flex-col gap-2 border-b px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
           <div>
             <p className="text-muted-foreground text-xs font-semibold tracking-[0.1em] uppercase">
-              ช่วงที่เลือก
+              สรุปยอด
             </p>
             <h2
               className="mt-1 text-xl font-bold"
               id="financial-overview-heading"
             >
-              ยอดที่บันทึกแล้ว
+              ยอดรวมที่บันทึก
             </h2>
           </div>
           <p className="text-muted-foreground text-sm">
@@ -130,7 +130,7 @@ function CalculatorOverviewContent({
               {formatThaiBaht(totals.netBeforeTaxSatang)}
             </p>
             <p className="mt-3 text-xs leading-5 opacity-65">
-              คำนวณจากรายรับหักรายจ่ายที่บันทึกในช่วงนี้
+              รายรับหักรายจ่าย
             </p>
           </div>
 
@@ -162,9 +162,9 @@ function CalculatorOverviewContent({
       <section aria-labelledby="data-actions-heading">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-secondary text-sm font-semibold">งานถัดไป</p>
+            <p className="text-secondary text-sm font-semibold">รายการ</p>
             <h2 className="mt-1 text-xl font-bold" id="data-actions-heading">
-              เลือกข้อมูลที่ต้องการจัดการ
+              เพิ่มหรือแก้ไขข้อมูล
             </h2>
           </div>
           <Link

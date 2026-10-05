@@ -240,7 +240,7 @@ export function PdfExportPanel({
         {!selectedPeriod.isWorkspacePeriod ? (
           <div className="border-border bg-muted/50 rounded-xl border px-4 py-3 text-sm leading-6">
             รายงานช่วงย่อยจะแสดงเฉพาะรายการและยอดรวมในช่วงที่เลือก
-            โดยไม่แสดงค่าลดหย่อนร่างแบบรวมและประมาณการภาษีของ Workspace
+            โดยไม่แสดงค่าลดหย่อนรวมและประมาณการภาษีของชุดข้อมูลทั้งหมด
           </div>
         ) : null}
 

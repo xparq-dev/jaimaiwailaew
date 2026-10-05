@@ -140,7 +140,7 @@ export function IncomeSectionPage() {
           เพิ่มรายการ
         </Button>
       }
-      description="เพิ่มรายการตามวันที่หรือเดือน แล้วตรวจยอดรวมในช่วงที่เลือก"
+      description="บันทึกรายรับตามวันที่หรือเดือน"
       title="รายรับ"
     >
       <p aria-live="polite" className="sr-only">

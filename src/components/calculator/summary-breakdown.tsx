@@ -342,7 +342,7 @@ function BreakdownDetailDialog({
             </p>
             <p className="text-right">
               <span className="text-muted-foreground block text-xs">
-                ยอดรวมเชิงคณิตศาสตร์
+                ยอดรวมที่บันทึก
               </span>
               <span className="font-semibold tabular-nums">
                 {formatThaiBaht(selected.detail.group.totalSatang)}

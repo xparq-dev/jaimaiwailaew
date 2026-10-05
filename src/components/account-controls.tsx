@@ -8,9 +8,9 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useCloudSync } from "@/sync/sync-provider";
 
 const syncLabels = {
-  disabled: "ปิด Cloud Sync",
+  disabled: "ไม่ได้สำรองข้อมูล",
   auth_required: "รอเข้าสู่ระบบ",
-  config_missing: "ยังไม่ตั้งค่า Cloud",
+  config_missing: "การสำรองข้อมูลยังไม่พร้อม",
   offline: "รอออนไลน์",
   idle: "พร้อมซิงก์",
   syncing: "กำลังซิงก์",
@@ -34,7 +34,7 @@ export function AccountControls() {
     <Link
       aria-label={
         user
-          ? `เปิดโปรไฟล์ — สถานะ Cloud Sync: ${syncLabels[syncStatus]}`
+          ? `เปิดบัญชี — สถานะการสำรองข้อมูล: ${syncLabels[syncStatus]}`
           : "เข้าสู่ระบบ"
       }
       className="border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground relative inline-flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full border"

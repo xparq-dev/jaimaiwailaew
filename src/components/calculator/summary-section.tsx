@@ -47,7 +47,7 @@ export function SummarySectionPage() {
 
   return (
     <CalculatorLayout
-      description="สรุปยอดรวมเชิงคณิตศาสตร์ คำเตือน และสถานะกฎภาษีจากข้อมูลในอุปกรณ์"
+      description="ตรวจยอดรวม ประมาณการภาษี และดาวน์โหลดรายงาน"
       title="สรุปข้อมูล"
     >
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -77,7 +77,7 @@ export function SummarySectionPage() {
         />
         <SummaryCard
           label="ส่วนต่างก่อนภาษี"
-          hint="เป็นส่วนต่างเชิงคณิตศาสตร์จากข้อมูลที่กรอก ไม่ใช่เงินได้สุทธิทางภาษี"
+          hint="รายรับหักรายจ่ายจากข้อมูลที่บันทึก ไม่ใช่เงินได้สุทธิทางภาษี"
           value={formatThaiBaht(totals.netBeforeTaxSatang)}
         />
         <SummaryCard

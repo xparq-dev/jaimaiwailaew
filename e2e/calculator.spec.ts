@@ -47,7 +47,7 @@ test.describe("Calculator UX (Local-only)", () => {
     await page.goto("/start/income-type");
 
     await expect(
-      page.getByRole("heading", { level: 1, name: "ตั้งค่าเครื่องคำนวณ" }),
+      page.getByRole("heading", { level: 1, name: "ตั้งค่าชุดข้อมูล" }),
     ).toBeVisible();
 
     // Select Persona "ขายออนไลน์ / ธุรกิจ"
@@ -61,7 +61,7 @@ test.describe("Calculator UX (Local-only)", () => {
 
     // Create workspace
     await page
-      .getByRole("button", { name: "สร้าง Workspace และเริ่มบันทึกข้อมูล" })
+      .getByRole("button", { name: "สร้างชุดข้อมูลและเริ่มบันทึก" })
       .click();
 
     // URL should now be /calculator
@@ -82,16 +82,16 @@ test.describe("Calculator UX (Local-only)", () => {
 
     // Start page exposes the existing workspace and warns before adding another.
     await page.goto("/start");
-    await expect(page.getByText("พบ Workspace เดิมในอุปกรณ์นี้")).toBeVisible();
-    await page.getByRole("button", { name: "เพิ่ม Workspace" }).click();
+    await expect(page.getByText("พบชุดข้อมูลเดิมในอุปกรณ์นี้")).toBeVisible();
+    await page.getByRole("button", { name: "เพิ่มชุดข้อมูล" }).click();
     const addWorkspaceDialog = page.getByRole("dialog", {
-      name: "เพิ่ม Workspace ใหม่",
+      name: "เพิ่มชุดข้อมูลใหม่",
     });
     await expect(addWorkspaceDialog).toContainText(
-      "โหมดไม่สมัครสมาชิกเก็บได้ 1 Workspace",
+      "การใช้งานโดยไม่สมัครสมาชิกเก็บได้ 1 ชุดข้อมูล",
     );
     await addWorkspaceDialog.getByRole("button", { name: "ยกเลิก" }).click();
-    await page.getByRole("link", { name: "เปิด Workspace เดิม" }).click();
+    await page.getByRole("link", { name: "เปิดชุดข้อมูลเดิม" }).click();
     await expect(page).toHaveURL(/\/calculator$/);
 
     // Requirement A: Compact Privacy Indicator
@@ -890,7 +890,7 @@ test.describe("Calculator UX (Local-only)", () => {
 
     // After clearing, reload and check that workspace is cleared
     await page.goto("/calculator");
-    await expect(page.getByText("ยังไม่ได้เริ่มจัดข้อมูล")).toBeVisible();
+    await expect(page.getByText("ยังไม่มีชุดข้อมูล")).toBeVisible();
     expect(
       await page.evaluate(() =>
         localStorage.getItem("jaimaiwailaew:export-history:v1"),

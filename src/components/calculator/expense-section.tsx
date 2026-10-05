@@ -87,10 +87,7 @@ export function ExpenseSectionPage() {
   if (!workspace) return null;
 
   return (
-    <CalculatorLayout
-      description="จัดกลุ่มรายจ่ายเพื่อสรุปยอดรวม ไม่ใช่การวินิจฉัยว่าหักภาษีได้"
-      title="รายจ่าย"
-    >
+    <CalculatorLayout description="บันทึกและจัดหมวดหมู่รายจ่าย" title="รายจ่าย">
       <p aria-live="polite" className="sr-only">
         {announcement}
       </p>

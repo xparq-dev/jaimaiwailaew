@@ -73,12 +73,12 @@ function CalculatorWorkspaceShell({
     return (
       <div className="space-y-6">
         <PageHeader
-          description="ยังไม่มี workspace ในอุปกรณ์นี้ เริ่มจาก wizard เพื่อสร้างข้อมูล local-only"
+          description="สร้างชุดข้อมูลแรกเพื่อเริ่มบันทึกรายรับและรายจ่าย"
           eyebrow={eyebrow}
-          title="ยังไม่ได้เริ่มจัดข้อมูล"
+          title="ยังไม่มีชุดข้อมูล"
         />
         <Button asChild>
-          <Link href="/start">ไปหน้าเริ่มต้น</Link>
+          <Link href="/start">เริ่มตั้งค่า</Link>
         </Button>
       </div>
     );
@@ -98,7 +98,7 @@ function CalculatorWorkspaceShell({
       {children}
       <div className="flex flex-wrap gap-3">
         <Button asChild variant="secondary">
-          <Link href="/start">เปลี่ยนโหมด / เริ่มใหม่</Link>
+          <Link href="/start">จัดการชุดข้อมูล</Link>
         </Button>
         <Button
           onClick={() => router.push("/calculator/summary")}

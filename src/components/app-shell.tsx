@@ -61,7 +61,13 @@ function getCurrentPageLabel(pathname: string) {
   return current?.label ?? "พื้นที่จัดการข้อมูล";
 }
 
-function Brand({ compact = false }: { compact?: boolean }) {
+function Brand({
+  compact = false,
+  inverse = false,
+}: {
+  compact?: boolean;
+  inverse?: boolean;
+}) {
   const { dictionary, locale } = useLocale();
   const { user } = useAuth();
 
@@ -90,14 +96,20 @@ function Brand({ compact = false }: { compact?: boolean }) {
       <span className="min-w-0">
         <span
           className={cn(
-            "text-foreground block truncate font-bold",
+            "block truncate font-bold",
+            inverse ? "text-white" : "text-foreground",
             compact && "text-sm whitespace-nowrap sm:text-base",
           )}
         >
           จ่ายไม่ไหวแล้ว
         </span>
         {!compact ? (
-          <span className="text-muted-foreground block truncate text-xs">
+          <span
+            className={cn(
+              "block truncate text-xs",
+              inverse ? "text-white/62" : "text-muted-foreground",
+            )}
+          >
             {dictionary.brand.subtitle}
           </span>
         ) : null}
@@ -112,8 +124,8 @@ function DesktopSidebar() {
 
   return (
     <aside className="bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 overflow-hidden text-white lg:flex lg:flex-col">
-      <div className="border-b border-white/10 px-5 py-6 [&_*]:!text-white">
-        <Brand />
+      <div className="border-b border-white/10 px-5 py-6">
+        <Brand inverse />
       </div>
       <nav aria-label="เมนูหลัก" className="flex-1 space-y-1 px-3 py-5">
         <p className="px-3 pb-3 text-[0.6875rem] font-semibold tracking-[0.16em] text-white/45 uppercase">

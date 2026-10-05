@@ -153,7 +153,7 @@ export function OnboardingWizard({
                 aria-pressed={isSelected}
                 className={`focus-visible:ring-focus/35 flex gap-4 rounded-2xl border p-5 text-left transition focus-visible:ring-3 focus-visible:outline-none ${
                   isSelected
-                    ? "border-primary bg-primary text-primary-foreground ring-primary/30 shadow-lg ring-1"
+                    ? "border-selected-border bg-selected text-selected-foreground ring-selected-border/25 shadow-lg ring-1"
                     : "border-border bg-card hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
                 }`}
                 key={option.code}
@@ -170,7 +170,7 @@ export function OnboardingWizard({
                 <span
                   className={`grid size-10 shrink-0 place-items-center rounded-xl ${
                     isSelected
-                      ? "bg-white/12 text-emerald-100"
+                      ? "bg-selected-icon text-selected-foreground"
                       : "bg-muted text-primary"
                   }`}
                 >
@@ -182,12 +182,12 @@ export function OnboardingWizard({
                     {isSelected ? (
                       <CheckCircle2
                         aria-hidden="true"
-                        className="size-4 text-emerald-200"
+                        className="text-secondary size-4"
                       />
                     ) : null}
                   </div>
                   <p
-                    className={`text-xs leading-5 ${isSelected ? "text-white/65" : "text-muted-foreground"}`}
+                    className={`text-xs leading-5 ${isSelected ? "text-selected-muted" : "text-muted-foreground"}`}
                   >
                     {option.hint}
                   </p>

@@ -69,7 +69,7 @@ export function SettingsPanel() {
 
   if (!user) {
     return (
-      <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
+      <section className="surface-card p-6">
         <p className="text-muted-foreground leading-7">
           เข้าสู่ระบบเพื่อสำรองข้อมูลและใช้ข้อมูลร่วมกันหลายอุปกรณ์
         </p>
@@ -82,7 +82,7 @@ export function SettingsPanel() {
 
   return (
     <div className="grid gap-6">
-      <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
+      <section className="surface-card p-6">
         <div className="flex items-start gap-3">
           <Cloud aria-hidden="true" className="text-primary mt-0.5 size-5" />
           <div>

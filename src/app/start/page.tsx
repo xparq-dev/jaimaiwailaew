@@ -60,10 +60,10 @@ export default function StartPage() {
       {/* Privacy Notice Banner */}
       <section
         aria-label="ความเป็นส่วนตัว"
-        className="border-border bg-card flex flex-col items-start justify-between gap-4 rounded-2xl border p-5 shadow-sm sm:flex-row sm:items-center"
+        className="surface-card flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6"
       >
         <div className="flex items-start gap-3">
-          <span className="bg-muted text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+          <span className="bg-success-soft text-success-strong grid size-11 shrink-0 place-items-center rounded-xl">
             <HardDrive aria-hidden="true" className="size-5" />
           </span>
           <div className="space-y-1">
@@ -84,11 +84,11 @@ export default function StartPage() {
       >
         {flows.map(({ href, icon: Icon, title, description }) => (
           <Link
-            className="group border-border bg-card hover:border-focus/50 focus-visible:ring-focus/35 rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-3 focus-visible:outline-none"
+            className="surface-card focus-visible:ring-focus/35 group hover:border-primary/25 p-5 transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgb(8_48_41/10%)] focus-visible:ring-3 focus-visible:outline-none sm:p-6"
             href={href}
             key={title}
           >
-            <span className="bg-muted text-primary inline-grid size-10 place-items-center rounded-xl">
+            <span className="bg-success-soft text-success-strong inline-grid size-11 place-items-center rounded-xl transition-transform group-hover:scale-105">
               <Icon aria-hidden="true" className="size-5" />
             </span>
             <div className="mt-4 flex items-start justify-between gap-3">

@@ -148,11 +148,11 @@ export function IncomeSectionPage() {
       </p>
       <section
         aria-label="ยอดรายรับในช่วงที่เลือก"
-        className="border-border bg-card grid overflow-hidden rounded-2xl border shadow-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+        className="surface-card grid overflow-hidden sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
       >
         <div className="px-5 py-5 sm:px-6">
           <p className="text-muted-foreground text-sm">รายรับในช่วงที่เลือก</p>
-          <p className="financial-figures text-primary mt-1 text-3xl font-bold tracking-tight">
+          <p className="financial-figures text-primary mt-1 text-3xl font-bold tracking-[-0.035em]">
             {formatThaiBaht(inPeriodTotalSatang)}
           </p>
         </div>
@@ -168,14 +168,14 @@ export function IncomeSectionPage() {
 
       <p
         id="income-section-disclaimer"
-        className="text-muted-foreground border-border border-l-2 pl-3 text-sm leading-6"
+        className="text-muted-foreground text-xs leading-5"
       >
         ใช้หมวดหมู่เพื่อช่วยจัดระเบียบข้อมูล
         ไม่ใช่คำวินิจฉัยประเภทเงินได้ตามกฎหมาย
       </p>
 
       {workspace.incomeEntries.length === 0 ? (
-        <div className="border-border bg-card rounded-2xl border px-5 py-8 text-center shadow-sm">
+        <div className="surface-card px-5 py-10 text-center">
           <p className="font-medium">ยังไม่มีรายการรายรับ</p>
           <p className="text-muted-foreground mt-2 text-sm">
             เริ่มเพิ่มรายการแรกเพื่อสรุปยอดรวมในช่วงเวลาที่เลือก
@@ -195,7 +195,7 @@ export function IncomeSectionPage() {
       ) : (
         <>
           {monthGroups.length === 0 ? (
-            <div className="border-border bg-card rounded-2xl border p-6 text-center">
+            <div className="surface-card p-8 text-center">
               <p className="font-medium">ยังไม่มีรายการรายรับในช่วงที่เลือก</p>
               <p className="text-muted-foreground mt-2 text-sm">
                 รายการนอกช่วงจะแสดงแยกด้านล่างและไม่รวมในยอดสรุป
@@ -490,7 +490,7 @@ function IncomeMonthSection({
   return (
     <section
       aria-labelledby={titleId}
-      className="border-border bg-card min-w-0 overflow-hidden rounded-2xl border shadow-sm"
+      className="surface-card min-w-0 overflow-hidden"
       data-month-key={group.monthKey}
       data-testid={`${testIdPrefix}-${group.monthKey}`}
     >

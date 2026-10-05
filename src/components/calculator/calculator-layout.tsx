@@ -85,16 +85,18 @@ function CalculatorWorkspaceShell({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7 lg:space-y-8">
       <PageHeader
         actions={actions}
         description={description}
         eyebrow={eyebrow}
         title={title}
       />
+      <div className="border-border flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <LocalDataIndicator />
+        <CalculatorSubNav />
+      </div>
       <PersistErrorBanner />
-      <LocalDataIndicator />
-      <CalculatorSubNav />
       {children}
       <div className="flex flex-wrap gap-3">
         <Button asChild variant="secondary">

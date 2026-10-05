@@ -24,6 +24,8 @@
   --color-warning-soft: var(--warning-soft);
   --color-warning-strong: var(--warning-strong);
   --color-danger: var(--danger);
+  --color-canvas-accent: var(--canvas-accent);
+  --color-surface-strong: var(--surface-strong);
   --font-sans: var(--font-noto-sans-thai), "Leelawadee UI", Tahoma, sans-serif;
   --font-mono: "Inter", ui-monospace, SFMono-Regular, Consolas, monospace;
   --radius-sm: 0.5rem;
@@ -34,45 +36,47 @@
 
 :root {
   color-scheme: light;
-  --background: #f5f7fa;
-  --foreground: #111827;
+  --background: #f3f6f3;
+  --foreground: #10211f;
   --card: #ffffff;
-  --card-foreground: #111827;
-  --muted: #edf1f6;
-  --muted-foreground: #475569;
-  --primary: #0b1f3a;
+  --card-foreground: #10211f;
+  --muted: #e9efeb;
+  --muted-foreground: #52635f;
+  --primary: #0b2f2a;
   --primary-foreground: #ffffff;
-  --secondary: #0e8f68;
+  --secondary: #078463;
   --secondary-foreground: #ffffff;
-  --border: #d8e0ea;
-  --focus: #2563eb;
-  --sidebar: #ffffff;
-  --sidebar-active: #e8eef8;
-  --sidebar-active-foreground: #0b1f3a;
-  --success-soft: #e5f7f0;
-  --success-strong: #087052;
+  --border: #d8e2dc;
+  --focus: #0f9f78;
+  --sidebar: #092621;
+  --sidebar-active: #d9f5e9;
+  --sidebar-active-foreground: #073d31;
+  --success-soft: #dff5eb;
+  --success-strong: #06664d;
   --warning: #b45309;
   --warning-soft: #fff7df;
   --warning-strong: #85400a;
   --danger: #b91c1c;
+  --canvas-accent: #d9f5e9;
+  --surface-strong: #113d36;
 }
 
 .dark {
   color-scheme: dark;
-  --background: #0b1220;
-  --foreground: #f8fafc;
-  --card: #121c2d;
+  --background: #081512;
+  --foreground: #f4faf7;
+  --card: #0f211d;
   --card-foreground: #f8fafc;
-  --muted: #1a273b;
-  --muted-foreground: #a9b7ca;
-  --primary: #dce8f8;
-  --primary-foreground: #0b1f3a;
-  --secondary: #3dd6a1;
+  --muted: #18302a;
+  --muted-foreground: #a7bbb4;
+  --primary: #dff7ee;
+  --primary-foreground: #092621;
+  --secondary: #47d9ac;
   --secondary-foreground: #06271d;
-  --border: #293548;
-  --focus: #60a5fa;
-  --sidebar: #0d1727;
-  --sidebar-active: #1d304b;
+  --border: #28433b;
+  --focus: #5de1b9;
+  --sidebar: #06120f;
+  --sidebar-active: #173c33;
   --sidebar-active-foreground: #f8fafc;
   --success-soft: #0c352b;
   --success-strong: #7ce5bf;
@@ -80,6 +84,8 @@
   --warning-soft: #3b2c0c;
   --warning-strong: #fcd876;
   --danger: #f87171;
+  --canvas-accent: #143c32;
+  --surface-strong: #092621;
 }
 
 * {
@@ -97,6 +103,18 @@ body {
   color: var(--foreground);
   font-family: var(--font-noto-sans-thai), "Leelawadee UI", Tahoma, sans-serif;
   text-rendering: optimizeLegibility;
+  background-image:
+    radial-gradient(
+      circle at 78% -8%,
+      color-mix(in srgb, var(--canvas-accent) 55%, transparent) 0,
+      transparent 30rem
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--card) 48%, transparent),
+      transparent 24rem
+    );
+  background-attachment: fixed;
 }
 
 button,
@@ -114,6 +132,21 @@ textarea {
 .financial-figures {
   font-family: var(--font-noto-sans-thai), "Leelawadee UI", Tahoma, sans-serif;
   font-variant-numeric: tabular-nums lining-nums;
+}
+
+.surface-card {
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--card) 96%, transparent);
+  box-shadow:
+    0 1px 2px rgb(10 35 30 / 5%),
+    0 12px 32px rgb(10 35 30 / 5%);
+}
+
+.dark .surface-card {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 24%),
+    0 18px 40px rgb(0 0 0 / 16%);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -55,7 +55,7 @@ export function WorkspaceEntryPanel() {
   return (
     <section
       aria-labelledby="existing-workspace-title"
-      className="border-primary/25 bg-primary/5 space-y-4 rounded-2xl border p-5"
+      className="surface-card space-y-4 p-5 sm:p-6"
     >
       <div>
         <p className="text-primary text-xs font-semibold">
@@ -71,7 +71,7 @@ export function WorkspaceEntryPanel() {
       <div className="grid gap-3">
         {allWorkspaces.map((candidate) => (
           <article
-            className="border-border bg-card flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="border-border bg-muted/25 hover:bg-muted/55 flex flex-col gap-3 rounded-2xl border p-4 transition-colors sm:flex-row sm:items-center sm:justify-between"
             key={candidate.id}
           >
             <div className="flex items-start gap-3">

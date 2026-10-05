@@ -111,12 +111,12 @@ function DesktopSidebar() {
   const { dictionary, locale } = useLocale();
 
   return (
-    <aside className="border-border bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 border-r lg:flex lg:flex-col">
-      <div className="border-border border-b px-5 py-5">
+    <aside className="bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 overflow-hidden text-white lg:flex lg:flex-col">
+      <div className="border-b border-white/10 px-5 py-6 [&_*]:!text-white">
         <Brand />
       </div>
       <nav aria-label="เมนูหลัก" className="flex-1 space-y-1 px-3 py-5">
-        <p className="text-muted-foreground px-3 pb-2 text-[0.6875rem] font-semibold tracking-[0.14em] uppercase">
+        <p className="px-3 pb-3 text-[0.6875rem] font-semibold tracking-[0.16em] text-white/45 uppercase">
           งานของฉัน
         </p>
         {navigation.map((item) => {
@@ -128,8 +128,8 @@ function DesktopSidebar() {
               className={cn(
                 "focus-visible:ring-focus/35 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:ring-3 focus-visible:outline-none",
                 current
-                  ? "bg-sidebar-active text-sidebar-active-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ? "bg-sidebar-active text-sidebar-active-foreground shadow-sm"
+                  : "text-white/65 hover:bg-white/8 hover:text-white",
               )}
               href={href}
               key={href}
@@ -140,10 +140,10 @@ function DesktopSidebar() {
           );
         })}
       </nav>
-      <div className="border-border text-muted-foreground border-t p-5 text-xs leading-5">
+      <div className="border-t border-white/10 p-5 text-xs leading-5 text-white/55">
         <p lang={locale}>{dictionary.footer.localProcessing}</p>
-        <p className="text-warning-strong mt-2 font-medium">
-          ข้อมูลกฎภาษียังไม่ผ่านการตรวจสอบ
+        <p className="mt-2 font-medium text-emerald-100/70">
+          ผลคำนวณเป็นค่าประมาณจากข้อมูลที่บันทึก
         </p>
       </div>
     </aside>
@@ -156,7 +156,7 @@ function MobileNavigation() {
   return (
     <nav
       aria-label="เมนูหลักบนมือถือ"
-      className="border-border bg-card/95 fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t px-[max(0.5rem,env(safe-area-inset-left))] pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="border-border bg-card/94 fixed right-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 z-40 grid grid-cols-4 rounded-[1.35rem] border p-1.5 shadow-[0_16px_45px_rgb(7_35_30/22%)] backdrop-blur-xl lg:hidden"
     >
       {mobileNavigation.map((item) => {
         const { href, icon: Icon, label } = item;
@@ -169,8 +169,10 @@ function MobileNavigation() {
           <Link
             aria-current={current ? "page" : undefined}
             className={cn(
-              "focus-visible:ring-focus/35 flex min-h-16 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[0.6875rem] font-medium focus-visible:ring-3 focus-visible:outline-none focus-visible:ring-inset",
-              current ? "text-primary" : "text-muted-foreground",
+              "focus-visible:ring-focus/35 flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 text-[0.6875rem] font-medium transition-colors focus-visible:ring-3 focus-visible:outline-none focus-visible:ring-inset",
+              current
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted",
             )}
             href={href}
             key={href}
@@ -194,7 +196,7 @@ function Footer() {
   ] as const;
 
   return (
-    <footer className="border-border bg-card mt-auto border-t px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
+    <footer className="border-border bg-card/70 mt-auto border-t px-4 pt-6 pb-28 backdrop-blur sm:px-6 lg:pb-6">
       <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} จ่ายไม่ไหวแล้ว</p>
         <nav
@@ -232,7 +234,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <DesktopSidebar />
       <div className="flex min-h-dvh min-w-0 flex-col lg:pl-64">
         <header
-          className="border-border bg-background/90 sticky top-0 z-20 border-b px-3 py-2.5 backdrop-blur sm:px-6 sm:py-3"
+          className="border-border/80 bg-background/82 sticky top-0 z-20 border-b px-4 py-3 backdrop-blur-xl sm:px-6"
           data-testid="app-header"
         >
           <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
@@ -255,7 +257,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <OfflineBanner />
         <main
-          className="w-full flex-1 px-4 py-6 pb-24 sm:px-6 sm:py-8 lg:pb-8"
+          className="w-full flex-1 px-4 py-6 pb-28 sm:px-6 sm:py-9 lg:pb-10"
           id="main-content"
         >
           <div className="mx-auto w-full max-w-7xl">{children}</div>

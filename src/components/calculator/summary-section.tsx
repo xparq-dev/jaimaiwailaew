@@ -50,23 +50,26 @@ export function SummarySectionPage() {
       description="ตรวจยอดรวม ประมาณการภาษี และดาวน์โหลดรายงาน"
       title="สรุปข้อมูล"
     >
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <SummaryCard label="ปีภาษี" value={`${workspace.taxYearBE}`} />
+      <section className="surface-card grid overflow-hidden sm:grid-cols-2 sm:divide-x xl:grid-cols-4">
+        <SummaryCard compact label="ปีภาษี" value={`${workspace.taxYearBE}`} />
         <SummaryCard
+          compact
           label="ประเภทผู้ใช้งาน"
           value={getPersonaLabel(workspace.persona)}
         />
         <SummaryCard
+          compact
           label="โหมด"
           value={getCalculationModeLabel(workspace.calculationMode)}
         />
         <SummaryCard
+          compact
           label="ช่วงเวลา"
           value={`${formatThaiDate(workspace.periodStart)} – ${formatThaiDate(workspace.periodEnd)}`}
         />
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-3">
         <SummaryCard
           label="รายรับรวม"
           value={formatThaiBaht(totals.totalIncomeSatang)}
@@ -76,24 +79,32 @@ export function SummarySectionPage() {
           value={formatThaiBaht(totals.totalExpenseSatang)}
         />
         <SummaryCard
+          featured
           label="ส่วนต่างก่อนภาษี"
           hint="รายรับหักรายจ่ายจากข้อมูลที่บันทึก ไม่ใช่เงินได้สุทธิทางภาษี"
           value={formatThaiBaht(totals.netBeforeTaxSatang)}
         />
+      </section>
+
+      <section className="surface-card grid overflow-hidden sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
+          compact
           label="ภาษีหัก ณ ที่จ่ายที่บันทึกไว้"
           value={formatThaiBaht(totals.totalWithholdingSatang)}
         />
         <SummaryCard
+          compact
           label="ค่าลดหย่อนที่บันทึกแบบร่าง"
           value={formatThaiBaht(totals.totalDeclaredAllowanceSatang)}
         />
         <SummaryCard
+          compact
           hint="เงินสมทบที่ระบบนำไปใช้ลดหย่อนภาษี ไม่ใช่การหักรายรับซ้ำ"
           label="ประกันสังคมที่ใช้คำนวณ"
           value={formatThaiBaht(socialSecurity.contributionSatang)}
         />
         <SummaryCard
+          compact
           hint="ยอดประมาณการก่อนภาษีหัก ณ ที่จ่ายและรายการหักอื่น"
           label="รายรับหลังหักประกันสังคม"
           value={formatThaiBaht(
@@ -116,7 +127,7 @@ export function SummarySectionPage() {
         <TaxEstimateUnavailableCard />
       )}
 
-      <section className="border-border bg-card rounded-2xl border p-5">
+      <section className="surface-card p-5 sm:p-6">
         <h2 className="font-semibold">ความครบถ้วนของข้อมูล</h2>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
           {completeness.statusLabel} ({completeness.score}/
@@ -138,7 +149,7 @@ export function SummarySectionPage() {
         />
       </section>
 
-      <section className="border-border bg-card rounded-2xl border p-5">
+      <section className="surface-card p-5 sm:p-6">
         <h2 className="font-semibold">สรุปรายเดือน (เลขคณิต)</h2>
         {monthlyRows.length === 0 ? (
           <p className="text-muted-foreground mt-3 text-sm">
@@ -231,17 +242,50 @@ function SummaryCard({
   label,
   value,
   hint,
+  compact = false,
+  featured = false,
 }: {
   label: string;
   value: string;
   hint?: string | undefined;
+  compact?: boolean;
+  featured?: boolean;
 }) {
   return (
-    <article className="border-border bg-card rounded-2xl border p-5 shadow-sm">
-      <p className="text-muted-foreground text-sm">{label}</p>
-      <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
+    <article
+      className={
+        featured
+          ? "bg-surface-strong relative overflow-hidden rounded-2xl p-5 text-white shadow-[0_16px_40px_rgb(8_48_41/18%)] sm:p-6"
+          : compact
+            ? "border-border border-b p-4 last:border-b-0 sm:p-5 xl:border-r xl:border-b-0 xl:last:border-r-0"
+            : "surface-card p-5 sm:p-6"
+      }
+    >
+      {featured ? (
+        <span className="bg-canvas-accent/12 absolute -right-10 -bottom-14 size-36 rounded-full blur-2xl" />
+      ) : null}
+      <p
+        className={
+          featured ? "text-sm text-white/65" : "text-muted-foreground text-sm"
+        }
+      >
+        {label}
+      </p>
+      <p
+        className={`${compact ? "text-lg" : "text-2xl"} financial-figures relative mt-2 font-bold tracking-[-0.03em]`}
+      >
+        {value}
+      </p>
       {hint ? (
-        <p className="text-muted-foreground mt-2 text-xs leading-5">{hint}</p>
+        <p
+          className={
+            featured
+              ? "mt-2 text-xs leading-5 text-white/55"
+              : "text-muted-foreground mt-2 text-xs leading-5"
+          }
+        >
+          {hint}
+        </p>
       ) : null}
     </article>
   );
@@ -255,7 +299,7 @@ function MessageList({
   items: readonly string[];
 }) {
   return (
-    <section className="border-border bg-card rounded-2xl border p-5">
+    <section className="surface-card p-5 sm:p-6">
       <h2 className="font-semibold">{title}</h2>
       <ul className="mt-3 space-y-2 text-sm leading-6">
         {items.map((item) => (

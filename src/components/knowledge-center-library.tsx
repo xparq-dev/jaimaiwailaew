@@ -35,7 +35,7 @@ export function KnowledgeCenterLibrary() {
 
       <section
         aria-label="ค้นหาและกรองบทความ"
-        className="border-border bg-card rounded-2xl border p-4 shadow-sm sm:p-5"
+        className="surface-card p-4 sm:p-6"
       >
         <label className="block" htmlFor="knowledge-search">
           <span className="font-semibold">ค้นหาหัวข้อที่ต้องการ</span>
@@ -48,7 +48,7 @@ export function KnowledgeCenterLibrary() {
               className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2"
             />
             <input
-              className="border-border bg-background focus:border-focus focus:ring-focus/20 min-h-12 w-full rounded-xl border py-3 pr-12 pl-12 text-base outline-none focus:ring-3"
+              className="border-border bg-card focus:border-focus focus:ring-focus/20 min-h-12 w-full rounded-xl border py-3 pr-12 pl-12 text-base shadow-inner shadow-black/[0.02] outline-none focus:ring-3"
               id="knowledge-search"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ค้นหาบทความ"
@@ -96,7 +96,7 @@ export function KnowledgeCenterLibrary() {
           {results.map((article) => (
             <li key={article.slug}>
               <Link
-                className="group border-border bg-card hover:border-focus/50 focus-visible:ring-focus flex h-full min-h-52 flex-col rounded-2xl border p-5 shadow-sm transition-colors focus-visible:ring-3 focus-visible:outline-none sm:p-6"
+                className="surface-card focus-visible:ring-focus group hover:border-primary/25 flex h-full min-h-52 flex-col p-5 transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgb(8_48_41/10%)] focus-visible:ring-3 focus-visible:outline-none sm:p-6"
                 href={`/learn/${article.slug}`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -129,7 +129,7 @@ export function KnowledgeCenterLibrary() {
           ))}
         </ul>
       ) : (
-        <section className="border-border bg-card rounded-2xl border p-8 text-center shadow-sm">
+        <section className="surface-card p-8 text-center">
           <h2 className="text-lg font-bold">ยังไม่พบบทความที่ตรงกัน</h2>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
             ลองใช้คำที่สั้นลง เลือกหมวดอื่น หรือแสดงบทความทั้งหมด

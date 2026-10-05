@@ -27,7 +27,7 @@ export function CalculatorSubNav() {
   return (
     <nav
       aria-label="เมนูย่อยเครื่องคำนวณ"
-      className="border-border bg-card -mx-4 mb-6 overflow-x-auto border-y px-4 py-2 sm:mx-0 sm:rounded-2xl sm:border sm:px-3 lg:mb-8"
+      className="border-border bg-card/85 -mx-4 overflow-x-auto border-y px-4 py-2.5 shadow-sm backdrop-blur sm:mx-0 sm:rounded-2xl sm:border sm:px-2.5"
     >
       <ul className="flex min-w-max gap-1">
         {calculatorSections.map(([href, label]) => {
@@ -37,9 +37,9 @@ export function CalculatorSubNav() {
               <Link
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-visible:ring-focus/35 inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-medium whitespace-nowrap focus-visible:ring-3 focus-visible:outline-none",
+                  "focus-visible:ring-focus/35 inline-flex min-h-10 items-center rounded-xl px-3.5 text-sm font-semibold whitespace-nowrap transition-all focus-visible:ring-3 focus-visible:outline-none",
                   active
-                    ? "bg-sidebar-active text-sidebar-active-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
                 href={href}

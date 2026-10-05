@@ -129,7 +129,7 @@ export function AllowanceSectionPage() {
         โปรดตรวจสอบยอดจริงและหลักฐานก่อนยื่นภาษี
       </div>
 
-      <section className="border-border bg-card rounded-2xl border p-5 shadow-sm">
+      <section className="surface-card p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="font-semibold">เงินสมทบประกันสังคม</h2>
@@ -268,7 +268,7 @@ export function AllowanceSectionPage() {
       </div>
 
       {entries.length === 0 ? (
-        <div className="border-border bg-card rounded-2xl border p-6 text-center">
+        <div className="surface-card p-8 text-center">
           <p className="font-medium">ยังไม่มีรายการค่าลดหย่อนแบบร่าง</p>
           <p className="text-muted-foreground mt-2 text-sm">
             บันทึกรายการที่วางแผนจะใช้สิทธิ เช่น ค่าลดหย่อนส่วนตัว ประกันชีวิต
@@ -342,10 +342,7 @@ export function AllowanceSectionPage() {
 
           <ul className="space-y-3 lg:hidden">
             {entries.map((entry) => (
-              <li
-                className="border-border bg-card rounded-2xl border p-4 shadow-sm"
-                key={entry.id}
-              >
+              <li className="surface-card p-4" key={entry.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-semibold">

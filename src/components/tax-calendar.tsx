@@ -13,10 +13,10 @@ function formatThaiDate(value: string): string {
 
 function CalendarEntry({ entry }: { readonly entry: TaxCalendarEntry }) {
   return (
-    <article className="border-border bg-card rounded-2xl border p-5 shadow-sm sm:p-6">
+    <article className="surface-card p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="bg-primary/10 text-primary rounded-xl p-2">
+          <span className="bg-success-soft text-success-strong rounded-xl p-2.5">
             <CalendarDays aria-hidden="true" className="size-5" />
           </span>
           <div>

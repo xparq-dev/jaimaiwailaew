@@ -36,7 +36,7 @@ export function PersonaLearningPath({
     return (
       <section
         aria-label="กำลังเตรียมเส้นทางแนะนำ"
-        className="border-border bg-card min-h-64 animate-pulse rounded-2xl border p-5 shadow-sm sm:p-6"
+        className="surface-card min-h-64 animate-pulse p-5 sm:p-6"
       >
         <div className="bg-muted h-5 w-40 rounded" />
         <div className="bg-muted mt-4 h-8 w-3/4 rounded" />
@@ -57,7 +57,7 @@ export function PersonaLearningPath({
           ? "personalized-read-next"
           : "personalized-learning-path"
       }
-      className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm"
+      className="surface-card overflow-hidden"
     >
       <div className="border-border bg-muted/40 border-b p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">

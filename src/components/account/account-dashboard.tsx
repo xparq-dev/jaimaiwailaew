@@ -92,7 +92,7 @@ export function AccountDashboard() {
 
   if (!user) {
     return (
-      <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
+      <section className="surface-card p-6">
         <h2 className="text-xl font-bold">เข้าสู่ระบบเพื่อดูภาพรวมบัญชี</h2>
         <p className="text-muted-foreground mt-2 max-w-2xl leading-7">
           ข้อมูลเครื่องคำนวณในอุปกรณ์นี้ยังอยู่ตามเดิม เมื่อลงชื่อเข้าใช้
@@ -135,10 +135,10 @@ export function AccountDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
+      <section className="surface-card overflow-hidden">
         <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
           <div className="flex items-start gap-3">
-            <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-xl">
+            <span className="bg-success-soft text-success-strong grid size-11 shrink-0 place-items-center rounded-xl">
               <ShieldCheck aria-hidden="true" className="size-5" />
             </span>
             <div>
@@ -238,14 +238,14 @@ export function AccountDashboard() {
         </div>
 
         {allWorkspaces.length ? (
-          <ul className="border-border bg-card mt-4 divide-y overflow-hidden rounded-2xl border shadow-sm">
+          <ul className="surface-card mt-4 divide-y overflow-hidden">
             {allWorkspaces.map((item) => (
               <li
                 className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                 key={item.id}
               >
                 <div className="flex min-w-0 items-start gap-3">
-                  <span className="bg-primary/10 text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+                  <span className="bg-success-soft text-success-strong grid size-10 shrink-0 place-items-center rounded-xl">
                     <FolderOpen aria-hidden="true" className="size-5" />
                   </span>
                   <div className="min-w-0">
@@ -295,7 +295,7 @@ export function AccountDashboard() {
             ))}
           </ul>
         ) : (
-          <div className="border-border bg-card mt-4 rounded-2xl border p-6 shadow-sm">
+          <div className="surface-card mt-4 p-6">
             <h3 className="text-lg font-bold">ยังไม่มีชุดข้อมูลในอุปกรณ์นี้</h3>
             <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
               สร้างชุดข้อมูลใหม่ หรือเปิดการสำรองข้อมูลเพื่อดึงข้อมูลของบัญชีนี้

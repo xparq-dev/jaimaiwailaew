@@ -75,7 +75,7 @@ export function AuthForm({ mode }: { readonly mode: "login" | "signup" }) {
   }
 
   return (
-    <div className="border-border bg-card mx-auto max-w-md space-y-6 rounded-2xl border p-5 shadow-sm sm:p-6">
+    <div className="surface-card mx-auto max-w-md space-y-6 p-5 sm:p-7">
       {!configured ? (
         <div className="border-warning/30 bg-warning-soft text-warning-strong rounded-xl border p-4 text-sm leading-6">
           ระบบเข้าสู่ระบบยังไม่พร้อมใช้งาน ข้อมูลในเครื่องยังใช้งานได้ปกติ

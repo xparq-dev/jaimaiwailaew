@@ -81,7 +81,7 @@ function CalculatorOverviewContent({
     <>
       <section
         aria-label="ชุดข้อมูลที่กำลังใช้"
-        className="border-border flex flex-col gap-4 border-y py-4 sm:flex-row sm:items-center sm:justify-between"
+        className="surface-card flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
       >
         <div className="min-w-0">
           <p className="text-muted-foreground text-xs font-semibold tracking-[0.1em] uppercase">
@@ -104,9 +104,9 @@ function CalculatorOverviewContent({
 
       <section
         aria-labelledby="financial-overview-heading"
-        className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm"
+        className="surface-card overflow-hidden"
       >
-        <div className="border-border flex flex-col gap-2 border-b px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+        <div className="border-border flex flex-col gap-2 border-b px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-7 sm:py-5">
           <div>
             <p className="text-muted-foreground text-xs font-semibold tracking-[0.1em] uppercase">
               สรุปยอด
@@ -124,9 +124,10 @@ function CalculatorOverviewContent({
         </div>
 
         <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <div className="bg-primary text-primary-foreground px-5 py-6 sm:px-6 sm:py-7">
+          <div className="bg-surface-strong relative overflow-hidden px-5 py-7 text-white sm:px-7 sm:py-8">
+            <div className="bg-canvas-accent/12 absolute -right-16 -bottom-20 size-48 rounded-full blur-2xl" />
             <p className="text-sm font-medium opacity-70">ส่วนต่างก่อนภาษี</p>
-            <p className="financial-figures mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            <p className="financial-figures relative mt-2 text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
               {formatThaiBaht(totals.netBeforeTaxSatang)}
             </p>
             <p className="mt-3 text-xs leading-5 opacity-65">
@@ -134,7 +135,7 @@ function CalculatorOverviewContent({
             </p>
           </div>
 
-          <dl className="divide-border grid divide-y px-5 sm:px-6">
+          <dl className="divide-border grid divide-y px-5 sm:px-7">
             <div className="flex items-center justify-between gap-4 py-4">
               <dt className="text-muted-foreground text-sm">รายรับรวม</dt>
               <dd className="financial-figures font-bold">
@@ -176,14 +177,14 @@ function CalculatorOverviewContent({
           </Link>
         </div>
 
-        <div className="border-border bg-card mt-4 divide-y overflow-hidden rounded-2xl border shadow-sm sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+        <div className="surface-card mt-4 divide-y overflow-hidden sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
           {sections.map(({ href, icon: Icon, title, description }, index) => (
             <Link
-              className={`focus-visible:ring-focus/35 group hover:bg-muted/60 flex items-start gap-4 px-5 py-4 transition-colors focus-visible:ring-3 focus-visible:outline-none focus-visible:ring-inset sm:px-6 sm:py-5 ${index > 1 ? "sm:border-border sm:border-t" : ""}`}
+              className={`focus-visible:ring-focus/35 group hover:bg-muted/55 flex items-start gap-4 px-5 py-5 transition-colors focus-visible:ring-3 focus-visible:outline-none focus-visible:ring-inset sm:px-6 sm:py-6 ${index > 1 ? "sm:border-border sm:border-t" : ""}`}
               href={href}
               key={href}
             >
-              <span className="bg-muted text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+              <span className="bg-success-soft text-success-strong grid size-11 shrink-0 place-items-center rounded-xl">
                 <Icon aria-hidden="true" className="size-5" />
               </span>
               <span className="min-w-0 flex-1">

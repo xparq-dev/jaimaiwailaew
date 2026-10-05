@@ -177,7 +177,7 @@ export function PdfExportPanel({
   return (
     <section
       aria-labelledby="pdf-export-title"
-      className="border-border bg-card rounded-2xl border p-5 shadow-sm"
+      className="surface-card p-5 sm:p-6"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">

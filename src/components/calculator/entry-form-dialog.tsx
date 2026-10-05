@@ -77,7 +77,7 @@ export function EntryFormDialog<TFieldValues extends FieldValues>({
     <dialog
       aria-labelledby={titleId}
       aria-modal="true"
-      className="border-border bg-card text-foreground m-auto w-[min(100%,36rem)] rounded-2xl border p-0 shadow-xl backdrop:bg-black/50"
+      className="border-border bg-card text-foreground m-0 mt-auto max-h-[92dvh] w-full rounded-t-3xl border p-0 shadow-2xl backdrop:bg-black/55 sm:m-auto sm:w-[min(calc(100%_-_2rem),38rem)] sm:rounded-3xl"
       onCancel={(event) => {
         event.preventDefault();
         onOpenChange(false);
@@ -86,7 +86,7 @@ export function EntryFormDialog<TFieldValues extends FieldValues>({
       ref={dialogRef}
     >
       <form
-        className="space-y-5 p-6"
+        className="max-h-[92dvh] space-y-5 overflow-y-auto p-5 sm:p-7"
         noValidate
         onSubmit={form.handleSubmit(async (values) => {
           const errorMessage = await onSubmit(values);
@@ -98,7 +98,7 @@ export function EntryFormDialog<TFieldValues extends FieldValues>({
         })}
       >
         <div>
-          <h2 className="text-lg font-bold" id={titleId}>
+          <h2 className="text-xl font-bold tracking-tight" id={titleId}>
             {title}
           </h2>
         </div>
@@ -108,7 +108,7 @@ export function EntryFormDialog<TFieldValues extends FieldValues>({
             {form.formState.errors.root.message}
           </p>
         ) : null}
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="border-border bg-card/95 sticky bottom-0 -mx-5 -mb-5 flex flex-col-reverse gap-2 border-t px-5 py-4 backdrop-blur sm:-mx-7 sm:-mb-7 sm:flex-row sm:justify-end sm:px-7">
           <Button
             onClick={() => onOpenChange(false)}
             ref={cancelRef}
@@ -167,7 +167,7 @@ export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       autoComplete={props.autoComplete ?? "off"}
-      className="border-border bg-background focus-visible:ring-focus/35 min-h-11 w-full rounded-xl border px-3 text-sm focus-visible:ring-3 focus-visible:outline-none"
+      className="border-border bg-card focus-visible:ring-focus/35 focus-visible:border-focus min-h-12 w-full rounded-xl border px-3.5 text-sm shadow-inner shadow-black/[0.02] transition-colors focus-visible:ring-3 focus-visible:outline-none"
     />
   );
 }
@@ -178,7 +178,7 @@ export function SelectInput(
   return (
     <select
       {...props}
-      className="border-border bg-background focus-visible:ring-focus/35 min-h-11 w-full rounded-xl border px-3 text-sm focus-visible:ring-3 focus-visible:outline-none"
+      className="border-border bg-card focus-visible:ring-focus/35 focus-visible:border-focus min-h-12 w-full rounded-xl border px-3.5 text-sm shadow-inner shadow-black/[0.02] focus-visible:ring-3 focus-visible:outline-none"
     />
   );
 }
@@ -190,7 +190,7 @@ export function TextAreaInput(
     <textarea
       {...props}
       autoComplete="off"
-      className="border-border bg-background focus-visible:ring-focus/35 min-h-24 w-full rounded-xl border px-3 py-2 text-sm focus-visible:ring-3 focus-visible:outline-none"
+      className="border-border bg-card focus-visible:ring-focus/35 focus-visible:border-focus min-h-28 w-full rounded-xl border px-3.5 py-3 text-sm shadow-inner shadow-black/[0.02] focus-visible:ring-3 focus-visible:outline-none"
     />
   );
 }

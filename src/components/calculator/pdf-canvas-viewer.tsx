@@ -75,8 +75,11 @@ export function PdfCanvasViewer({ blob, className }: PdfCanvasViewerProps) {
           const ctx = canvas.getContext("2d");
           if (!ctx) continue;
 
-          await page.render({ canvas, canvasContext: ctx, viewport: scaledViewport })
-            .promise;
+          await page.render({
+            canvas,
+            canvasContext: ctx,
+            viewport: scaledViewport,
+          }).promise;
           if (cancelled) return;
         }
 

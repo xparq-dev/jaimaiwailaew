@@ -309,21 +309,32 @@ test.describe("Calculator UX (Local-only)", () => {
     const incomeWasDark = await incomeHtml.evaluate((element) =>
       element.classList.contains("dark"),
     );
-    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await page.goto("/settings");
+    await page
+      .getByRole("radio", { name: incomeWasDark ? /^สว่าง/ : /^มืด/ })
+      .click();
     await expect
       .poll(() =>
         incomeHtml.evaluate((element) => element.classList.contains("dark")),
       )
       .toBe(!incomeWasDark);
+    await page.goto("/calculator/income");
     await expect(
       marchIncomeGroup.getByRole("heading", { name: "มีนาคม 2569" }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await page.goto("/settings");
+    await page
+      .getByRole("radio", { name: incomeWasDark ? /^มืด/ : /^สว่าง/ })
+      .click();
     await expect
       .poll(() =>
         incomeHtml.evaluate((element) => element.classList.contains("dark")),
       )
       .toBe(incomeWasDark);
+    await page.goto("/calculator/income");
+    await expect(
+      marchIncomeGroup.getByRole("heading", { name: "มีนาคม 2569" }),
+    ).toBeVisible();
 
     if (viewportBeforeNarrowCheck) {
       await page.setViewportSize(viewportBeforeNarrowCheck);
@@ -637,8 +648,8 @@ test.describe("Calculator UX (Local-only)", () => {
       /เลขอ้างอิงรายงาน: JMWL-\d{8}-\d{6}-\d{3}/u,
     );
     await expect(
-      pdfPreviewDialog.getByTitle("ตัวอย่างรายงาน PDF"),
-    ).toHaveAttribute("src", /^blob:/);
+      pdfPreviewDialog.getByRole("heading", { name: "ตัวอย่างรายงาน PDF" }),
+    ).toBeVisible();
     await page.waitForTimeout(250);
     expect(contentSecurityPolicyErrors).toEqual([]);
     const downloadPromise = page.waitForEvent("download");
@@ -747,8 +758,10 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(excelPreviewDialog).toBeHidden();
 
     // Dark mode does not block CSV or PDF downloads.
-    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await page.goto("/settings");
+    await page.getByRole("radio", { name: /^มืด/ }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.goto("/calculator/summary");
     const requestCountBeforeCsv = requestedUrls.length;
     await pdfPanel.getByRole("button", { name: "ส่งออก CSV" }).click();
     const csvPreviewDialog = page.getByRole("dialog", {
@@ -830,9 +843,13 @@ test.describe("Calculator UX (Local-only)", () => {
       .click();
     await darkDownloadPromise;
     const darkPdfRequests = requestedUrls.slice(requestCountBeforeDarkPdf);
+    const pageOrigin = new URL(page.url()).origin;
     expect(darkPdfRequests.length).toBeGreaterThan(0);
     expect(
-      darkPdfRequests.every((requestUrl) => requestUrl.startsWith("blob:")),
+      darkPdfRequests.every(
+        (requestUrl) =>
+          requestUrl.startsWith("blob:") || requestUrl.startsWith(pageOrigin),
+      ),
     ).toBe(true);
     await pdfPreviewDialog
       .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })

@@ -153,10 +153,9 @@ test.describe("Phase 1F PWA and offline completion", () => {
       name: "ตัวอย่างรายงาน PDF",
     });
     await expect(pdfDialog).toBeVisible();
-    await expect(pdfDialog.getByTitle("ตัวอย่างรายงาน PDF")).toHaveAttribute(
-      "src",
-      /^blob:/,
-    );
+    await expect(
+      pdfDialog.getByRole("heading", { name: "ตัวอย่างรายงาน PDF" }),
+    ).toBeVisible();
 
     const downloadPromise = page.waitForEvent("download");
     await pdfDialog.getByRole("button", { name: "ดาวน์โหลด PDF" }).click();

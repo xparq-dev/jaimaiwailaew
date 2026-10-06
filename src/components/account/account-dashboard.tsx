@@ -159,7 +159,7 @@ export function AccountDashboard() {
             <Button asChild size="sm" variant="secondary">
               <Link href="/settings">
                 <Settings aria-hidden="true" className="size-4" />
-                ตั้งค่าการซิงก์
+                การตั้งค่า
               </Link>
             </Button>
             <Button
@@ -305,7 +305,7 @@ export function AccountDashboard() {
                 <Link href="/start/income-type">สร้างชุดข้อมูล</Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link href="/settings">ตั้งค่าการสำรองข้อมูล</Link>
+                <Link href="/settings">เปิดการตั้งค่า</Link>
               </Button>
             </div>
           </div>

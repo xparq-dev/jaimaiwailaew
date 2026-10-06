@@ -16,6 +16,10 @@
   --color-border: var(--border);
   --color-focus: var(--focus);
   --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-hover: var(--sidebar-hover);
   --color-sidebar-active: var(--sidebar-active);
   --color-sidebar-active-foreground: var(--sidebar-active-foreground);
   --color-success-soft: var(--success-soft);
@@ -41,7 +45,7 @@
 
 :root {
   color-scheme: light;
-  --background: #f3f6f3;
+  --background: #f5f7f5;
   --foreground: #10211f;
   --card: #ffffff;
   --card-foreground: #10211f;
@@ -53,9 +57,13 @@
   --secondary-foreground: #ffffff;
   --border: #d8e2dc;
   --focus: #0f9f78;
-  --sidebar: #092621;
-  --sidebar-active: #d9f5e9;
-  --sidebar-active-foreground: #073d31;
+  --sidebar: #fbfdfb;
+  --sidebar-foreground: #18312c;
+  --sidebar-muted: #62736e;
+  --sidebar-border: #dce5df;
+  --sidebar-hover: #eef4f0;
+  --sidebar-active: #dff3ea;
+  --sidebar-active-foreground: #08634a;
   --success-soft: #dff5eb;
   --success-strong: #06664d;
   --warning: #b45309;
@@ -73,7 +81,7 @@
 
 .dark {
   color-scheme: dark;
-  --background: #081512;
+  --background: #071411;
   --foreground: #f4faf7;
   --card: #0f211d;
   --card-foreground: #f8fafc;
@@ -85,9 +93,13 @@
   --secondary-foreground: #06271d;
   --border: #28433b;
   --focus: #5de1b9;
-  --sidebar: #06120f;
+  --sidebar: #091b17;
+  --sidebar-foreground: #eef8f4;
+  --sidebar-muted: #91aaa1;
+  --sidebar-border: #223d35;
+  --sidebar-hover: #112a24;
   --sidebar-active: #173c33;
-  --sidebar-active-foreground: #f8fafc;
+  --sidebar-active-foreground: #7ce5bf;
   --success-soft: #0c352b;
   --success-strong: #7ce5bf;
   --warning: #fbbf24;

@@ -132,7 +132,7 @@ test("publishes verified filing dates with official sources only", async ({
     .toBe(true);
 });
 
-test("uses the signed-in provider avatar in the desktop brand", async ({
+test("uses the signed-in provider avatar in the desktop account area", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name.includes("mobile"));
@@ -161,12 +161,9 @@ test("uses the signed-in provider avatar in the desktop brand", async ({
   );
 
   await page.goto("/");
-  const desktopBrand = page
-    .getByRole("navigation", { name: "เมนูหลัก", exact: true })
-    .locator("xpath=preceding-sibling::div")
-    .getByRole("link", { name: "จ่ายไม่ไหวแล้ว" });
-  await expect(desktopBrand.locator("img")).toBeVisible();
-  await expect(desktopBrand.getByText("JM", { exact: true })).toHaveCount(0);
+  const accountLink = page.getByRole("link", { name: "เปิดบัญชีของฉัน" });
+  await expect(accountLink.locator("img")).toBeVisible();
+  await expect(accountLink.getByText("JM", { exact: true })).toHaveCount(0);
 });
 
 test("serves a scoped PWA manifest and baseline security headers", async ({
@@ -406,7 +403,7 @@ test("recommends a local-first learning path from the active workspace persona",
   ).toBeVisible();
 });
 
-test("keeps the interface Thai-only and switches theme without changing the URL", async ({
+test("keeps the interface Thai-only and changes theme from settings", async ({
   page,
 }) => {
   await page.goto("/");
@@ -421,14 +418,15 @@ test("keeps the interface Thai-only and switches theme without changing the URL"
   );
   await expect(page.getByText("EN", { exact: true })).toHaveCount(0);
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
-  await expect(page).toHaveURL(/\/$/);
-
   const html = page.locator("html");
-  const wasDark = await html.evaluate((element) =>
-    element.classList.contains("dark"),
-  );
-  await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+  await page.goto("/settings");
+  await page.getByRole("radio", { name: /^มืด/ }).click();
   await expect
     .poll(() => html.evaluate((element) => element.classList.contains("dark")))
-    .toBe(!wasDark);
+    .toBe(true);
+  await page.getByRole("radio", { name: /^สว่าง/ }).click();
+  await expect
+    .poll(() => html.evaluate((element) => element.classList.contains("dark")))
+    .toBe(false);
+  await expect(page).toHaveURL(/\/settings$/);
 });

@@ -10,7 +10,6 @@ export interface Dictionary {
     online: string;
     offline: string;
     skipToContent: string;
-    theme: string;
   };
   navigation: {
     home: string;
@@ -39,7 +38,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
       online: "ออนไลน์",
       offline: "ออฟไลน์",
       skipToContent: "ข้ามไปยังเนื้อหาหลัก",
-      theme: "เปลี่ยนธีม",
     },
     navigation: {
       home: "ภาพรวม",

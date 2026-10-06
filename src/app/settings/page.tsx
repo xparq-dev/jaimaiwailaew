@@ -1,3 +1,4 @@
+import { AppearanceSettings } from "@/components/account/appearance-settings";
 import { SettingsPanel } from "@/components/account/settings-panel";
 import { PageHeader } from "@/components/page-header";
 
@@ -5,10 +6,11 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        description="เลือกสำรองข้อมูล ใช้งานหลายอุปกรณ์ หรือลบข้อมูลสำรอง"
+        description="เลือกรูปแบบการแสดงผลและจัดการข้อมูลสำรองของบัญชีนี้"
         eyebrow="บัญชีของฉัน"
-        title="การสำรองข้อมูล"
+        title="การตั้งค่า"
       />
+      <AppearanceSettings />
       <SettingsPanel />
     </div>
   );

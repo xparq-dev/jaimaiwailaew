@@ -309,21 +309,32 @@ test.describe("Calculator UX (Local-only)", () => {
     const incomeWasDark = await incomeHtml.evaluate((element) =>
       element.classList.contains("dark"),
     );
-    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await page.goto("/settings");
+    await page
+      .getByRole("radio", { name: incomeWasDark ? /^สว่าง/ : /^มืด/ })
+      .click();
     await expect
       .poll(() =>
         incomeHtml.evaluate((element) => element.classList.contains("dark")),
       )
       .toBe(!incomeWasDark);
+    await page.goto("/calculator/income");
     await expect(
       marchIncomeGroup.getByRole("heading", { name: "มีนาคม 2569" }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await page.goto("/settings");
+    await page
+      .getByRole("radio", { name: incomeWasDark ? /^มืด/ : /^สว่าง/ })
+      .click();
     await expect
       .poll(() =>
         incomeHtml.evaluate((element) => element.classList.contains("dark")),
       )
       .toBe(incomeWasDark);
+    await page.goto("/calculator/income");
+    await expect(
+      marchIncomeGroup.getByRole("heading", { name: "มีนาคม 2569" }),
+    ).toBeVisible();
 
     if (viewportBeforeNarrowCheck) {
       await page.setViewportSize(viewportBeforeNarrowCheck);
@@ -747,8 +758,10 @@ test.describe("Calculator UX (Local-only)", () => {
     await expect(excelPreviewDialog).toBeHidden();
 
     // Dark mode does not block CSV or PDF downloads.
-    await page.getByRole("button", { name: "เปลี่ยนธีม" }).click();
+    await page.goto("/settings");
+    await page.getByRole("radio", { name: /^มืด/ }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.goto("/calculator/summary");
     const requestCountBeforeCsv = requestedUrls.length;
     await pdfPanel.getByRole("button", { name: "ส่งออก CSV" }).click();
     const csvPreviewDialog = page.getByRole("dialog", {

@@ -137,7 +137,6 @@ function Brand({
 
 function DesktopSidebar() {
   const pathname = usePathname();
-  const { dictionary, locale } = useLocale();
 
   return (
     <aside className="bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-[17rem] overflow-hidden border-r border-white/8 text-white before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-72 before:bg-[radial-gradient(circle_at_top_left,rgba(71,217,172,0.16),transparent_68%)] lg:flex lg:flex-col">
@@ -208,22 +207,6 @@ function DesktopSidebar() {
           </section>
         ))}
       </nav>
-      <div className="relative p-4 pt-2">
-        <div className="rounded-2xl border border-white/8 bg-black/10 p-3.5 text-xs leading-5 text-white/52">
-          <div className="flex items-start gap-2.5">
-            <ShieldCheck
-              aria-hidden="true"
-              className="mt-0.5 size-4 shrink-0 text-emerald-300"
-            />
-            <div>
-              <p className="font-semibold text-white/82">เก็บข้อมูลในเครื่อง</p>
-              <p className="mt-0.5" lang={locale}>
-                {dictionary.footer.localProcessing}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }

@@ -8,6 +8,10 @@ Product Requirements Document
 > แต่ implementation ที่ผ่าน Phase 1E ใช้ Supabase เฉพาะ Auth และใช้ Cloudflare Worker กับ private R2
 > สำหรับ Cloud Sync แบบ opt-in รายการ Email login, account deletion, audit log, consent management,
 > dashboard และ Supabase Database/RLS จึงเป็น roadmap ที่ต้อง re-scope ไม่ใช่สถานะปัจจุบัน
+> ผล reconciliation ล่าสุดของงานข้าม Phase อยู่ที่
+> [`CrossPhaseBacklogCloseout.md`](./CrossPhaseBacklogCloseout.md): email verification/password
+> reset ไม่ใช้กับ OAuth-only Production, RLS ถูกแทนด้วย JWT/R2 owner isolation, export quota
+> ถูกย้ายไปพิจารณากับ Phase 6 และ server-side download audit ต้องมี privacy/legal scope ใหม่
 
 ชื่อและตัวตนผลิตภัณฑ์
 รายการ	ข้อกำหนด

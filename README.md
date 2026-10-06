@@ -9,9 +9,9 @@
 
 ## สถานะโครงการ
 
-> สถานะ: Phase 1E — Auth + Local-first Cloud Sync ปิด Release Gate เป็น `PASS` แล้ว
-> Phase 1F — PWA and Offline Completion merge ผ่าน PR #19 และ automated Production gate เป็น `PASS`
-> ส่วน manual device certification ยัง `HOLD` จนกว่าจะบันทึกผลติดตั้งบน Android/iOS/Desktop ครบ
+> สถานะ: พัฒนาผ่าน Phase 5B — Tax Calendar แล้ว โดย PR #38 และ UX/UI redesign/navigation
+> ผ่าน PR #39/#41 ขึ้น Production เรียบร้อย ส่วน Phase 1F manual device certification ยัง `HOLD`
+> จนกว่าจะบันทึกผลติดตั้งบน Android/iOS/Desktop ครบ
 
 โครงการพัฒนาผ่าน Phase 1A–1D, Tax Rules Verification และ Phase 1E แล้ว ปัจจุบันรองรับ
 เครื่องคำนวณแบบ local-first, การประมาณการภาษีจากชุดกฎปี 2568/2569 ที่เผยแพร่เป็นเวอร์ชัน
@@ -21,6 +21,8 @@
 Phase 1F รองรับ installability metadata, public app shell, versioned tax-rule runtime,
 offline Calculator/PDF, offline status และ cache privacy แล้ว PR #20 เพิ่ม multi-workspace,
 cross-device sync และ safe deletion สำหรับสมาชิก โดยยังรักษา local-first/opt-in sync ตามเดิม
+Phase 2–4 เพิ่ม Knowledge Center, Account/Cloud controls และรายงานที่เลือกช่วง/รูปแบบได้
+ส่วน Phase 5A–5B เพิ่มแหล่งอ้างอิงกฎภาษีและปฏิทินกำหนดยื่นแบบที่ตรวจสอบแล้ว
 หลักฐาน release hardening อยู่ที่
 [`Phase1GReleaseHardening.md`](./docs/Phase1GReleaseHardening.md)
 
@@ -145,7 +147,7 @@ certification สำหรับ install UI, standalone launch และ icon/sa
 [`docs/Checklist ก่อน Deploy.md`](./docs/Checklist%20ก่อน%20Deploy.md) และตรวจว่าไม่มี secret
 หรือข้อมูลการเงินของผู้ใช้ใน source, build log หรือ public cache
 
-สถานะ deployment ที่ตรวจล่าสุดเมื่อ 2026-09-25:
+สถานะ deployment ที่ตรวจล่าสุดเมื่อ 2026-10-06:
 
 - GitHub: <https://github.com/xparq-dev/jaimaiwailaew>
 - Production: <https://jaimaiwailaew.vercel.app>
@@ -166,6 +168,8 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 - การอัปเดตกฎหมายอัตโนมัติโดยไม่มี reviewed publish workflow
 
 รายละเอียดข้อจำกัดล่าสุดให้ยึดเอกสารใน `docs/` เป็นหลัก
+รายการที่ส่งต่อข้าม Phase และ disposition ล่าสุดอยู่ที่
+[`CrossPhaseBacklogCloseout.md`](./docs/CrossPhaseBacklogCloseout.md)
 
 ## ข้อจำกัดที่ยังต้องดำเนินการภายนอก
 
@@ -176,4 +180,6 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 - Cloudflare Worker/R2 ใช้งานกับ Cloud Sync แล้ว แต่ custom domain และ DNS/WAF/Analytics ยังต้องตัดสินใจแยก
 - หน้าเว็บตั้ง `noindex` ไว้ใน Foundation โดยตั้งใจ ต้องทบทวนหลังเนื้อหาและกฎผ่านการอนุมัติ
 - PWA มี PNG regular/maskable icons แล้ว แต่ยังต้องบันทึกผลการติดตั้งและการแสดงไอคอนบนอุปกรณ์จริงก่อนให้ manual device certification เป็น `PASS`
-- CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ก่อนเปิดรับข้อมูลจริงควรประเมิน nonce-based CSP เทียบกับต้นทุน dynamic rendering
+- CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ประเมิน nonce-based CSP แล้ว
+  และคง policy ปัจจุบันเพื่อรักษา static/PWA behavior ตาม
+  [`SecurityCspDecision.md`](./docs/SecurityCspDecision.md)

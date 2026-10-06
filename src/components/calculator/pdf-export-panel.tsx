@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileSearch, X } from "lucide-react";
+import { Download, FileSearch, FileX, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import type { CalculatorWorkspace } from "@/calculator/types";
@@ -346,11 +346,29 @@ export function PdfExportPanel({
 
           <div className="bg-muted min-h-0 flex-1 p-2 sm:p-4">
             {preview ? (
-              <iframe
+              <object
+                aria-label="ตัวอย่างรายงาน PDF"
                 className="h-full min-h-80 w-full rounded-lg bg-white"
-                src={preview.url}
-                title="ตัวอย่างรายงาน PDF"
-              />
+                data={preview.url}
+                type="application/pdf"
+              >
+                {/* Fallback: shown when browser blocks blob PDF rendering (e.g. Brave on mobile) */}
+                <div className="flex h-full min-h-80 flex-col items-center justify-center gap-4 rounded-lg bg-white p-6 text-center">
+                  <FileX
+                    aria-hidden="true"
+                    className="text-muted-foreground size-12"
+                  />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">
+                      เบราว์เซอร์นี้ไม่รองรับการแสดง PDF ในหน้านี้
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      กดปุ่ม &ldquo;ดาวน์โหลด PDF&rdquo;
+                      ด้านล่างเพื่อบันทึกไฟล์ลงอุปกรณ์แทน
+                    </p>
+                  </div>
+                </div>
+              </object>
             ) : null}
           </div>
 

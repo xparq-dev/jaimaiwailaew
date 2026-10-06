@@ -109,9 +109,11 @@ describe("PdfExportPanel", () => {
     expect(previewDialog).toHaveTextContent(
       /เลขอ้างอิงรายงาน: JMWL-\d{8}-\d{6}-\d{3}/u,
     );
-    expect(
-      screen.getByTitle<HTMLIFrameElement>("ตัวอย่างรายงาน PDF"),
-    ).toHaveAttribute("src", "blob:local-pdf-preview");
+    const pdfObject = previewDialog.querySelector<HTMLObjectElement>(
+      'object[type="application/pdf"]',
+    );
+    expect(pdfObject).not.toBeNull();
+    expect(pdfObject).toHaveAttribute("data", "blob:local-pdf-preview");
 
     await user.click(screen.getByRole("button", { name: "ดาวน์โหลด PDF" }));
     expect(downloadLocalPdfArtifactMock).toHaveBeenCalledWith(artifact);

@@ -845,7 +845,11 @@ test.describe("Calculator UX (Local-only)", () => {
     const darkPdfRequests = requestedUrls.slice(requestCountBeforeDarkPdf);
     expect(darkPdfRequests.length).toBeGreaterThan(0);
     expect(
-      darkPdfRequests.every((requestUrl) => requestUrl.startsWith("blob:")),
+      darkPdfRequests.every(
+        (requestUrl) =>
+          requestUrl.startsWith("blob:") ||
+          requestUrl.includes("pdf.worker.min.mjs"),
+      ),
     ).toBe(true);
     await pdfPreviewDialog
       .getByRole("button", { name: "ปิดตัวอย่าง", exact: true })

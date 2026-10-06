@@ -1,13 +1,12 @@
 import { notFound } from "next/navigation";
 
 import { OnboardingWizard } from "@/components/calculator/onboarding-wizard";
-import { startPlaceholders } from "@/content/route-placeholders";
 
 const validFlows = ["income-type", "pnd94", "pnd91", "multi-income"] as const;
 type ValidFlow = (typeof validFlows)[number];
 
 export function generateStaticParams() {
-  return Object.keys(startPlaceholders).map((flow) => ({ flow }));
+  return validFlows.map((flow) => ({ flow }));
 }
 
 export default async function StartFlowPage({

@@ -8,11 +8,11 @@ export default function AccessibilityPage() {
   return (
     <LegalPage
       description="แนวทางการออกแบบให้ผู้ใช้หลากหลายกลุ่มเข้าถึงเนื้อหาและการควบคุมได้"
-      eyebrow="การเข้าถึง · Placeholder"
-      notice="เรายังไม่ได้ทำ accessibility audit โดยผู้ตรวจอิสระ ช่องทางแจ้งปัญหาจะเพิ่มก่อนเปิด production"
+      eyebrow="การเข้าถึง"
+      notice="ระบบผ่านการตรวจอัตโนมัติและ browser tests ตาม release baseline แล้ว แต่ยังไม่ได้รับการตรวจ accessibility โดยผู้ตรวจอิสระ"
       sections={[
         {
-          title: "สิ่งที่รองรับใน Foundation",
+          title: "สิ่งที่รองรับในปัจจุบัน",
           content: (
             <p>
               โครงสร้างใช้ semantic HTML, skip link, keyboard focus
@@ -34,9 +34,9 @@ export default function AccessibilityPage() {
           title: "งานที่ต้องตรวจต่อ",
           content: (
             <p>
-              ก่อน production ต้องตรวจด้วย keyboard, screen reader, zoom, mobile
-              viewport และ automated accessibility tooling
-              พร้อมแก้ข้อบกพร่องที่พบ
+              ยังต้องทดสอบกับ screen reader, การ zoom
+              และอุปกรณ์จริงให้ครอบคลุมมากขึ้น
+              เมื่อพบอุปสรรคในการใช้งานจะบันทึกและแก้ไขตามลำดับความสำคัญ
             </p>
           ),
         },

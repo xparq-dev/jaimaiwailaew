@@ -9,8 +9,8 @@
 
 ## สถานะโครงการ
 
-> สถานะ: พัฒนาผ่าน Phase 5B — Tax Calendar แล้ว โดย PR #38 และ UX/UI redesign
-> ผ่าน PR #39 ขึ้น Production เรียบร้อย ส่วน Phase 1F manual device certification ยัง `HOLD`
+> สถานะ: พัฒนาผ่าน Phase 5B — Tax Calendar แล้ว โดย PR #38 และ UX/UI redesign/navigation
+> ผ่าน PR #39/#41 ขึ้น Production เรียบร้อย ส่วน Phase 1F manual device certification ยัง `HOLD`
 > จนกว่าจะบันทึกผลติดตั้งบน Android/iOS/Desktop ครบ
 
 โครงการพัฒนาผ่าน Phase 1A–1D, Tax Rules Verification และ Phase 1E แล้ว ปัจจุบันรองรับ
@@ -168,6 +168,8 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 - การอัปเดตกฎหมายอัตโนมัติโดยไม่มี reviewed publish workflow
 
 รายละเอียดข้อจำกัดล่าสุดให้ยึดเอกสารใน `docs/` เป็นหลัก
+รายการที่ส่งต่อข้าม Phase และ disposition ล่าสุดอยู่ที่
+[`CrossPhaseBacklogCloseout.md`](./docs/CrossPhaseBacklogCloseout.md)
 
 ## ข้อจำกัดที่ยังต้องดำเนินการภายนอก
 
@@ -178,4 +180,6 @@ Vercel Hobby เหมาะกับการใช้งานแบบ non-co
 - Cloudflare Worker/R2 ใช้งานกับ Cloud Sync แล้ว แต่ custom domain และ DNS/WAF/Analytics ยังต้องตัดสินใจแยก
 - หน้าเว็บตั้ง `noindex` ไว้ใน Foundation โดยตั้งใจ ต้องทบทวนหลังเนื้อหาและกฎผ่านการอนุมัติ
 - PWA มี PNG regular/maskable icons แล้ว แต่ยังต้องบันทึกผลการติดตั้งและการแสดงไอคอนบนอุปกรณ์จริงก่อนให้ manual device certification เป็น `PASS`
-- CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ก่อนเปิดรับข้อมูลจริงควรประเมิน nonce-based CSP เทียบกับต้นทุน dynamic rendering
+- CSP production ยังอนุญาต inline script ที่ Next.js ใช้สำหรับ hydration; ประเมิน nonce-based CSP แล้ว
+  และคง policy ปัจจุบันเพื่อรักษา static/PWA behavior ตาม
+  [`SecurityCspDecision.md`](./docs/SecurityCspDecision.md)

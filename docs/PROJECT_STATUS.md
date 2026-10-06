@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `1b5a860` — Merge PR #39
+- Production baseline: `2e54a9b` — Merge PR #41
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -32,6 +32,7 @@
 - PR #37: Phase 5A Tax Rule Transparency & Governance Readiness
 - PR #38: Phase 5B Tax Calendar
 - PR #39: Calm Thai Finance Workspace และการปรับสีข้อความ Light/Dark Mode
+- PR #41: รวม navigation และ theme settings พร้อมแก้ PDF Preview ข้าม browser
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -100,17 +101,24 @@ acceptance criteria โดยงานด้าน Admin role, Tax Rule Editor �
 - Worker ตรวจ JWT, ownership และ CORS allow-list แบบ fail closed
 - ไม่มี Firebase/FCM/VAPID, Push UI, Notification permission request หรือ Firebase CSP origin
 
-## รายการที่ยังไม่ปิด
+## Cross-phase closeout
 
-### Release / governance
+รายการที่ถูกส่งต่อข้าม Phase ได้รับการ reconcile แล้วที่
+[`CrossPhaseBacklogCloseout.md`](./CrossPhaseBacklogCloseout.md) โดยแยกเป็นงานที่ปิดแล้ว,
+decision ที่ปิดการประเมิน, external evidence และงานที่ต้องได้รับ scope ใหม่
+
+### รายการที่ยังต้องมีหลักฐานภายนอก
+
+#### Release / governance
 
 - [x] ตั้ง GitHub ruleset `Protect main` สำหรับ `main` พร้อม required CI/Browser checks
 - [x] บันทึก Lighthouse 13.5.0 lab audit สำหรับ 4 routes ทั้ง mobile และ desktop
-- [ ] ตัดสินใจเรื่อง custom domain และ Cloudflare DNS/WAF/Analytics แยกจาก Worker/R2 ที่ใช้อยู่
+- [ ] อนุมัติโดเมนและ release policy ก่อนตั้ง custom domain/Cloudflare DNS/WAF/Analytics
 - [ ] เติมข้อมูลผู้ควบคุมข้อมูล/ช่องทางติดต่อ และตรวจ Privacy/Terms/Disclaimer ด้านกฎหมาย
-- [ ] ประเมิน nonce-based CSP ก่อนเปลี่ยนนโยบายการเปิดใช้งานจริง
+- [x] ประเมิน nonce-based CSP และบันทึก decision ไว้ใน
+  [`SecurityCspDecision.md`](./SecurityCspDecision.md); ยังไม่เปลี่ยน runtime เพราะกระทบ static/PWA
 
-### PWA / Offline Completion
+#### PWA / Offline Completion
 
 Phase 1F merge ผ่าน PR #19 แล้ว และ automated Production gate ผ่านครบ หลักฐานอยู่ใน
 [`Phase1GReleaseHardening.md`](./Phase1GReleaseHardening.md):
@@ -127,15 +135,13 @@ Phase 1F merge ผ่าน PR #19 แล้ว และ automated Production g
 สถานะ closeout: **implementation/automated Production gate = PASS** และ
 **manual device certification = HOLD** ห้ามอ้างว่า automated test แทนการติดตั้งจริง
 
-## Proposed next phase
+## Phase ถัดไป
 
 Phase 1G — Release Hardening and Phase 1F Closeout **ปิดแล้ว** (PR #21)
 
-รายการที่เปิดอยู่ก่อนเริ่ม Phase ใหม่:
-- [ ] ตัดสินใจเรื่อง custom domain และ Cloudflare DNS/WAF/Analytics
-- [ ] เติมข้อมูลผู้ควบคุมข้อมูล/ช่องทางติดต่อ และตรวจ Privacy/Terms/Disclaimer ด้านกฎหมาย
-- [ ] ประเมิน nonce-based CSP
-- [ ] manual device acceptance ครบ Android/iOS/Desktop (PWA install)
+ไม่มี repository cleanup ที่ต้องนำไปปนกับ Phase ถัดไป รายการที่ยังรอข้อมูลจาก Product Owner
+หรือผู้เชี่ยวชาญคือ legal sign-off, custom-domain decision และ manual device certification
+โดยมี owner/evidence ระบุไว้ใน `CrossPhaseBacklogCloseout.md`
 
 Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #25 ส่วน Phase 3A Account Dashboard
 และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ Phase 4A Report
@@ -145,5 +151,6 @@ Phase 5A Tax Rule Transparency และ Phase 5B Tax Calendar ปิดแล�
 ตามลำดับ ส่วน PR #39 ปิดงาน UX/UI redesign โดยไม่เปลี่ยน business logic
 
 Phase ถัดไปยังไม่มี scope ที่อนุมัติ งาน account deletion/retention, audit/consent governance,
-export quota, document/download audit, admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก
-scope/PR ตาม ownership ความเสี่ยง และนโยบายข้อมูล
+admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership ความเสี่ยง
+และนโยบายข้อมูล ส่วน email verification/password reset ไม่ใช้กับ OAuth-only Production และ
+export quota/server download audit ถูก defer ตาม architecture decision ใน cross-phase closeout

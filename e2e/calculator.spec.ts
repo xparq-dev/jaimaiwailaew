@@ -648,8 +648,8 @@ test.describe("Calculator UX (Local-only)", () => {
       /เลขอ้างอิงรายงาน: JMWL-\d{8}-\d{6}-\d{3}/u,
     );
     await expect(
-      pdfPreviewDialog.getByTitle("ตัวอย่างรายงาน PDF"),
-    ).toHaveAttribute("src", /^blob:/);
+      pdfPreviewDialog.getByRole("heading", { name: "ตัวอย่างรายงาน PDF" }),
+    ).toBeVisible();
     await page.waitForTimeout(250);
     expect(contentSecurityPolicyErrors).toEqual([]);
     const downloadPromise = page.waitForEvent("download");

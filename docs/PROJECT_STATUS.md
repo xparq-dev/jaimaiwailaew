@@ -1,6 +1,6 @@
 # สถานะโครงการ
 
-ตรวจสอบล่าสุด: 2026-10-04 (Asia/Bangkok)
+ตรวจสอบล่าสุด: 2026-10-06 (Asia/Bangkok)
 
 เอกสารนี้เป็น source of truth สำหรับสถานะการดำเนินงานจริง ส่วนข้อกำหนดผลิตภัณฑ์ระยะยาวให้ยึด
 [`ProductRequirementsDocument.md`](./ProductRequirementsDocument.md) โดยต้องอ่านหมายเหตุการ re-scope
@@ -8,7 +8,7 @@
 
 ## Production baseline
 
-- Production baseline: `883d45f` — Merge PR #37
+- Production baseline: `1b5a860` — Merge PR #39
 - Branch: `main`
 - PR #15: เพิ่ม Supabase Auth และ Local-first Cloud Sync
 - PR #16: ถอด Firebase Web Push และ notification infrastructure ออกจาก runtime
@@ -29,6 +29,9 @@
 - PR #34: Phase 4B Report Templates
 - PR #35: Phase 4C Report Document Identity
 - PR #36: Phase 4D Local Export History
+- PR #37: Phase 5A Tax Rule Transparency & Governance Readiness
+- PR #38: Phase 5B Tax Calendar
+- PR #39: Calm Thai Finance Workspace และการปรับสีข้อความ Light/Dark Mode
 - GitHub Actions CI และ Browser tests: ผ่านบน release baseline
 - Vercel Production: Ready ที่ <https://jaimaiwailaew.vercel.app>
 - Search indexing: ปิดด้วย `noindex, nofollow`
@@ -69,16 +72,18 @@
   ไม่เก็บยอดเงินหรือ identifier และไม่ sync ขึ้น Cloud
 - Phase 5A (PR #37) — แสดงสถานะกฎภาษีและแหล่งอ้างอิงที่ผ่าน local resolver แบบ read-only
   โดยตัด identifiers ภายในออกและคง fail-closed policy เดิม
+- Phase 5B (PR #38) — แสดงกำหนด ภ.ง.ด.94 ปีภาษี 2569 และ ภ.ง.ด.90/91
+  ปีภาษี 2568 จากแหล่งอ้างอิงกรมสรรพากรแบบ read-only โดยไม่มี reminder, API,
+  notification หรือการเปลี่ยนการคำนวณภาษี
+- UX/UI redesign (PR #39) — ปรับ app shell, หน้าแรก, onboarding, calculator,
+  summary, account และหน้าความรู้ให้ใช้ visual system เดียวกัน พร้อม semantic text colors
+  สำหรับ Light/Dark Mode โดยไม่เปลี่ยน business logic หรือ local-first architecture
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 5B — Tax Calendar เริ่มบน branch `feat/phase-5b-tax-calendar`:
-
-- แสดงกำหนด ภ.ง.ด.94 ปีภาษี 2569 และ ภ.ง.ด.90/91 ปีภาษี 2568 ที่ตรวจสอบแล้ว
-- ทุกกำหนดชี้ไปยังแหล่งอ้างอิงของกรมสรรพากรแบบ read-only
-- ไม่มี reminder, calendar sync, API, Cloud Sync หรือการเปลี่ยนการคำนวณภาษี
-- ขอบเขตและ acceptance criteria อยู่ที่
-  [`Phase5BTaxCalendar.md`](./Phase5BTaxCalendar.md)
+ไม่มี Phase implementation ที่กำลังดำเนินการ Phase ถัดไปยังไม่ได้รับอนุมัติ scope และ
+acceptance criteria โดยงานด้าน Admin role, Tax Rule Editor และ Review/Approve/Publish
+ต้องออกแบบสิทธิ์ การจัดเก็บข้อมูล และ fail-closed policy ก่อนเริ่ม implementation
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -136,7 +141,9 @@ Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #
 และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ Phase 4A Report
 Periods ปิดแล้วผ่าน PR #33, Phase 4B Report Templates ปิดแล้วผ่าน PR #34, Phase 4C
 Report Document Identity ปิดแล้วผ่าน PR #35 และ Phase 4D Local Export History ปิดแล้วผ่าน PR #36
-ขณะนี้ Phase 5A Tax Rule Transparency & Governance Readiness กำลังดำเนินการ
-ส่วน account
-deletion/retention, audit/consent governance, export history/quota, document/download audit,
-admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership
+Phase 5A Tax Rule Transparency และ Phase 5B Tax Calendar ปิดแล้วผ่าน PR #37 และ PR #38
+ตามลำดับ ส่วน PR #39 ปิดงาน UX/UI redesign โดยไม่เปลี่ยน business logic
+
+Phase ถัดไปยังไม่มี scope ที่อนุมัติ งาน account deletion/retention, audit/consent governance,
+export quota, document/download audit, admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก
+scope/PR ตาม ownership ความเสี่ยง และนโยบายข้อมูล

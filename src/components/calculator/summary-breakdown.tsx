@@ -152,7 +152,7 @@ function BreakdownSection({
   return (
     <section
       aria-labelledby={`${section.kind}-title`}
-      className="border-border bg-card min-w-0 rounded-2xl border p-4 shadow-sm sm:p-5"
+      className="surface-card min-w-0 p-4 sm:p-5"
       data-breakdown-kind={section.kind}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -188,7 +188,7 @@ function BreakdownSection({
               <li key={group.key}>
                 <button
                   aria-label={`ดูรายละเอียด${section.title} ${group.label} จำนวน ${group.entryCount} รายการ รวม ${amount}`}
-                  className="border-border bg-background hover:bg-muted/60 focus-visible:ring-focus/35 block min-h-11 w-full rounded-xl border p-3 text-left transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                  className="border-border bg-card hover:bg-muted/60 focus-visible:ring-focus/35 block min-h-11 w-full rounded-xl border p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-3 focus-visible:outline-none"
                   onClick={() => onSelect(detail)}
                   type="button"
                 >
@@ -342,7 +342,7 @@ function BreakdownDetailDialog({
             </p>
             <p className="text-right">
               <span className="text-muted-foreground block text-xs">
-                ยอดรวมเชิงคณิตศาสตร์
+                ยอดรวมที่บันทึก
               </span>
               <span className="font-semibold tabular-nums">
                 {formatThaiBaht(selected.detail.group.totalSatang)}

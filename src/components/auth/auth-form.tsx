@@ -75,19 +75,15 @@ export function AuthForm({ mode }: { readonly mode: "login" | "signup" }) {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-6">
+    <div className="surface-card mx-auto max-w-md space-y-6 p-5 sm:p-7">
       {!configured ? (
-        <div className="border-warning/30 bg-warning-soft text-warning-strong rounded-2xl border p-4 text-sm leading-6">
-          ยังไม่ได้ตั้งค่า Supabase ใน environment จึงยังเข้าสู่ระบบจริงไม่ได้
-          การใช้งาน Local-only เดิมยังทำงานตามปกติ
+        <div className="border-warning/30 bg-warning-soft text-warning-strong rounded-xl border p-4 text-sm leading-6">
+          ระบบเข้าสู่ระบบยังไม่พร้อมใช้งาน ข้อมูลในเครื่องยังใช้งานได้ปกติ
         </div>
       ) : null}
 
       {isSupabaseTestMode ? (
-        <form
-          className="border-border bg-card space-y-4 rounded-2xl border p-5 shadow-sm"
-          onSubmit={submit}
-        >
+        <form className="space-y-4" onSubmit={submit}>
           <label className="block text-sm font-semibold" htmlFor="auth-email">
             อีเมล
           </label>
@@ -132,7 +128,7 @@ export function AuthForm({ mode }: { readonly mode: "login" | "signup" }) {
         </form>
       ) : (
         <p className="text-muted-foreground text-center text-sm leading-6">
-          ขณะนี้รองรับการเข้าสู่ระบบด้วย Google และ GitHub
+          เลือกบัญชีที่ต้องการใช้
         </p>
       )}
 
@@ -143,7 +139,7 @@ export function AuthForm({ mode }: { readonly mode: "login" | "signup" }) {
           type="button"
           variant="secondary"
         >
-          ดำเนินการด้วย Google
+          เข้าสู่ระบบด้วย Google
         </Button>
         <Button
           disabled={!configured || pending}
@@ -151,7 +147,7 @@ export function AuthForm({ mode }: { readonly mode: "login" | "signup" }) {
           type="button"
           variant="secondary"
         >
-          ดำเนินการด้วย GitHub
+          เข้าสู่ระบบด้วย GitHub
         </Button>
       </div>
 

@@ -93,7 +93,7 @@ function RegistryYear({
   return (
     <section
       aria-labelledby={`tax-rule-year-${entry.taxYearBE}`}
-      className="border-border bg-card rounded-2xl border p-5 shadow-sm sm:p-6"
+      className="surface-card p-5 sm:p-6"
       id={`tax-rule-year-${entry.taxYearBE}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">

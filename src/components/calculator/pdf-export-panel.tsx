@@ -177,7 +177,7 @@ export function PdfExportPanel({
   return (
     <section
       aria-labelledby="pdf-export-title"
-      className="border-border bg-card rounded-2xl border p-5 shadow-sm"
+      className="surface-card p-5 sm:p-6"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
@@ -240,7 +240,7 @@ export function PdfExportPanel({
         {!selectedPeriod.isWorkspacePeriod ? (
           <div className="border-border bg-muted/50 rounded-xl border px-4 py-3 text-sm leading-6">
             รายงานช่วงย่อยจะแสดงเฉพาะรายการและยอดรวมในช่วงที่เลือก
-            โดยไม่แสดงค่าลดหย่อนร่างแบบรวมและประมาณการภาษีของ Workspace
+            โดยไม่แสดงค่าลดหย่อนรวมและประมาณการภาษีของชุดข้อมูลทั้งหมด
           </div>
         ) : null}
 

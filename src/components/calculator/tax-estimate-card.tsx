@@ -19,7 +19,7 @@ export function TaxEstimateCard({ workspace }: TaxEstimateCardProps) {
   return (
     <section
       aria-labelledby="tax-estimate-title"
-      className="border-border bg-card rounded-2xl border p-5 shadow-sm"
+      className="surface-card p-5 sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">

@@ -28,7 +28,7 @@ import type { CloudSyncStatus } from "@/sync/types";
 const syncLabels: Readonly<Record<CloudSyncStatus, string>> = {
   disabled: "เก็บในอุปกรณ์นี้เท่านั้น",
   auth_required: "ต้องเข้าสู่ระบบอีกครั้ง",
-  config_missing: "Cloud Sync ยังไม่พร้อมใช้งาน",
+  config_missing: "การสำรองข้อมูลยังไม่พร้อมใช้งาน",
   offline: "ออฟไลน์ — ข้อมูลในอุปกรณ์ยังใช้งานได้",
   idle: "พร้อมซิงก์",
   syncing: "กำลังซิงก์…",
@@ -92,12 +92,12 @@ export function AccountDashboard() {
 
   if (!user) {
     return (
-      <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
+      <section className="surface-card p-6">
         <h2 className="text-xl font-bold">เข้าสู่ระบบเพื่อดูภาพรวมบัญชี</h2>
         <p className="text-muted-foreground mt-2 max-w-2xl leading-7">
-          ข้อมูลเครื่องคำนวณในอุปกรณ์นี้ยังอยู่ตามเดิม
-          การเข้าสู่ระบบช่วยให้คุณจัดการหลาย Workspace และเลือกเปิด Cloud Sync
-          ได้ด้วยตนเอง
+          ข้อมูลเครื่องคำนวณในอุปกรณ์นี้ยังอยู่ตามเดิม เมื่อลงชื่อเข้าใช้
+          คุณจะสร้างชุดข้อมูลได้หลายชุดและเลือกสำรองข้อมูล
+          เพื่อใช้กับอุปกรณ์อื่นได้
         </p>
         <Button asChild className="mt-5">
           <Link href="/login">เข้าสู่ระบบ</Link>
@@ -135,10 +135,10 @@ export function AccountDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
+      <section className="surface-card overflow-hidden">
         <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
           <div className="flex items-start gap-3">
-            <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-xl">
+            <span className="bg-success-soft text-success-strong grid size-11 shrink-0 place-items-center rounded-xl">
               <ShieldCheck aria-hidden="true" className="size-5" />
             </span>
             <div>
@@ -149,8 +149,8 @@ export function AccountDashboard() {
                 {user.email ?? "บัญชีของคุณ"}
               </h2>
               <p className="text-muted-foreground mt-2 text-sm leading-6">
-                ข้อมูลในเครื่องยังใช้งานได้เมื่อออกจากระบบ และจะส่งสำเนาขึ้น
-                Cloud เฉพาะอุปกรณ์ที่เปิด Cloud Sync
+                ข้อมูลในเครื่องยังใช้งานได้เมื่อออกจากระบบ
+                การสำรองข้อมูลจะทำงานเฉพาะอุปกรณ์ที่คุณเปิดไว้
               </p>
             </div>
           </div>
@@ -184,10 +184,10 @@ export function AccountDashboard() {
             <div>
               <dt className="font-bold">ข้อมูลในอุปกรณ์นี้</dt>
               <dd className="text-muted-foreground mt-1 text-sm leading-6">
-                {allWorkspaces.length} Workspace
+                {allWorkspaces.length} ชุดข้อมูล
                 {latestLocalUpdate
                   ? ` · แก้ไขล่าสุด ${formatDateTime(latestLocalUpdate)}`
-                  : " · ยังไม่มีข้อมูล Workspace"}
+                  : " · ยังไม่มีข้อมูล"}
               </dd>
             </div>
           </div>
@@ -208,7 +208,7 @@ export function AccountDashboard() {
               ) : null}
               {pendingDeletionCount > 0 ? (
                 <dd className="text-warning-strong mt-1 text-sm">
-                  รอส่งคำสั่งลบ {pendingDeletionCount} Workspace เมื่อออนไลน์
+                  รอลบ {pendingDeletionCount} ชุดข้อมูลเมื่อออนไลน์
                 </dd>
               ) : null}
             </div>
@@ -226,26 +226,26 @@ export function AccountDashboard() {
               className="mt-1 text-2xl font-bold"
               id="account-workspaces-title"
             >
-              Workspace
+              ชุดข้อมูลของฉัน
             </h2>
           </div>
           <Button asChild variant="secondary">
             <Link href="/start/income-type">
               <Plus aria-hidden="true" className="size-4" />
-              เพิ่ม Workspace
+              เพิ่มชุดข้อมูล
             </Link>
           </Button>
         </div>
 
         {allWorkspaces.length ? (
-          <ul className="border-border bg-card mt-4 divide-y overflow-hidden rounded-2xl border shadow-sm">
+          <ul className="surface-card mt-4 divide-y overflow-hidden">
             {allWorkspaces.map((item) => (
               <li
                 className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                 key={item.id}
               >
                 <div className="flex min-w-0 items-start gap-3">
-                  <span className="bg-primary/10 text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+                  <span className="bg-success-soft text-success-strong grid size-10 shrink-0 place-items-center rounded-xl">
                     <FolderOpen aria-hidden="true" className="size-5" />
                   </span>
                   <div className="min-w-0">
@@ -275,7 +275,7 @@ export function AccountDashboard() {
                       item.id === workspace?.id ? "default" : "secondary"
                     }
                   >
-                    เปิด Workspace
+                    เปิดชุดข้อมูล
                     <ArrowRight aria-hidden="true" className="size-4" />
                   </Button>
                   <Button
@@ -295,20 +295,17 @@ export function AccountDashboard() {
             ))}
           </ul>
         ) : (
-          <div className="border-border bg-card mt-4 rounded-2xl border p-6 shadow-sm">
-            <h3 className="text-lg font-bold">
-              ยังไม่มี Workspace ในอุปกรณ์นี้
-            </h3>
+          <div className="surface-card mt-4 p-6">
+            <h3 className="text-lg font-bold">ยังไม่มีชุดข้อมูลในอุปกรณ์นี้</h3>
             <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-              เริ่มสร้าง Workspace ใหม่ หรือเปิด Cloud Sync
-              ในหน้าการตั้งค่าเพื่อดึงสำเนาของบัญชีนี้เมื่อออนไลน์
+              สร้างชุดข้อมูลใหม่ หรือเปิดการสำรองข้อมูลเพื่อดึงข้อมูลของบัญชีนี้
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Button asChild>
-                <Link href="/start/income-type">สร้าง Workspace</Link>
+                <Link href="/start/income-type">สร้างชุดข้อมูล</Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link href="/settings">ตรวจการตั้งค่า Cloud Sync</Link>
+                <Link href="/settings">ตั้งค่าการสำรองข้อมูล</Link>
               </Button>
             </div>
           </div>
@@ -316,9 +313,7 @@ export function AccountDashboard() {
       </section>
 
       <aside className="border-border bg-muted/40 rounded-2xl border p-5 text-sm leading-6">
-        <strong>ขอบเขตข้อมูล:</strong> หน้านี้แสดงเฉพาะข้อมูลบัญชีขั้นต่ำและ
-        Workspace ที่อยู่ในอุปกรณ์ปัจจุบัน ไม่แสดงรหัสผู้ใช้ โทเคน
-        หรือรายละเอียดระบบจัดเก็บ
+        หน้านี้แสดงเฉพาะอีเมล บัญชีที่ใช้เข้าสู่ระบบ และชุดข้อมูลในอุปกรณ์นี้
       </aside>
     </div>
   );

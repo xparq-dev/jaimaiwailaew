@@ -75,10 +75,7 @@ export function KnowledgeArticle({
 
       <div className="space-y-5">
         {article.sections.map((section) => (
-          <section
-            className="border-border bg-card rounded-2xl border p-5 shadow-sm sm:p-7"
-            key={section.heading}
-          >
+          <section className="surface-card p-5 sm:p-7" key={section.heading}>
             <h2 className="text-xl font-bold">{section.heading}</h2>
             <div className="text-muted-foreground mt-4 space-y-3 leading-7">
               {section.paragraphs.map((paragraph) => (
@@ -89,7 +86,7 @@ export function KnowledgeArticle({
               <ul className="mt-5 grid gap-3 sm:grid-cols-2">
                 {section.checklist.map((item) => (
                   <li
-                    className="border-border bg-background flex gap-3 rounded-xl border px-4 py-3 text-sm leading-6"
+                    className="border-border bg-muted/35 flex gap-3 rounded-xl border px-4 py-3 text-sm leading-6"
                     key={item}
                   >
                     <span
@@ -117,7 +114,7 @@ export function KnowledgeArticle({
           {article.sources.map((source) => (
             <li key={source.url}>
               <a
-                className="border-border bg-card hover:border-focus focus-visible:ring-focus flex min-h-12 items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                className="border-border bg-card hover:border-focus focus-visible:ring-focus flex min-h-12 items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
                 href={source.url}
                 rel="noreferrer"
                 target="_blank"
@@ -143,7 +140,7 @@ export function KnowledgeArticle({
           {relatedArticles.map((related) => (
             <li key={related.slug}>
               <Link
-                className="border-border bg-card hover:border-focus focus-visible:ring-focus flex h-full min-h-24 items-center rounded-xl border p-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                className="surface-card hover:border-focus focus-visible:ring-focus flex h-full min-h-24 items-center p-4 text-sm font-semibold transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:outline-none"
                 href={`/learn/${related.slug}`}
               >
                 {related.title}

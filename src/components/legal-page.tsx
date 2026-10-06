@@ -28,10 +28,13 @@ export function LegalPage({
         <AlertTriangle aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
         <p>{notice}</p>
       </div>
-      <article className="border-border bg-card rounded-2xl border p-5 shadow-sm sm:p-8">
+      <article className="surface-card p-5 sm:p-8">
         <div className="space-y-8">
           {sections.map((section) => (
-            <section key={section.title}>
+            <section
+              className="border-border border-b pb-8 last:border-b-0 last:pb-0"
+              key={section.title}
+            >
               <h2 className="text-lg font-semibold">{section.title}</h2>
               <div className="text-muted-foreground mt-3 space-y-3 text-sm leading-7">
                 {section.content}

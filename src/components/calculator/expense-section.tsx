@@ -87,10 +87,7 @@ export function ExpenseSectionPage() {
   if (!workspace) return null;
 
   return (
-    <CalculatorLayout
-      description="จัดกลุ่มรายจ่ายเพื่อสรุปยอดรวม ไม่ใช่การวินิจฉัยว่าหักภาษีได้"
-      title="รายจ่าย"
-    >
+    <CalculatorLayout description="บันทึกและจัดหมวดหมู่รายจ่าย" title="รายจ่าย">
       <p aria-live="polite" className="sr-only">
         {announcement}
       </p>
@@ -307,7 +304,7 @@ export function ExpenseSectionPage() {
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-6 text-center">
+    <div className="surface-card p-8 text-center">
       <p className="font-medium">ยังไม่มีรายการ{label}</p>
     </div>
   );
@@ -384,10 +381,7 @@ function EntryCards({
   return (
     <ul className="space-y-3">
       {entries.map((entry) => (
-        <li
-          className="border-border bg-card rounded-2xl border p-4 shadow-sm"
-          key={entry.id}
-        >
+        <li className="surface-card p-4" key={entry.id}>
           <div className="flex items-start justify-between gap-3">
             <div>
               {renderMeta(entry)}

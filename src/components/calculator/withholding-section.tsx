@@ -131,7 +131,7 @@ export function WithholdingSectionPage() {
       </div>
 
       {entries.length === 0 ? (
-        <div className="border-border bg-card rounded-2xl border p-6 text-center">
+        <div className="surface-card p-8 text-center">
           <p className="font-medium">ยังไม่มีรายการภาษีหัก ณ ที่จ่าย</p>
           <p className="text-muted-foreground mt-2 text-sm">
             เพิ่มรายการตามเอกสารอ้างอิงเพื่อรวมยอดภาษีที่ถูกหักไว้
@@ -230,10 +230,7 @@ export function WithholdingSectionPage() {
                 workspace.periodEnd,
               );
               return (
-                <li
-                  className="border-border bg-card rounded-2xl border p-4 shadow-sm"
-                  key={entry.id}
-                >
+                <li className="surface-card p-4" key={entry.id}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">

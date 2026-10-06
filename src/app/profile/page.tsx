@@ -5,9 +5,9 @@ export default function ProfilePage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        description="ดูบัญชี สถานะข้อมูล และ Workspace ในอุปกรณ์นี้ พร้อมกลับไปทำงานต่อหรือจัดการ Cloud Sync ได้จากที่เดียว"
+        description="ดูบัญชี ชุดข้อมูลในเครื่อง และสถานะการสำรองข้อมูล"
         eyebrow="ข้อมูลบัญชี"
-        title="ภาพรวมบัญชีและข้อมูล"
+        title="บัญชีและข้อมูลของฉัน"
       />
       <AccountDashboard />
     </div>

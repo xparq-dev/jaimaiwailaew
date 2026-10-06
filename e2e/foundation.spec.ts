@@ -8,11 +8,11 @@ test("renders the responsive foundation shell and legal access", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "จัดข้อมูลการเงินให้เป็นเรื่องที่รับมือได้",
+      name: "รายรับ รายจ่าย และภาษี อยู่ในที่เดียว",
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "เปิดพื้นที่ข้อมูลของฉัน" }),
+    page.getByRole("link", { name: "เปิดข้อมูลของฉัน" }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "ข้อจำกัดความรับผิด" }),

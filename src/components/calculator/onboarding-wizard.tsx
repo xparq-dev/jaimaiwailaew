@@ -90,11 +90,11 @@ export function OnboardingWizard({
       <PageHeader
         description={
           user
-            ? "เลือกรูปแบบเพื่อสร้าง Workspace เพิ่ม ข้อมูลจะบันทึกในอุปกรณ์ก่อนและส่งสำเนาเมื่อคุณเปิด Cloud Sync"
-            : "เลือกรูปแบบเพื่อตั้งค่าพื้นที่จัดระเบียบข้อมูลเบื้องต้น ข้อมูลทั้งหมดจะบันทึกในอุปกรณ์นี้เท่านั้นและไม่ส่งขึ้นเครือข่าย"
+            ? "เลือกประเภทข้อมูล ปีภาษี และช่วงเวลาสำหรับชุดใหม่"
+            : "เลือกประเภทข้อมูล ปีภาษี และช่วงเวลา ข้อมูลจะเก็บในอุปกรณ์นี้"
         }
         eyebrow="เริ่มต้นใช้งาน"
-        title="ตั้งค่าเครื่องคำนวณ"
+        title="ตั้งค่าชุดข้อมูล"
       />
 
       {workspace && confirmReplace ? (
@@ -103,11 +103,9 @@ export function OnboardingWizard({
           className="border-warning/30 bg-warning-soft text-warning-strong space-y-3 rounded-2xl border p-5"
           role="alert"
         >
-          <p className="font-semibold">
-            มีข้อมูล Workspace เดิมอยู่ในอุปกรณ์นี้แล้ว
-          </p>
+          <p className="font-semibold">มีชุดข้อมูลเดิมอยู่ในอุปกรณ์นี้แล้ว</p>
           <p className="text-sm leading-6">
-            หากคุณสร้าง Workspace ใหม่ ข้อมูลรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย
+            หากคุณสร้างชุดข้อมูลใหม่ ข้อมูลรายรับ รายจ่าย ภาษีหัก ณ ที่จ่าย
             และค่าลดหย่อนเดิมจะถูกแทนที่ คุณต้องการดำเนินการต่อหรือไม่?
           </p>
           <div className="flex gap-2 pt-2">
@@ -155,8 +153,8 @@ export function OnboardingWizard({
                 aria-pressed={isSelected}
                 className={`focus-visible:ring-focus/35 flex gap-4 rounded-2xl border p-5 text-left transition focus-visible:ring-3 focus-visible:outline-none ${
                   isSelected
-                    ? "border-primary bg-primary/5 ring-primary/30 shadow-sm ring-1"
-                    : "border-border bg-card hover:border-focus/50 hover:bg-muted"
+                    ? "border-selected-border bg-selected text-selected-foreground ring-selected-border/25 shadow-lg ring-1"
+                    : "border-border bg-card hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
                 }`}
                 key={option.code}
                 onClick={() => {
@@ -172,7 +170,7 @@ export function OnboardingWizard({
                 <span
                   className={`grid size-10 shrink-0 place-items-center rounded-xl ${
                     isSelected
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-selected-icon text-selected-foreground"
                       : "bg-muted text-primary"
                   }`}
                 >
@@ -184,11 +182,13 @@ export function OnboardingWizard({
                     {isSelected ? (
                       <CheckCircle2
                         aria-hidden="true"
-                        className="text-primary size-4"
+                        className="text-secondary size-4"
                       />
                     ) : null}
                   </div>
-                  <p className="text-muted-foreground text-xs leading-5">
+                  <p
+                    className={`text-xs leading-5 ${isSelected ? "text-selected-muted" : "text-muted-foreground"}`}
+                  >
                     {option.hint}
                   </p>
                 </div>
@@ -202,7 +202,7 @@ export function OnboardingWizard({
       {persona === "unsure" ? (
         <section
           aria-labelledby="unsure-help-title"
-          className="border-border bg-card space-y-4 rounded-2xl border p-5"
+          className="surface-card space-y-4 p-5 sm:p-6"
         >
           <h3 className="font-semibold" id="unsure-help-title">
             คำถามช่วยเลือกเบื้องต้น (ไม่บันทึกขึ้นเครือข่าย)
@@ -289,7 +289,7 @@ export function OnboardingWizard({
                 className={`focus-visible:ring-focus/35 min-w-36 rounded-2xl border p-4 text-center transition focus-visible:ring-3 focus-visible:outline-none ${
                   isSelected
                     ? "border-primary bg-primary/5 ring-primary/30 ring-1"
-                    : "border-border bg-card hover:border-focus/50 hover:bg-muted"
+                    : "border-border bg-card hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
                 }`}
                 key={year}
                 onClick={() => setTaxYearBE(year as 2568 | 2569)}
@@ -303,9 +303,8 @@ export function OnboardingWizard({
             );
           })}
         </div>
-        <p className="text-warning-strong text-xs">
-          หมายเหตุ: กฎภาษีสำหรับปี 2568 และ 2569 ยังอยู่ระหว่างการตรวจสอบ
-          ระบบจะสรุปเฉพาะยอดรวมเลขคณิตเท่านั้น
+        <p className="text-muted-foreground text-xs">
+          เลือกปีให้ตรงกับรายการที่ต้องการบันทึก
         </p>
       </section>
 
@@ -326,7 +325,7 @@ export function OnboardingWizard({
             className={`focus-visible:ring-focus/35 flex gap-3 rounded-2xl border p-4 text-left transition focus-visible:ring-3 focus-visible:outline-none ${
               periodChoice === "first_half"
                 ? "border-primary bg-primary/5 ring-primary/30 ring-1"
-                : "border-border bg-card hover:border-focus/50 hover:bg-muted"
+                : "border-border bg-card hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
             }`}
             onClick={() => setPeriodChoice("first_half")}
             type="button"
@@ -347,7 +346,7 @@ export function OnboardingWizard({
             className={`focus-visible:ring-focus/35 flex gap-3 rounded-2xl border p-4 text-left transition focus-visible:ring-3 focus-visible:outline-none ${
               periodChoice === "full_year"
                 ? "border-primary bg-primary/5 ring-primary/30 ring-1"
-                : "border-border bg-card hover:border-focus/50 hover:bg-muted"
+                : "border-border bg-card hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
             }`}
             onClick={() => setPeriodChoice("full_year")}
             type="button"
@@ -367,7 +366,7 @@ export function OnboardingWizard({
 
       <div className="flex flex-wrap items-center gap-4 pt-4">
         <Button onClick={handleStart} size="default" type="button">
-          สร้าง Workspace และเริ่มบันทึกข้อมูล
+          สร้างชุดข้อมูลและเริ่มบันทึก
         </Button>
         <p className="text-muted-foreground text-xs">
           ข้อมูลจะถูกจัดเก็บบนอุปกรณ์นี้เท่านั้น

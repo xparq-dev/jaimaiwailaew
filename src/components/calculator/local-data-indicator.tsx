@@ -40,18 +40,18 @@ export function LocalDataIndicator() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
         <button
           aria-expanded={detailOpen}
           aria-haspopup="dialog"
           aria-label="ข้อมูลบันทึกในอุปกรณ์นี้ คลิกเพื่อดูรายละเอียดความเป็นส่วนตัว"
-          className="border-border bg-card/80 hover:bg-muted/70 focus-visible:ring-focus text-foreground inline-flex min-h-[44px] items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none sm:text-sm"
+          className="bg-success-soft text-success-strong hover:bg-success-soft/70 focus-visible:ring-focus inline-flex min-h-10 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none"
           onClick={() => setDetailOpen(true)}
           ref={triggerRef}
           title="ข้อมูลบันทึกในอุปกรณ์นี้เท่านั้น คลิกเพื่อดูรายละเอียด"
           type="button"
         >
-          <span className="bg-primary/10 text-primary inline-grid size-5 place-items-center rounded-full">
+          <span className="grid size-5 place-items-center rounded-full bg-current/10">
             <Lock aria-hidden="true" className="size-3" />
           </span>
           <span className="font-medium">ข้อมูลบันทึกในอุปกรณ์นี้</span>

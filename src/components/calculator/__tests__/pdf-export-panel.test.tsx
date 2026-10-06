@@ -11,10 +11,6 @@ import { PdfExportPanel } from "../pdf-export-panel";
 
 const createLocalPdfArtifactMock = vi.hoisted(() => vi.fn());
 const downloadLocalPdfArtifactMock = vi.hoisted(() => vi.fn());
-const createObjectUrlMock = vi.hoisted(() =>
-  vi.fn(() => "blob:local-pdf-preview"),
-);
-const revokeObjectUrlMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/pdf/download-local-pdf", () => ({
   createLocalPdfArtifact: createLocalPdfArtifactMock,
@@ -35,22 +31,12 @@ beforeAll(() => {
       this.dispatchEvent(new Event("close"));
     },
   });
-  Object.defineProperty(URL, "createObjectURL", {
-    configurable: true,
-    value: createObjectUrlMock,
-  });
-  Object.defineProperty(URL, "revokeObjectURL", {
-    configurable: true,
-    value: revokeObjectUrlMock,
-  });
 });
 
 beforeEach(() => {
   localStorage.clear();
   createLocalPdfArtifactMock.mockReset();
   downloadLocalPdfArtifactMock.mockReset();
-  createObjectUrlMock.mockClear();
-  revokeObjectUrlMock.mockClear();
 });
 
 describe("PdfExportPanel", () => {
@@ -99,7 +85,6 @@ describe("PdfExportPanel", () => {
       taxYearBE: 2569,
     });
     expect(downloadLocalPdfArtifactMock).not.toHaveBeenCalled();
-    expect(createObjectUrlMock).toHaveBeenCalledWith(artifact.blob);
     expect(storageSpy).not.toHaveBeenCalled();
 
     const previewDialog = await screen.findByRole("dialog", {
@@ -109,11 +94,10 @@ describe("PdfExportPanel", () => {
     expect(previewDialog).toHaveTextContent(
       /เลขอ้างอิงรายงาน: JMWL-\d{8}-\d{6}-\d{3}/u,
     );
-    const pdfObject = previewDialog.querySelector<HTMLObjectElement>(
-      'object[type="application/pdf"]',
-    );
-    expect(pdfObject).not.toBeNull();
-    expect(pdfObject).toHaveAttribute("data", "blob:local-pdf-preview");
+    // PdfCanvasViewer renders a div with aria-label (canvas pages added by effect)
+    expect(
+      previewDialog.querySelector('[aria-label^="ตัวอย่างรายงาน PDF"]'),
+    ).not.toBeNull();
 
     await user.click(screen.getByRole("button", { name: "ดาวน์โหลด PDF" }));
     expect(downloadLocalPdfArtifactMock).toHaveBeenCalledWith(artifact);
@@ -127,9 +111,9 @@ describe("PdfExportPanel", () => {
 
     await user.click(screen.getByRole("button", { name: "ปิดตัวอย่าง" }));
     await waitFor(() =>
-      expect(revokeObjectUrlMock).toHaveBeenCalledWith(
-        "blob:local-pdf-preview",
-      ),
+      expect(
+        screen.queryByRole("dialog", { name: "ตัวอย่างรายงาน PDF" }),
+      ).toBeNull(),
     );
     const history = screen
       .getByText("ประวัติการดาวน์โหลดในอุปกรณ์นี้")

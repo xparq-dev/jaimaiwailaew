@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileSearch, FileX, X } from "lucide-react";
+import { Download, FileSearch, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import type { CalculatorWorkspace } from "@/calculator/types";
@@ -25,6 +25,7 @@ import {
 
 import { Button } from "../ui/button";
 import { LocalExportHistoryPanel } from "./local-export-history-panel";
+import { PdfCanvasViewer } from "./pdf-canvas-viewer";
 import { TabularExportButtons } from "./tabular-export-buttons";
 
 const DEFAULT_REPORT_TITLE = "รายงานสรุปข้อมูลรายได้และค่าใช้จ่าย";
@@ -37,7 +38,6 @@ interface PdfPreview {
   readonly periodLabel: string;
   readonly reportReference: string;
   readonly templateLabel: string;
-  readonly url: string;
 }
 
 export function PdfExportPanel({
@@ -100,7 +100,9 @@ export function PdfExportPanel({
       dialog.showModal();
     }
 
-    return () => URL.revokeObjectURL(preview.url);
+    return () => {
+      dialogRef.current?.close();
+    };
   }, [preview]);
 
   async function handlePreview(event: FormEvent<HTMLFormElement>) {
@@ -123,7 +125,6 @@ export function PdfExportPanel({
         periodLabel: report.periodLabel,
         reportReference: report.reportReference,
         templateLabel: report.templateLabel,
-        url: URL.createObjectURL(artifact.blob),
       });
       setStatus("preview-ready");
     } catch {
@@ -344,31 +345,12 @@ export function PdfExportPanel({
             </Button>
           </div>
 
-          <div className="bg-muted min-h-0 flex-1 p-2 sm:p-4">
+          <div className="bg-muted min-h-0 flex-1 overflow-y-auto p-2 sm:p-4">
             {preview ? (
-              <object
-                aria-label="ตัวอย่างรายงาน PDF"
-                className="h-full min-h-80 w-full rounded-lg bg-white"
-                data={preview.url}
-                type="application/pdf"
-              >
-                {/* Fallback: shown when browser blocks blob PDF rendering (e.g. Brave on mobile) */}
-                <div className="flex h-full min-h-80 flex-col items-center justify-center gap-4 rounded-lg bg-white p-6 text-center">
-                  <FileX
-                    aria-hidden="true"
-                    className="text-muted-foreground size-12"
-                  />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      เบราว์เซอร์นี้ไม่รองรับการแสดง PDF ในหน้านี้
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      กดปุ่ม &ldquo;ดาวน์โหลด PDF&rdquo;
-                      ด้านล่างเพื่อบันทึกไฟล์ลงอุปกรณ์แทน
-                    </p>
-                  </div>
-                </div>
-              </object>
+              <PdfCanvasViewer
+                blob={preview.artifact.blob}
+                className="h-full min-h-80 rounded-lg bg-white p-2"
+              />
             ) : null}
           </div>
 

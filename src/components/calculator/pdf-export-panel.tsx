@@ -101,7 +101,7 @@ export function PdfExportPanel({
     }
 
     return () => {
-      dialogRef.current?.close();
+      dialog?.close();
     };
   }, [preview]);
 

@@ -25,6 +25,7 @@ import {
 
 import { Button } from "../ui/button";
 import { LocalExportHistoryPanel } from "./local-export-history-panel";
+import { PdfCanvasViewer } from "./pdf-canvas-viewer";
 import { TabularExportButtons } from "./tabular-export-buttons";
 
 const DEFAULT_REPORT_TITLE = "รายงานสรุปข้อมูลรายได้และค่าใช้จ่าย";
@@ -37,7 +38,6 @@ interface PdfPreview {
   readonly periodLabel: string;
   readonly reportReference: string;
   readonly templateLabel: string;
-  readonly url: string;
 }
 
 export function PdfExportPanel({
@@ -100,7 +100,9 @@ export function PdfExportPanel({
       dialog.showModal();
     }
 
-    return () => URL.revokeObjectURL(preview.url);
+    return () => {
+      dialog?.close();
+    };
   }, [preview]);
 
   async function handlePreview(event: FormEvent<HTMLFormElement>) {
@@ -123,7 +125,6 @@ export function PdfExportPanel({
         periodLabel: report.periodLabel,
         reportReference: report.reportReference,
         templateLabel: report.templateLabel,
-        url: URL.createObjectURL(artifact.blob),
       });
       setStatus("preview-ready");
     } catch {
@@ -344,12 +345,11 @@ export function PdfExportPanel({
             </Button>
           </div>
 
-          <div className="bg-muted min-h-0 flex-1 p-2 sm:p-4">
+          <div className="bg-muted min-h-0 flex-1 overflow-y-auto p-2 sm:p-4">
             {preview ? (
-              <iframe
-                className="h-full min-h-80 w-full rounded-lg bg-white"
-                src={preview.url}
-                title="ตัวอย่างรายงาน PDF"
+              <PdfCanvasViewer
+                blob={preview.artifact.blob}
+                className="h-full min-h-80 rounded-lg bg-white p-2"
               />
             ) : null}
           </div>

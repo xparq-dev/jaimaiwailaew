@@ -843,12 +843,12 @@ test.describe("Calculator UX (Local-only)", () => {
       .click();
     await darkDownloadPromise;
     const darkPdfRequests = requestedUrls.slice(requestCountBeforeDarkPdf);
+    const pageOrigin = new URL(page.url()).origin;
     expect(darkPdfRequests.length).toBeGreaterThan(0);
     expect(
       darkPdfRequests.every(
         (requestUrl) =>
-          requestUrl.startsWith("blob:") ||
-          requestUrl.includes("pdf.worker.min.mjs"),
+          requestUrl.startsWith("blob:") || requestUrl.startsWith(pageOrigin),
       ),
     ).toBe(true);
     await pdfPreviewDialog

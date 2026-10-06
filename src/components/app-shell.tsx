@@ -3,10 +3,12 @@
 import {
   BookOpenText,
   ChartNoAxesCombined,
+  ChevronRight,
   CircleDollarSign,
   ClipboardList,
   Home,
   ReceiptText,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -48,6 +50,21 @@ const mobileNavigation: NavigationItem[] = [
   { href: "/calculator/summary", icon: ClipboardList, label: "สรุป" },
   { href: "/learn", icon: BookOpenText, label: "เรียนรู้" },
 ];
+
+const desktopNavigationGroups = [
+  {
+    label: "ภาพรวม",
+    items: navigation.slice(0, 2),
+  },
+  {
+    label: "ข้อมูลการเงิน",
+    items: navigation.slice(2, 5),
+  },
+  {
+    label: "คู่มือ",
+    items: navigation.slice(5),
+  },
+] as const;
 
 function isCurrentRoute(pathname: string, item: NavigationItem) {
   return item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -123,40 +140,89 @@ function DesktopSidebar() {
   const { dictionary, locale } = useLocale();
 
   return (
-    <aside className="bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 overflow-hidden text-white lg:flex lg:flex-col">
-      <div className="border-b border-white/10 px-5 py-6">
-        <Brand inverse />
+    <aside className="bg-sidebar fixed inset-y-0 left-0 z-30 hidden w-[17rem] overflow-hidden border-r border-white/8 text-white before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-72 before:bg-[radial-gradient(circle_at_top_left,rgba(71,217,172,0.16),transparent_68%)] lg:flex lg:flex-col">
+      <div className="relative p-4 pb-2">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-3 shadow-[0_14px_35px_rgb(0_0_0/12%)]">
+          <Brand inverse />
+          <div className="mt-3 flex items-center gap-2 border-t border-white/8 pt-3 text-[0.6875rem] font-medium text-emerald-100/70">
+            <ShieldCheck aria-hidden="true" className="size-3.5" />
+            <span>พื้นที่ข้อมูลส่วนตัวของคุณ</span>
+          </div>
+        </div>
       </div>
-      <nav aria-label="เมนูหลัก" className="flex-1 space-y-1 px-3 py-5">
-        <p className="px-3 pb-3 text-[0.6875rem] font-semibold tracking-[0.16em] text-white/45 uppercase">
-          งานของฉัน
-        </p>
-        {navigation.map((item) => {
-          const { href, icon: Icon, label } = item;
-          const current = isCurrentRoute(pathname, item);
-          return (
-            <Link
-              aria-current={current ? "page" : undefined}
-              className={cn(
-                "focus-visible:ring-focus/35 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:ring-3 focus-visible:outline-none",
-                current
-                  ? "bg-sidebar-active text-sidebar-active-foreground shadow-sm"
-                  : "text-white/65 hover:bg-white/8 hover:text-white",
-              )}
-              href={href}
-              key={href}
-            >
-              <Icon aria-hidden="true" className="size-5" />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
+      <nav
+        aria-label="เมนูหลัก"
+        className="relative flex-1 space-y-5 overflow-y-auto px-3 py-4"
+      >
+        {desktopNavigationGroups.map((group) => (
+          <section aria-label={group.label} key={group.label}>
+            <p className="px-3 pb-2 text-[0.6875rem] font-semibold tracking-[0.08em] text-white/38">
+              {group.label}
+            </p>
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const { href, icon: Icon, label } = item;
+                const current = isCurrentRoute(pathname, item);
+                return (
+                  <Link
+                    aria-current={current ? "page" : undefined}
+                    className={cn(
+                      "focus-visible:ring-focus/35 group relative flex min-h-12 items-center gap-3 overflow-hidden rounded-xl px-2.5 text-sm font-medium transition duration-200 focus-visible:ring-3 focus-visible:outline-none",
+                      current
+                        ? "bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgb(255_255_255/8%)]"
+                        : "text-white/62 hover:bg-white/[0.055] hover:text-white",
+                    )}
+                    href={href}
+                    key={href}
+                  >
+                    {current ? (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-y-3 left-0 w-0.5 rounded-r-full bg-emerald-300"
+                      />
+                    ) : null}
+                    <span
+                      className={cn(
+                        "grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
+                        current
+                          ? "bg-emerald-300 text-[#073d31]"
+                          : "bg-white/[0.055] text-white/55 group-hover:bg-white/10 group-hover:text-white",
+                      )}
+                    >
+                      <Icon aria-hidden="true" className="size-[1.125rem]" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{label}</span>
+                    <ChevronRight
+                      aria-hidden="true"
+                      className={cn(
+                        "size-3.5 shrink-0 transition duration-200",
+                        current
+                          ? "text-emerald-200"
+                          : "-translate-x-1 text-white/0 group-hover:translate-x-0 group-hover:text-white/45",
+                      )}
+                    />
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </nav>
-      <div className="border-t border-white/10 p-5 text-xs leading-5 text-white/55">
-        <p lang={locale}>{dictionary.footer.localProcessing}</p>
-        <p className="mt-2 font-medium text-emerald-100/70">
-          ผลคำนวณเป็นค่าประมาณจากข้อมูลที่บันทึก
-        </p>
+      <div className="relative p-4 pt-2">
+        <div className="rounded-2xl border border-white/8 bg-black/10 p-3.5 text-xs leading-5 text-white/52">
+          <div className="flex items-start gap-2.5">
+            <ShieldCheck
+              aria-hidden="true"
+              className="mt-0.5 size-4 shrink-0 text-emerald-300"
+            />
+            <div>
+              <p className="font-semibold text-white/82">เก็บข้อมูลในเครื่อง</p>
+              <p className="mt-0.5" lang={locale}>
+                {dictionary.footer.localProcessing}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </aside>
   );
@@ -244,7 +310,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {dictionary.common.skipToContent}
       </a>
       <DesktopSidebar />
-      <div className="flex min-h-dvh min-w-0 flex-col lg:pl-64">
+      <div className="flex min-h-dvh min-w-0 flex-col lg:pl-[17rem]">
         <header
           className="border-border/80 bg-background/82 sticky top-0 z-20 border-b px-4 py-3 backdrop-blur-xl sm:px-6"
           data-testid="app-header"

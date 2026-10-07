@@ -82,9 +82,11 @@
 
 ## Phase ที่กำลังดำเนินการ
 
-ไม่มี Phase implementation ที่กำลังดำเนินการ Phase ถัดไปยังไม่ได้รับอนุมัติ scope และ
-acceptance criteria โดยงานด้าน Admin role, Tax Rule Editor และ Review/Approve/Publish
-ต้องออกแบบสิทธิ์ การจัดเก็บข้อมูล และ fail-closed policy ก่อนเริ่ม implementation
+Phase 5C — Tax Governance Workflow Foundation กำลังดำเนินการบน branch
+`feat/phase-5c-tax-governance` โดยสร้าง role contract, transition state machine,
+append-only history validation, separation of duties และ publication gate แบบ fail closed
+ก่อนเริ่ม Admin UI หรือ write API รายละเอียด scope และ acceptance criteria อยู่ที่
+[`Phase5CTaxGovernanceFoundation.md`](./Phase5CTaxGovernanceFoundation.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม

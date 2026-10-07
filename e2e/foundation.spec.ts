@@ -56,6 +56,31 @@ test("renders the responsive foundation shell and legal access", async ({
   }
 });
 
+test("keeps legal copy current and redirects the retired PDF placeholder", async ({
+  page,
+}) => {
+  await page.goto("/disclaimer");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "ข้อจำกัดความรับผิด" }),
+  ).toBeVisible();
+  await expect(page.getByText("กฎภาษีปี 2568/2569")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(
+    /Placeholder|ยังไม่มี Tax Rules|เมื่อเปิดใช้ในอนาคต/iu,
+  );
+
+  await page.goto("/accessibility");
+  await expect(page.getByText("ผ่านการตรวจอัตโนมัติ")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(
+    /Placeholder|ก่อน production/iu,
+  );
+
+  await page.goto("/calculator/export-pdf");
+  await expect(page).toHaveURL(/\/calculator\/summary$/u);
+  await expect(page.locator("body")).not.toContainText(
+    /route placeholder|ยังไม่เปิดใช้การคำนวณ/iu,
+  );
+});
+
 test("publishes a read-only tax rule source registry without private identifiers", async ({
   page,
 }) => {

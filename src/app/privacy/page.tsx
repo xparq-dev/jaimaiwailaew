@@ -26,7 +26,7 @@ export default function PrivacyPage() {
           title: "บริการภายนอกเมื่อผู้ใช้เปิดใช้งาน",
           content: (
             <p>
-              Supabase ใช้ยืนยันตัวตนด้วยอีเมล Google หรือ GitHub, Cloudflare
+              Supabase ใช้ยืนยันตัวตนด้วยบัญชี Google หรือ GitHub, Cloudflare
               Worker ตรวจสิทธิ์ก่อนอ่านหรือเขียนสำเนาชุดข้อมูลใน R2
               เฉพาะเมื่อผู้ใช้เปิดการสำรองข้อมูล
               ผู้ให้บริการโฮสติ้งอาจเก็บบันทึกการเข้าถึงตามการทำงานปกติ

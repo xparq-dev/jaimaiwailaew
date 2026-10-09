@@ -129,6 +129,16 @@ const TRANSITION_POLICIES: readonly TransitionPolicy[] = [
   },
 ];
 
+export function resolveTaxGovernanceTransition(
+  action: TaxGovernanceAction,
+  from: TaxGovernanceStatus,
+): Pick<TransitionPolicy, "roles" | "to"> | null {
+  const policy = TRANSITION_POLICIES.find(
+    (candidate) => candidate.action === action && candidate.from === from,
+  );
+  return policy ? { roles: policy.roles, to: policy.to } : null;
+}
+
 function schemaIssues(error: z.ZodError): TaxGovernanceIssue[] {
   return error.issues.map((issue) => ({
     code: "invalid-governance-schema",

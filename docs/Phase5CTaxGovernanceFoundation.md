@@ -1,6 +1,6 @@
 # Phase 5C — Tax Governance Workflow Foundation
 
-สถานะ: กำลังดำเนินการบน branch `feat/phase-5c-tax-governance`
+สถานะ: ปิดแล้วผ่าน PR #43 (`f0727074b7e4435bda2c9c4e51a17386171dd1cb`)
 
 ## เป้าหมาย
 

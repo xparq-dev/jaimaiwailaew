@@ -7,6 +7,10 @@ import {
   type CloudWorkspaceDeletion,
   type CloudWorkspaceDocument,
 } from "../src/sync/types";
+import {
+  createGovernanceApi,
+  type GovernanceEnvironment,
+} from "./governance-api";
 
 const MAX_REQUEST_BYTES = 1_048_576;
 
@@ -31,7 +35,7 @@ export interface R2BucketLike {
   list(options: { prefix: string; cursor?: string }): Promise<R2ListResultLike>;
 }
 
-export interface WorkerEnvironment {
+export interface WorkerEnvironment extends GovernanceEnvironment {
   readonly DATA_BUCKET: R2BucketLike;
   readonly SUPABASE_URL: string;
   readonly ALLOWED_ORIGIN?: string;
@@ -57,7 +61,7 @@ interface MutableDocument {
 type VerifyToken = (
   token: string,
   env: WorkerEnvironment,
-) => Promise<{ sub: string }>;
+) => Promise<{ aal?: string; sub: string }>;
 
 const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 
@@ -173,7 +177,10 @@ async function verifySupabaseToken(token: string, env: WorkerEnvironment) {
     audience: "authenticated",
   });
   if (!payload.sub) throw new Error("missing_subject");
-  return { sub: payload.sub };
+  return {
+    sub: payload.sub,
+    ...(typeof payload.aal === "string" ? { aal: payload.aal } : {}),
+  };
 }
 
 async function readWorkspace(
@@ -314,7 +321,11 @@ function entryCollection(document: MutableDocument, entryType: string) {
 
 export function createWorkerHandler({
   verifyToken = verifySupabaseToken,
-}: { readonly verifyToken?: VerifyToken } = {}) {
+  handleGovernanceApi = createGovernanceApi(),
+}: {
+  readonly verifyToken?: VerifyToken;
+  readonly handleGovernanceApi?: ReturnType<typeof createGovernanceApi>;
+} = {}) {
   return {
     async fetch(request: Request, env: WorkerEnvironment): Promise<Response> {
       const originResult = allowedOrigin(request, env);
@@ -334,18 +345,31 @@ export function createWorkerHandler({
         return jsonResponse({ error: "authentication_required" }, 401, origin);
       }
 
-      let userId: string;
+      let identity: { aal?: string; sub: string };
       try {
-        userId = (await verifyToken(authorization.slice("Bearer ".length), env))
-          .sub;
+        identity = await verifyToken(
+          authorization.slice("Bearer ".length),
+          env,
+        );
       } catch {
         return jsonResponse({ error: "invalid_access_token" }, 401, origin);
       }
+      const userId = identity.sub;
 
       const url = new URL(request.url);
       const pathname = url.pathname.replace(/\/$/, "");
 
       try {
+        const governanceResponse = await handleGovernanceApi({
+          environment: env,
+          identity,
+          pathname,
+          request,
+          parseBody: parseJsonBody,
+          respond: (body, status) => jsonResponse(body, status, origin),
+        });
+        if (governanceResponse) return governanceResponse;
+
         const userWorkspaces = pathname.match(
           /^\/api\/users\/([^/]+)\/workspaces$/,
         );
@@ -667,6 +691,14 @@ export function createWorkerHandler({
         if (error instanceof Error && error.message === "workspace_deleted") {
           return jsonResponse({ error: "workspace_deleted" }, 409, origin);
         }
+        console.error(
+          JSON.stringify({
+            error:
+              error instanceof Error ? error.message : "unknown_worker_error",
+            message: "worker_request_failed",
+            path: pathname,
+          }),
+        );
         return jsonResponse({ error: "internal_error" }, 500, origin);
       }
     },

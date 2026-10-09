@@ -1,6 +1,17 @@
 # Phase 5D — Server-side Admin Authority & Governance Storage
 
-สถานะ: กำลังดำเนินการบน branch `feat/phase-5d-admin-authority`
+สถานะ: ปิดงานแล้วผ่าน PR #44 และ rollout สู่ Production สำเร็จ
+
+หลักฐานหลัง merge:
+
+- merge commit: `298f08256cc69c50b83fdf165e916024c73f8592`
+- GitHub Actions CI และ Browser tests ผ่าน
+- Production D1 migration ถูก apply และแยกจาก Preview
+- Production Worker deploy สำเร็จ โดย CORS อนุญาตเฉพาะ Production origin
+- preflight จาก Production origin ได้ `204`; origin อื่นได้ `403`
+- request ที่ไม่มีหรือใช้ token ไม่ถูกต้องได้ `401`
+- governance tables ยังไม่มีข้อมูลทดสอบปะปนหลัง rollout
+- Vercel Production พร้อมใช้งานจาก merge commit เดียวกัน
 
 ## เป้าหมาย
 

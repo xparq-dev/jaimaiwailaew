@@ -22,6 +22,7 @@
 *.pem
 *.log
 npm-debug.log*
+/workers/.wrangler/
 
 # TypeScript
 *.tsbuildinfo

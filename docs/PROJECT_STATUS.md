@@ -82,11 +82,11 @@
 
 ## Phase ที่กำลังดำเนินการ
 
-Phase 5C — Tax Governance Workflow Foundation กำลังดำเนินการบน branch
-`feat/phase-5c-tax-governance` โดยสร้าง role contract, transition state machine,
-append-only history validation, separation of duties และ publication gate แบบ fail closed
-ก่อนเริ่ม Admin UI หรือ write API รายละเอียด scope และ acceptance criteria อยู่ที่
-[`Phase5CTaxGovernanceFoundation.md`](./Phase5CTaxGovernanceFoundation.md)
+Phase 5C — Tax Governance Workflow Foundation ปิดแล้วผ่าน PR #43 และ Phase 5D —
+Server-side Admin Authority & Governance Storage กำลังดำเนินการบน branch
+`feat/phase-5d-admin-authority` โดยเพิ่ม authority ฝั่ง Worker, D1 storage, AAL2 gate,
+append-only governance history และ audit แบบ fail closed รายละเอียดอยู่ที่
+[`Phase5DAdminAuthorityStorage.md`](./Phase5DAdminAuthorityStorage.md)
 
 ผลภาษีที่แสดงเป็น **ค่าประมาณการเพื่อช่วยเตรียมข้อมูล** ไม่ใช่แบบยื่นภาษี คำรับรอง หรือคำปรึกษา
 ทางภาษี ชุดกฎที่ไม่ผ่าน validation/review ในอนาคตต้องถูก resolver ปฏิเสธแบบ fail closed ตามเดิม
@@ -149,8 +149,9 @@ Phase 2 Knowledge Center ปิดแล้วผ่าน PR #24 และ PR #
 และ Phase 3B Cloud Data Controls ปิดแล้วผ่าน PR #26 และ PR #27 ตามลำดับ Phase 4A Report
 Periods ปิดแล้วผ่าน PR #33, Phase 4B Report Templates ปิดแล้วผ่าน PR #34, Phase 4C
 Report Document Identity ปิดแล้วผ่าน PR #35 และ Phase 4D Local Export History ปิดแล้วผ่าน PR #36
-Phase 5A Tax Rule Transparency และ Phase 5B Tax Calendar ปิดแล้วผ่าน PR #37 และ PR #38
-ตามลำดับ ส่วน PR #39 ปิดงาน UX/UI redesign โดยไม่เปลี่ยน business logic
+Phase 5A Tax Rule Transparency, Phase 5B Tax Calendar และ Phase 5C Tax Governance
+Workflow Foundation ปิดแล้วผ่าน PR #37, PR #38 และ PR #43 ตามลำดับ ส่วน PR #39
+ปิดงาน UX/UI redesign โดยไม่เปลี่ยน business logic
 
 Phase ถัดไปยังไม่มี scope ที่อนุมัติ งาน account deletion/retention, audit/consent governance,
 admin, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership ความเสี่ยง

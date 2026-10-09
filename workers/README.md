@@ -63,3 +63,26 @@ keeps all calculator data in Local Storage.
 This operation is not Supabase account deletion and has no retention/grace
 period. Account deletion, an operational retention policy, audit/consent
 governance, and the remaining privacy/legal review require separate scope.
+
+## Phase 5D governance authority
+
+Admin authority and tax-rule workflow history use a separate D1 binding named
+`GOVERNANCE_DB`. Preview and Production have different databases. Apply the
+versioned migration only to the intended environment and set
+`GOVERNANCE_BOOTSTRAP_OWNER_SUB` as a Worker secret; never place the Supabase
+user ID in source, Wrangler variables, frontend configuration, or logs.
+
+All `/api/admin/*` routes require a verified Supabase JWT with `aal2`. The
+bootstrap owner is immutable through the API. Delegated roles are stored in D1
+with optimistic versions, while tax-rule workflow events are append-only and
+use an expected-head check. D1 triggers create audit records in the same
+database transaction. There is no audit-delete or emergency-access endpoint.
+
+Preview rollout commands (after setting the secret):
+
+```sh
+npx wrangler d1 migrations apply GOVERNANCE_DB --config workers/wrangler.jsonc --env preview --remote
+npm run worker:deploy:preview
+```
+
+Production migration and deployment require separate post-merge approval.

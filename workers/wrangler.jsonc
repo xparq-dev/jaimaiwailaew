@@ -3,8 +3,21 @@
   "name": "jaimaiwailaew-sync-api",
   "main": "index.ts",
   "compatibility_date": "2026-09-20",
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 },
+  },
   "env": {
     "preview": {
+      "d1_databases": [
+        {
+          "binding": "GOVERNANCE_DB",
+          "database_name": "jaimaiwailaew-governance-preview",
+          "database_id": "e6cc0b3e-b5b4-444a-a473-30172b196e4b",
+          "migrations_dir": "migrations",
+        },
+      ],
       "r2_buckets": [
         {
           "binding": "DATA_BUCKET",
@@ -16,10 +29,18 @@
         "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app,http://localhost:3000,https://jaimaiwailaew-*-dev-xparq-s-projects.vercel.app,https://jaimaiwailaew-51ez1e6ev-dev-xparq-s-projects.vercel.app",
       },
       "secrets": {
-        "required": ["SUPABASE_URL"],
+        "required": ["SUPABASE_URL", "GOVERNANCE_BOOTSTRAP_OWNER_SUB"],
       },
     },
     "production": {
+      "d1_databases": [
+        {
+          "binding": "GOVERNANCE_DB",
+          "database_name": "jaimaiwailaew-governance-production",
+          "database_id": "1e4bf0c9-1bb8-4281-b4c5-e11a6c844abf",
+          "migrations_dir": "migrations",
+        },
+      ],
       "r2_buckets": [
         {
           "binding": "DATA_BUCKET",
@@ -30,7 +51,7 @@
         "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app",
       },
       "secrets": {
-        "required": ["SUPABASE_URL"],
+        "required": ["SUPABASE_URL", "GOVERNANCE_BOOTSTRAP_OWNER_SUB"],
       },
     },
   },

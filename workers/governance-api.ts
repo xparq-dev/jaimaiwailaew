@@ -4,6 +4,7 @@ import {
   resolveTaxGovernanceTransition,
   TAX_GOVERNANCE_ROLES,
   validateTaxGovernanceHistory,
+  validateTaxPublicationCandidate,
   type TaxGovernanceEvent,
   type TaxGovernanceHistory,
   type TaxGovernanceRole,
@@ -22,10 +23,18 @@ import {
   type GovernanceStore,
   type ServerAuthorityRole,
 } from "./governance-storage";
+import {
+  artifactWriteSchema,
+  prepareTaxRuleArtifact,
+  readTaxRuleArtifact,
+  storeImmutableTaxRuleArtifact,
+  type ArtifactBucket,
+} from "./tax-rule-artifacts";
 
 export interface GovernanceEnvironment {
   readonly GOVERNANCE_BOOTSTRAP_OWNER_SUB?: string;
   readonly GOVERNANCE_DB?: D1Database;
+  readonly DATA_BUCKET?: ArtifactBucket;
 }
 
 interface GovernanceIdentity {
@@ -88,7 +97,8 @@ export function createGovernanceApi(
 
     if (
       !context.environment.GOVERNANCE_BOOTSTRAP_OWNER_SUB ||
-      (!context.environment.GOVERNANCE_DB && !dependencies.createStore)
+      (!context.environment.GOVERNANCE_DB && !dependencies.createStore) ||
+      !context.environment.DATA_BUCKET
     ) {
       return context.respond({ error: "governance_unavailable" }, 503);
     }
@@ -221,6 +231,123 @@ export function createGovernanceApi(
       );
     }
 
+    const artifactMatch = context.pathname.match(
+      /^\/api\/admin\/tax-rules\/([^/]+)\/versions\/([^/]+)\/artifact$/,
+    );
+    if (artifactMatch) {
+      const ruleSetId = decodePathSegment(artifactMatch[1]);
+      const version = decodePathSegment(artifactMatch[2]);
+      if (
+        !machineIdentifierSchema.safeParse(ruleSetId).success ||
+        !semverVersionSchema.safeParse(version).success
+      ) {
+        return context.respond({ error: "invalid_rule_identity" }, 400);
+      }
+      if (
+        !hasRole(roles, "owner", "author", "reviewer", "approver", "publisher")
+      ) {
+        return context.respond({ error: "governance_authority_required" }, 403);
+      }
+
+      if (context.request.method === "GET") {
+        const record = await store.getTaxRuleVersion(ruleSetId, version);
+        if (!record) {
+          return context.respond({ ruleSet: null, version: null }, 200);
+        }
+        const artifact = await store.getTaxRuleArtifact(
+          ruleSetId,
+          version,
+          record.currentChecksum,
+        );
+        if (!artifact) {
+          return context.respond({ error: "artifact_metadata_missing" }, 503);
+        }
+        const ruleSet = await readTaxRuleArtifact(
+          context.environment.DATA_BUCKET,
+          artifact.objectKey,
+        );
+        if (!ruleSet) {
+          return context.respond({ error: "artifact_object_missing" }, 503);
+        }
+        return context.respond({ ruleSet, version: record }, 200);
+      }
+
+      if (context.request.method === "PUT") {
+        if (!hasRole(roles, "owner", "author")) {
+          return context.respond({ error: "author_authority_required" }, 403);
+        }
+        const parsed = artifactWriteSchema.safeParse(
+          await context.parseBody(context.request),
+        );
+        if (!parsed.success) {
+          return context.respond({ error: "invalid_artifact_request" }, 400);
+        }
+        const history = await store.getGovernanceHistory(ruleSetId, version);
+        const historyValidation =
+          history.length === 0
+            ? { currentStatus: "draft" as const, isValid: true }
+            : validateTaxGovernanceHistory({
+                schemaVersion: "1.0.0",
+                ruleSetId,
+                version,
+                events: history,
+              });
+        if (
+          !historyValidation.isValid ||
+          historyValidation.currentStatus !== "draft"
+        ) {
+          return context.respond({ error: "artifact_edit_not_allowed" }, 409);
+        }
+        const artifact = await prepareTaxRuleArtifact(parsed.data.ruleSet);
+        if (
+          artifact.ruleSet.metadata.ruleSetId !== ruleSetId ||
+          artifact.ruleSet.metadata.version !== version
+        ) {
+          return context.respond({ error: "artifact_identity_mismatch" }, 400);
+        }
+        await storeImmutableTaxRuleArtifact(
+          context.environment.DATA_BUCKET,
+          artifact,
+        );
+        const saved = await store.saveTaxRuleArtifact({
+          actorId: context.identity.sub,
+          artifact: {
+            ruleSetId,
+            version,
+            checksum: artifact.checksum,
+            objectKey: artifact.objectKey,
+            taxYearBE: artifact.ruleSet.metadata.taxYearBE,
+            schemaVersion: artifact.ruleSet.metadata.schemaVersion,
+            createdAt: now(),
+            createdBy: context.identity.sub,
+          },
+          expectedRevision: parsed.data.expectedRevision,
+          occurredAt: now(),
+        });
+        if (!saved) {
+          return context.respond({ error: "artifact_revision_conflict" }, 409);
+        }
+        console.log(
+          JSON.stringify({
+            action: "tax_rule.artifact_stored",
+            actorId: context.identity.sub,
+            checksum: artifact.checksum,
+            revision: saved.revision,
+            ruleSetId,
+            version,
+          }),
+        );
+        return context.respond(
+          {
+            checksum: artifact.checksum,
+            ruleSet: artifact.ruleSet,
+            version: saved,
+          },
+          200,
+        );
+      }
+    }
+
     const historyMatch = context.pathname.match(
       /^\/api\/admin\/tax-rules\/([^/]+)\/versions\/([^/]+)\/history$/,
     );
@@ -296,6 +423,48 @@ export function createGovernanceApi(
             },
             unauthorized ? 403 : 409,
           );
+        }
+        if (
+          event.action === "submit_for_review" ||
+          event.action === "publish"
+        ) {
+          const current = await store.getTaxRuleVersion(ruleSetId, version);
+          if (
+            !event.snapshotChecksum ||
+            !current ||
+            current.currentChecksum !== event.snapshotChecksum
+          ) {
+            return context.respond(
+              { error: "current_artifact_checksum_required" },
+              409,
+            );
+          }
+          if (event.action === "publish") {
+            const artifact = await store.getTaxRuleArtifact(
+              ruleSetId,
+              version,
+              event.snapshotChecksum,
+            );
+            const ruleSet = artifact
+              ? await readTaxRuleArtifact(
+                  context.environment.DATA_BUCKET,
+                  artifact.objectKey,
+                )
+              : null;
+            if (!ruleSet) {
+              return context.respond({ error: "artifact_object_missing" }, 503);
+            }
+            const publication = validateTaxPublicationCandidate({
+              governanceHistory: history,
+              ruleSet,
+            });
+            if (!publication.isPublishable) {
+              return context.respond(
+                { error: "publication_not_ready", issues: publication.issues },
+                409,
+              );
+            }
+          }
         }
         const appended = await store.appendGovernanceEvent({
           event,

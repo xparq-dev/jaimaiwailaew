@@ -41,7 +41,7 @@ const SAFE_STATIC_PATHS = new Set([
 
 // Fail closed for all authenticated, synchronized, generated, or user-specific resources.
 const NEVER_CACHE_PATH =
-  /(?:^\/(?:api|auth|login|signup|profile|settings)(?:\/|$)|(?:^|\/)(?:sync|export|download|receipt|document|upload)(?:\/|$)|\.(?:pdf|csv|xlsx?|zip)(?:$|\/))/i;
+  /(?:^\/(?:api|admin|auth|login|signup|profile|settings)(?:\/|$)|(?:^|\/)(?:sync|export|download|receipt|document|upload)(?:\/|$)|\.(?:pdf|csv|xlsx?|zip)(?:$|\/))/i;
 
 function isSafeNavigation(url) {
   return (

@@ -29,7 +29,11 @@ export interface R2BucketLike {
   put(
     key: string,
     value: string,
-    options?: { httpMetadata?: { contentType?: string } },
+    options?: {
+      onlyIf?: { etagDoesNotMatch?: string };
+      httpMetadata?: { contentType?: string };
+      customMetadata?: Record<string, string>;
+    },
   ): Promise<unknown>;
   delete(keys: string | string[]): Promise<void>;
   list(options: { prefix: string; cursor?: string }): Promise<R2ListResultLike>;

@@ -455,3 +455,52 @@ test("keeps the interface Thai-only and changes theme from settings", async ({
     .toBe(false);
   await expect(page).toHaveURL(/\/settings$/);
 });
+
+test("keeps the tax-rule admin workbench behind authentication and MFA", async ({
+  page,
+}) => {
+  await page.goto("/admin/tax-rules");
+
+  await expect(
+    page.getByRole("heading", { name: "ยืนยันสิทธิ์ก่อนเริ่มงาน" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "ยังไม่ได้เข้าสู่ระบบ" }),
+  ).toBeVisible();
+  await expect(
+    page.locator("#main-content").getByRole("link", { name: "เข้าสู่ระบบ" }),
+  ).toBeVisible();
+  await expect(page.getByText("Candidate JSON")).toHaveCount(0);
+});
+
+test("renders the authorized tax-rule workbench and saves a candidate", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "jaimaiwailaew:e2e:auth-user",
+      JSON.stringify({
+        id: "admin-e2e-user",
+        email: "admin@example.com",
+        provider: "google",
+        avatarUrl: null,
+      }),
+    );
+  });
+
+  await page.goto("/admin/tax-rules");
+  await expect(
+    page.getByRole("heading", { name: "จัดการชุดกฎภาษี" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("เนื้อหา candidate JSON")).toBeVisible();
+  await page.getByRole("button", { name: "บันทึก Candidate" }).click();
+  await expect(page.getByText("บันทึก candidate รุ่น 1 แล้ว")).toBeVisible();
+  await expect(page.getByText("เผยแพร่แล้ว", { exact: true })).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
+});

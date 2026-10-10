@@ -172,6 +172,22 @@ textarea {
     0 12px 32px rgb(10 35 30 / 5%);
 }
 
+.admin-input {
+  min-height: 3rem;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  padding-inline: 0.75rem;
+  outline: none;
+}
+
+.admin-input:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent);
+}
+
 .dark .surface-card {
   box-shadow:
     0 1px 2px rgb(0 0 0 / 24%),

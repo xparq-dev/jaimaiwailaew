@@ -6,6 +6,8 @@ import type {
   AuditRecord,
   AuthorityRecord,
   GovernanceStore,
+  TaxRuleArtifactRecord,
+  TaxRuleVersionRecord,
 } from "../../../workers/governance-storage";
 import {
   createWorkerHandler,
@@ -13,11 +15,15 @@ import {
   type WorkerEnvironment,
 } from "../../../workers/index";
 import type { TaxGovernanceEvent } from "../../tax/governance";
+import manifests2569 from "../../tax/rules/2569/manifest.json";
+import metadata2569 from "../../tax/rules/2569/meta.json";
 
 class MemoryGovernanceStore implements GovernanceStore {
   readonly authorities = new Map<string, AuthorityRecord>();
   readonly histories = new Map<string, TaxGovernanceEvent[]>();
   readonly audit: AuditRecord[] = [];
+  readonly artifacts = new Map<string, TaxRuleArtifactRecord>();
+  readonly versions = new Map<string, TaxRuleVersionRecord>();
 
   async getAuthority(userId: string) {
     return this.authorities.get(userId) ?? null;
@@ -121,11 +127,86 @@ class MemoryGovernanceStore implements GovernanceStore {
   async listAuditEvents(limit: number) {
     return this.audit.slice(0, limit);
   }
+
+  async getTaxRuleArtifact(
+    ruleSetId: string,
+    version: string,
+    checksum: string,
+  ) {
+    return this.artifacts.get(`${ruleSetId}@${version}@${checksum}`) ?? null;
+  }
+
+  async getTaxRuleVersion(ruleSetId: string, version: string) {
+    return this.versions.get(`${ruleSetId}@${version}`) ?? null;
+  }
+
+  async saveTaxRuleArtifact(input: {
+    readonly actorId: string;
+    readonly artifact: TaxRuleArtifactRecord;
+    readonly expectedRevision: number;
+    readonly occurredAt: string;
+  }) {
+    const key = `${input.artifact.ruleSetId}@${input.artifact.version}`;
+    const current = this.versions.get(key);
+    if (
+      (current?.revision ?? 0) !== input.expectedRevision ||
+      current?.publishedChecksum
+    ) {
+      return null;
+    }
+    this.artifacts.set(`${key}@${input.artifact.checksum}`, input.artifact);
+    const record: TaxRuleVersionRecord = {
+      ruleSetId: input.artifact.ruleSetId,
+      version: input.artifact.version,
+      currentChecksum: input.artifact.checksum,
+      revision: input.expectedRevision + 1,
+      updatedAt: input.occurredAt,
+      updatedBy: input.actorId,
+      publishedChecksum: null,
+      publishedAt: null,
+      publishedBy: null,
+    };
+    this.versions.set(key, record);
+    return record;
+  }
 }
 
-function environment(): WorkerEnvironment {
+class MemoryBucket implements R2BucketLike {
+  readonly values = new Map<string, unknown>();
+
+  async get(key: string) {
+    if (!this.values.has(key)) return null;
+    return {
+      json: async <T>() => structuredClone(this.values.get(key)) as T,
+    };
+  }
+
+  async put(key: string, value: string) {
+    if (!this.values.has(key)) this.values.set(key, JSON.parse(value));
+    return {};
+  }
+
+  async delete(key: string | string[]) {
+    for (const item of Array.isArray(key) ? key : [key]) {
+      this.values.delete(item);
+    }
+  }
+
+  async list({ prefix }: { prefix: string }) {
+    return {
+      objects: [...this.values.keys()]
+        .filter((key) => key.startsWith(prefix))
+        .map((key) => ({ key })),
+      truncated: false,
+    };
+  }
+}
+
+function environment(
+  bucket: R2BucketLike = new MemoryBucket(),
+): WorkerEnvironment {
   return {
-    DATA_BUCKET: {} as R2BucketLike,
+    DATA_BUCKET: bucket,
     GOVERNANCE_BOOTSTRAP_OWNER_SUB: "owner-user",
     SUPABASE_URL: "https://example.supabase.co",
     ALLOWED_ORIGIN: "https://jaimaiwailaew.vercel.app",
@@ -258,12 +339,81 @@ describe("server-side governance authority", () => {
 });
 
 describe("server-side tax rule governance history", () => {
+  it("rejects stale candidate revisions and editing after review starts", async () => {
+    const { handler } = testSystem();
+    const bucket = new MemoryBucket();
+    await assign(handler, "author-user", ["author"]);
+    const identity = `${metadata2569.ruleSetId}/versions/${metadata2569.version}`;
+    const artifactPath = `/api/admin/tax-rules/${identity}/artifact`;
+    const body = JSON.stringify({
+      expectedRevision: 0,
+      ruleSet: { metadata: metadata2569, manifests: manifests2569 },
+    });
+    const saved = await handler.fetch(
+      request("author-user", artifactPath, { method: "PUT", body }),
+      environment(bucket),
+    );
+    expect(saved.status).toBe(200);
+    const artifact = (await saved.json()) as { checksum: string };
+
+    const stale = await handler.fetch(
+      request("author-user", artifactPath, { method: "PUT", body }),
+      environment(bucket),
+    );
+    expect(stale.status).toBe(409);
+    expect(await stale.json()).toEqual({ error: "artifact_revision_conflict" });
+
+    const submitted = await handler.fetch(
+      request("author-user", `/api/admin/tax-rules/${identity}/history`, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "submit_for_review",
+          expectedEventId: null,
+          note: "Submit the current immutable candidate for review",
+          snapshotChecksum: artifact.checksum,
+        }),
+      }),
+      environment(bucket),
+    );
+    expect(submitted.status).toBe(201);
+
+    const editDuringReview = await handler.fetch(
+      request("author-user", artifactPath, {
+        method: "PUT",
+        body: JSON.stringify({
+          expectedRevision: 1,
+          ruleSet: { metadata: metadata2569, manifests: manifests2569 },
+        }),
+      }),
+      environment(bucket),
+    );
+    expect(editDuringReview.status).toBe(409);
+    expect(await editDuringReview.json()).toEqual({
+      error: "artifact_edit_not_allowed",
+    });
+  });
+
   it("derives actor identity and roles on the server through publish", async () => {
     const { handler, store } = testSystem();
+    const bucket = new MemoryBucket();
     await assign(handler, "author-user", ["author"]);
     await assign(handler, "approver-user", ["approver"]);
     await assign(handler, "publisher-user", ["publisher"]);
-    const path = "/api/admin/tax-rules/th-pit-2569-next/versions/1.0.0/history";
+    const identity = `${metadata2569.ruleSetId}/versions/${metadata2569.version}`;
+    const artifactPath = `/api/admin/tax-rules/${identity}/artifact`;
+    const artifactResponse = await handler.fetch(
+      request("author-user", artifactPath, {
+        method: "PUT",
+        body: JSON.stringify({
+          expectedRevision: 0,
+          ruleSet: { metadata: metadata2569, manifests: manifests2569 },
+        }),
+      }),
+      environment(bucket),
+    );
+    expect(artifactResponse.status).toBe(200);
+    const artifact = (await artifactResponse.json()) as { checksum: string };
+    const path = `/api/admin/tax-rules/${identity}/history`;
 
     const submitted = await handler.fetch(
       request("author-user", path, {
@@ -272,9 +422,10 @@ describe("server-side tax rule governance history", () => {
           action: "submit_for_review",
           expectedEventId: null,
           note: "Submit immutable candidate for independent review",
+          snapshotChecksum: artifact.checksum,
         }),
       }),
-      environment(),
+      environment(bucket),
     );
     expect(submitted.status).toBe(201);
     const submitEvent = (await submitted.json()) as {
@@ -291,7 +442,7 @@ describe("server-side tax rule governance history", () => {
           note: "Approve independently reviewed official-source candidate",
         }),
       }),
-      environment(),
+      environment(bucket),
     );
     expect(approved.status).toBe(201);
     const approveEvent = (await approved.json()) as {
@@ -305,22 +456,38 @@ describe("server-side tax rule governance history", () => {
           action: "publish",
           expectedEventId: approveEvent.event.eventId,
           note: "Publish checksum-pinned approved tax rule artifact",
-          snapshotChecksum: "a".repeat(64),
+          snapshotChecksum: artifact.checksum,
         }),
       }),
-      environment(),
+      environment(bucket),
     );
     expect(published.status).toBe(201);
     expect(
-      await store.getGovernanceHistory("th-pit-2569-next", "1.0.0"),
+      await store.getGovernanceHistory(
+        metadata2569.ruleSetId,
+        metadata2569.version,
+      ),
     ).toHaveLength(3);
   });
 
   it("rejects unauthorized roles, self-approval, and stale history heads", async () => {
     const { handler } = testSystem();
+    const bucket = new MemoryBucket();
     await assign(handler, "mixed-user", ["author", "approver"]);
     await assign(handler, "review-user", ["reviewer"]);
-    const path = "/api/admin/tax-rules/th-pit-2569-next/versions/1.0.0/history";
+    const identity = `${metadata2569.ruleSetId}/versions/${metadata2569.version}`;
+    const artifactResponse = await handler.fetch(
+      request("mixed-user", `/api/admin/tax-rules/${identity}/artifact`, {
+        method: "PUT",
+        body: JSON.stringify({
+          expectedRevision: 0,
+          ruleSet: { metadata: metadata2569, manifests: manifests2569 },
+        }),
+      }),
+      environment(bucket),
+    );
+    const artifact = (await artifactResponse.json()) as { checksum: string };
+    const path = `/api/admin/tax-rules/${identity}/history`;
 
     const submitted = await handler.fetch(
       request("mixed-user", path, {
@@ -329,9 +496,10 @@ describe("server-side tax rule governance history", () => {
           action: "submit_for_review",
           expectedEventId: null,
           note: "Submit candidate that requires independent approval",
+          snapshotChecksum: artifact.checksum,
         }),
       }),
-      environment(),
+      environment(bucket),
     );
     const submitEvent = (await submitted.json()) as {
       event: TaxGovernanceEvent;
@@ -346,7 +514,7 @@ describe("server-side tax rule governance history", () => {
           note: "This self approval must be rejected by policy",
         }),
       }),
-      environment(),
+      environment(bucket),
     );
     expect(selfApproval.status).toBe(409);
 
@@ -359,7 +527,7 @@ describe("server-side tax rule governance history", () => {
           note: "Reviewer does not hold the approver authority role",
         }),
       }),
-      environment(),
+      environment(bucket),
     );
     expect(unauthorized.status).toBe(403);
 
@@ -372,8 +540,77 @@ describe("server-side tax rule governance history", () => {
           note: "Stale browser state must not append a new event",
         }),
       }),
-      environment(),
+      environment(bucket),
     );
     expect(stale.status).toBe(409);
+  });
+
+  it("fails closed when the pinned artifact is not ready for publication", async () => {
+    const { handler } = testSystem();
+    const bucket = new MemoryBucket();
+    await assign(handler, "author-user", ["author"]);
+    await assign(handler, "approver-user", ["approver"]);
+    await assign(handler, "publisher-user", ["publisher"]);
+    const identity = `${metadata2569.ruleSetId}/versions/${metadata2569.version}`;
+    const metadata = structuredClone(metadata2569);
+    metadata.sources[0]!.reviewerStatus = "under_review";
+    const saved = await handler.fetch(
+      request("author-user", `/api/admin/tax-rules/${identity}/artifact`, {
+        method: "PUT",
+        body: JSON.stringify({
+          expectedRevision: 0,
+          ruleSet: { metadata, manifests: manifests2569 },
+        }),
+      }),
+      environment(bucket),
+    );
+    const artifact = (await saved.json()) as { checksum: string };
+    const path = `/api/admin/tax-rules/${identity}/history`;
+    const submitted = await handler.fetch(
+      request("author-user", path, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "submit_for_review",
+          expectedEventId: null,
+          note: "Submit candidate with incomplete source review evidence",
+          snapshotChecksum: artifact.checksum,
+        }),
+      }),
+      environment(bucket),
+    );
+    const submitEvent = (await submitted.json()) as {
+      event: TaxGovernanceEvent;
+    };
+    const approved = await handler.fetch(
+      request("approver-user", path, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "approve",
+          expectedEventId: submitEvent.event.eventId,
+          note: "Approve candidate before final server publication checks",
+        }),
+      }),
+      environment(bucket),
+    );
+    const approveEvent = (await approved.json()) as {
+      event: TaxGovernanceEvent;
+    };
+    const published = await handler.fetch(
+      request("publisher-user", path, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "publish",
+          expectedEventId: approveEvent.event.eventId,
+          note: "Attempt to publish candidate with incomplete evidence",
+          snapshotChecksum: artifact.checksum,
+        }),
+      }),
+      environment(bucket),
+    );
+
+    expect(published.status).toBe(409);
+    expect(await published.json()).toEqual(
+      expect.objectContaining({ error: "publication_not_ready" }),
+    );
   });
 });

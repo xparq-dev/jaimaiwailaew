@@ -10,17 +10,20 @@
 
 ## User journey
 
-1. ผู้ดูแลเข้าสู่ระบบและยืนยันตัวตนขั้นที่สองด้วย TOTP
-2. Worker ตรวจ AAL2 และ authority ฝั่ง server
-3. ผู้มีบทบาท author เลือกหรือวาง JSON ของ rule set แล้วบันทึก candidate
-4. Worker parse schema, ตรวจ identity, canonicalize และคำนวณ SHA-256
-5. R2 เก็บ snapshot แบบ content-addressed; key และ checksum ไม่มาจาก client
-6. ผู้ดูแลส่งตรวจ ขอแก้ไข อนุมัติ publish หรือ retire ตาม role และ separation of duties
-7. การ publish ต้องอ้าง snapshot ที่มีอยู่ ตรวจ publication gate ผ่าน และบันทึก audit/history
+1. ผู้ดูแลเข้าสู่ระบบ แล้วเปิด “พื้นที่ผู้ดูแล” จากหน้าบัญชี
+2. ระบบยืนยันตัวตนขั้นที่สองด้วย TOTP ก่อนเปิด Admin Dashboard
+3. Worker ตรวจ AAL2 และ authority ฝั่ง server
+4. Admin Dashboard แยกทางไปชุดกฎภาษี ทีมและสิทธิ์ และประวัติ ตามบทบาท
+5. ผู้มีบทบาท author เลือกหรือวาง JSON ของ rule set แล้วบันทึก candidate
+6. Worker parse schema, ตรวจ identity, canonicalize และคำนวณ SHA-256
+7. R2 เก็บ snapshot แบบ content-addressed; key และ checksum ไม่มาจาก client
+8. ผู้ดูแลส่งตรวจ ขอแก้ไข อนุมัติ publish หรือ retire ตาม role และ separation of duties
+9. การ publish ต้องอ้าง snapshot ที่มีอยู่ ตรวจ publication gate ผ่าน และบันทึก audit/history
 
 ## In scope
 
-- หน้า `/admin/tax-rules` ภาษาไทย พร้อม loading, empty, permission, validation,
+- หน้า `/admin` สำหรับเลือกงาน และทางเข้าจากหน้าบัญชี/เมนูบัญชี
+- หน้า `/admin/tax-rules`, `/admin/access` และ `/admin/audit` ภาษาไทย พร้อม loading, empty, permission, validation,
   conflict, success และ mobile review states
 - TOTP enrollment/challenge สำหรับยกระดับ session เป็น AAL2
 - API สำหรับบันทึกและอ่าน candidate artifact ตาม `ruleSetId` และ `version`

@@ -470,7 +470,59 @@ test("keeps the tax-rule admin workbench behind authentication and MFA", async (
   await expect(
     page.locator("#main-content").getByRole("link", { name: "เข้าสู่ระบบ" }),
   ).toBeVisible();
-  await expect(page.getByText("Candidate JSON")).toHaveCount(0);
+  await expect(page.getByText("ข้อมูลฉบับกฎ (JSON)")).toHaveCount(0);
+});
+
+test("provides a clear account entry and admin dashboard", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "jaimaiwailaew:e2e:auth-user",
+      JSON.stringify({
+        id: "admin-e2e-user",
+        email: "admin@example.com",
+        provider: "google",
+        avatarUrl: null,
+      }),
+    );
+  });
+
+  await page.goto("/profile");
+  const main = page.locator("#main-content");
+  await expect(
+    main.getByRole("link", { name: "พื้นที่ผู้ดูแล" }),
+  ).toBeVisible();
+  await main.getByRole("link", { name: "พื้นที่ผู้ดูแล" }).click();
+
+  await expect(page).toHaveURL(/\/admin$/u);
+  await expect(
+    page.getByRole("heading", { name: "ศูนย์จัดการระบบ" }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /^ชุดกฎภาษี/u })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /^ทีมและสิทธิ์/u }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /ประวัติการดำเนินการ/u }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: /^ประวัติการดำเนินการ/u }).click();
+  await expect(page).toHaveURL(/\/admin\/audit$/u);
+  await expect(
+    page.getByRole("heading", { name: "ประวัติการดำเนินการ" }),
+  ).toBeVisible();
+  await expect(page.getByText("ยังไม่มีเหตุการณ์ที่บันทึกไว้")).toBeVisible();
+  await page.getByRole("link", { name: "กลับศูนย์ผู้ดูแล" }).click();
+  await page.getByRole("link", { name: /^ทีมและสิทธิ์/u }).click();
+  await expect(page).toHaveURL(/\/admin\/access$/u);
+  await expect(
+    page.getByRole("heading", { name: "ทีมและสิทธิ์" }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
 });
 
 test("renders the authorized tax-rule workbench and saves a candidate", async ({

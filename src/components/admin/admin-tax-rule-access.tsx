@@ -3,6 +3,7 @@
 import { KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 
 import {
   AdminApiError,
@@ -37,6 +38,35 @@ export function AdminTaxRuleAccess({
   seeds,
 }: {
   readonly seeds: readonly TaxRuleSet[];
+}) {
+  return (
+    <AdminAccessGate
+      description="พื้นที่สำหรับตรวจและเผยแพร่ชุดกฎโดยผู้ดูแลที่ได้รับสิทธิ์เท่านั้น"
+      eyebrow="การดูแลกฎภาษี"
+      title="ยืนยันสิทธิ์ก่อนเริ่มงาน"
+    >
+      {({ api, roles }) => (
+        <TaxRuleWorkbench api={api} roles={roles} seeds={seeds} />
+      )}
+    </AdminAccessGate>
+  );
+}
+
+export interface AdminAccessContext {
+  readonly api: AdminGovernanceClient;
+  readonly roles: readonly AdminRole[];
+}
+
+export function AdminAccessGate({
+  children,
+  description = "เข้าสู่พื้นที่ทำงานสำหรับผู้ดูแลที่ได้รับสิทธิ์",
+  eyebrow = "พื้นที่ผู้ดูแล",
+  title = "ยืนยันสิทธิ์ก่อนเริ่มงาน",
+}: {
+  readonly children: (context: AdminAccessContext) => ReactNode;
+  readonly description?: string;
+  readonly eyebrow?: string;
+  readonly title?: string;
 }) {
   const { getAccessToken, status } = useAuth();
   const [gate, setGate] = useState<GateState>({ kind: "checking" });
@@ -165,16 +195,12 @@ export function AdminTaxRuleAccess({
   }
 
   if (gate.kind === "ready") {
-    return <TaxRuleWorkbench api={api} roles={gate.roles} seeds={seeds} />;
+    return children({ api, roles: gate.roles });
   }
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        description="พื้นที่สำหรับตรวจและเผยแพร่ชุดกฎโดยผู้ดูแลที่ได้รับสิทธิ์เท่านั้น"
-        eyebrow="การดูแลกฎภาษี"
-        title="ยืนยันสิทธิ์ก่อนเริ่มงาน"
-      />
+      <PageHeader description={description} eyebrow={eyebrow} title={title} />
 
       <section className="surface-card mx-auto max-w-2xl p-5 sm:p-7">
         {gate.kind === "checking" ? (

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeft,
   CheckCircle2,
   FileJson2,
   LoaderCircle,
@@ -9,6 +10,7 @@ import {
   Send,
   ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { adminErrorCopy } from "@/admin/error-copy";
@@ -18,7 +20,6 @@ import {
   type AdminRole,
   type TaxRuleArtifactResponse,
 } from "@/admin/governance-client";
-import { AuthorityPanel } from "@/components/admin/authority-panel";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -257,23 +258,31 @@ export function TaxRuleWorkbench({
     <div className="space-y-7">
       <PageHeader
         actions={
-          <Button
-            disabled={Boolean(busy)}
-            onClick={() => void load()}
-            variant="secondary"
-          >
-            {busy === "load" ? (
-              <LoaderCircle
-                aria-hidden="true"
-                className="size-4 animate-spin"
-              />
-            ) : (
-              <RefreshCw aria-hidden="true" className="size-4" />
-            )}
-            โหลดข้อมูล
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="ghost">
+              <Link href="/admin">
+                <ArrowLeft aria-hidden="true" className="size-4" />
+                ศูนย์ผู้ดูแล
+              </Link>
+            </Button>
+            <Button
+              disabled={Boolean(busy)}
+              onClick={() => void load()}
+              variant="secondary"
+            >
+              {busy === "load" ? (
+                <LoaderCircle
+                  aria-hidden="true"
+                  className="size-4 animate-spin"
+                />
+              ) : (
+                <RefreshCw aria-hidden="true" className="size-4" />
+              )}
+              โหลดข้อมูล
+            </Button>
+          </div>
         }
-        description="จัดทำ ตรวจ และเผยแพร่ artifact โดยทุกขั้นตอนบันทึกประวัติและแยกหน้าที่"
+        description="จัดทำ ตรวจ อนุมัติ และเผยแพร่ฉบับกฎ โดยบันทึกประวัติทุกขั้นตอน"
         eyebrow="พื้นที่ผู้ดูแล"
         title="จัดการชุดกฎภาษี"
       />
@@ -317,7 +326,7 @@ export function TaxRuleWorkbench({
             <div>
               <h2 className="flex items-center gap-2 font-bold">
                 <FileJson2 aria-hidden="true" className="size-5" />
-                Candidate JSON
+                ข้อมูลฉบับกฎ (JSON)
               </h2>
               <p className="text-muted-foreground mt-1 text-xs">
                 ระบบตรวจ schema และคำนวณ checksum ฝั่งเซิร์ฟเวอร์
@@ -523,8 +532,6 @@ export function TaxRuleWorkbench({
           </ol>
         )}
       </section>
-
-      {roles.includes("owner") ? <AuthorityPanel api={api} /> : null}
     </div>
   );
 }

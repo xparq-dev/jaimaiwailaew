@@ -46,9 +46,20 @@ const artifactResponseSchema = z.strictObject({
   version: versionRecordSchema.nullable(),
 });
 
+const auditRecordSchema = z.strictObject({
+  eventId: z.string(),
+  category: z.string(),
+  action: z.string(),
+  actorId: z.string(),
+  subjectId: z.string(),
+  details: z.record(z.string(), z.unknown()),
+  occurredAt: z.string(),
+});
+
 export type AdminRole = z.infer<typeof adminRoleSchema>;
 export type TaxRuleVersionRecord = z.infer<typeof versionRecordSchema>;
 export type TaxRuleArtifactResponse = z.infer<typeof artifactResponseSchema>;
+export type AdminAuditRecord = z.infer<typeof auditRecordSchema>;
 
 interface ErrorBody {
   readonly error?: string;
@@ -128,6 +139,16 @@ export class AdminGovernanceClient {
     const response = await this.request("/api/admin/authorities");
     return z
       .strictObject({ authorities: z.array(authorityRecordSchema) })
+      .parse(await response.json());
+  }
+
+  async getAuditEvents(limit = 50) {
+    if (testMode) return { events: [] as AdminAuditRecord[] };
+    const response = await this.request(
+      `/api/admin/audit?limit=${encodeURIComponent(String(limit))}`,
+    );
+    return z
+      .strictObject({ events: z.array(auditRecordSchema) })
       .parse(await response.json());
   }
 

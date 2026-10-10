@@ -46,6 +46,10 @@ const artifactResponseSchema = z.strictObject({
   version: versionRecordSchema.nullable(),
 });
 
+const eligibilityResponseSchema = z.strictObject({
+  eligible: z.boolean(),
+});
+
 const auditRecordSchema = z.strictObject({
   eventId: z.string(),
   category: z.string(),
@@ -113,6 +117,18 @@ export class AdminGovernanceClient {
       );
     }
     return response;
+  }
+
+  async getEligibility() {
+    if (testMode) {
+      const override =
+        typeof window === "undefined"
+          ? null
+          : window.localStorage.getItem("jaimaiwailaew:e2e:admin-eligible");
+      return { eligible: override !== "0" };
+    }
+    const response = await this.request("/api/admin/eligibility");
+    return eligibilityResponseSchema.parse(await response.json());
   }
 
   async getMe() {

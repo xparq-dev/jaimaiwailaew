@@ -91,14 +91,9 @@ export function createGovernanceApi(
   ): Promise<Response | null> {
     if (!context.pathname.startsWith("/api/admin")) return null;
 
-    if (context.identity.aal !== "aal2") {
-      return context.respond({ error: "mfa_required" }, 403);
-    }
-
     if (
       !context.environment.GOVERNANCE_BOOTSTRAP_OWNER_SUB ||
-      (!context.environment.GOVERNANCE_DB && !dependencies.createStore) ||
-      !context.environment.DATA_BUCKET
+      (!context.environment.GOVERNANCE_DB && !dependencies.createStore)
     ) {
       return context.respond({ error: "governance_unavailable" }, 503);
     }
@@ -106,6 +101,27 @@ export function createGovernanceApi(
     const store = dependencies.createStore
       ? dependencies.createStore(context.environment)
       : new D1GovernanceStore(context.environment.GOVERNANCE_DB!);
+
+    if (
+      context.pathname === "/api/admin/eligibility" &&
+      context.request.method === "GET"
+    ) {
+      const roles = await resolveServerAuthority({
+        bootstrapOwnerSub: context.environment.GOVERNANCE_BOOTSTRAP_OWNER_SUB,
+        store,
+        userId: context.identity.sub,
+      });
+      return context.respond({ eligible: roles.length > 0 }, 200);
+    }
+
+    if (context.identity.aal !== "aal2") {
+      return context.respond({ error: "mfa_required" }, 403);
+    }
+
+    if (!context.environment.DATA_BUCKET) {
+      return context.respond({ error: "governance_unavailable" }, 503);
+    }
+
     const roles = await resolveServerAuthority({
       bootstrapOwnerSub: context.environment.GOVERNANCE_BOOTSTRAP_OWNER_SUB,
       store,

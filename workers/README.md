@@ -72,8 +72,11 @@ versioned migration only to the intended environment and set
 `GOVERNANCE_BOOTSTRAP_OWNER_SUB` as a Worker secret; never place the Supabase
 user ID in source, Wrangler variables, frontend configuration, or logs.
 
-All `/api/admin/*` routes require a verified Supabase JWT with `aal2`. The
-bootstrap owner is immutable through the API. Delegated roles are stored in D1
+All `/api/admin/*` routes require a verified Supabase JWT. The self-only
+`GET /api/admin/eligibility` route may run at `aal1` and returns only an
+eligibility boolean; it never returns roles. Every other admin route requires
+`aal2` and rechecks server authority. The bootstrap owner is immutable through
+the API. Delegated roles are stored in D1
 with optimistic versions, while tax-rule workflow events are append-only and
 use an expected-head check. D1 triggers create audit records in the same
 database transaction. There is no audit-delete or emergency-access endpoint.

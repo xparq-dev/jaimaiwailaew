@@ -10,9 +10,9 @@
 
 ## User journey
 
-1. ผู้ดูแลเข้าสู่ระบบ แล้วเปิด “พื้นที่ผู้ดูแล” จากหน้าบัญชี
-2. ระบบยืนยันตัวตนขั้นที่สองด้วย TOTP ก่อนเปิด Admin Dashboard
-3. Worker ตรวจ AAL2 และ authority ฝั่ง server
+1. หลังเข้าสู่ระบบ Worker ตรวจ eligibility ของบัญชีจาก `sub` ที่ verify แล้ว
+2. เฉพาะบัญชีที่มี authority จึงเห็น “พื้นที่ผู้ดูแล” และเข้าสู่ขั้น TOTP
+3. Worker ตรวจ AAL2 และ authority ซ้ำก่อนเปิด Admin Dashboard
 4. Admin Dashboard แยกทางไปชุดกฎภาษี ทีมและสิทธิ์ และประวัติ ตามบทบาท
 5. ผู้มีบทบาท author เลือกหรือวาง JSON ของ rule set แล้วบันทึก candidate
 6. Worker parse schema, ตรวจ identity, canonicalize และคำนวณ SHA-256
@@ -45,7 +45,10 @@
 
 ## Security และ privacy
 
-- ทุก `/api/admin/*` endpoint ต้องใช้ JWT ที่ verify แล้วและ `aal2`
+- ทุก `/api/admin/*` endpoint ต้องใช้ JWT ที่ verify แล้ว
+- `GET /api/admin/eligibility` ตอบเฉพาะ eligibility ของผู้เรียกที่ AAL1 โดยไม่คืน role;
+  endpoint ผู้ดูแลที่เหลือยังต้องใช้ AAL2 และตรวจ authority ทุกครั้ง
+- บัญชีที่ไม่มี authority ไม่เห็นทางเข้า Admin และไม่ถูกชวนลงทะเบียน TOTP
 - role มาจาก bootstrap owner secret หรือ D1 เท่านั้น
 - client ส่ง rule set, action, note และ expected head/revision ได้ แต่ส่ง actor/role/object key ไม่ได้
 - published artifact แก้ไข/เขียนทับ/ลบผ่าน API ไม่ได้

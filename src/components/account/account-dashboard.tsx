@@ -157,6 +157,12 @@ export function AccountDashboard() {
 
           <div className="flex flex-wrap gap-2 sm:justify-end">
             <Button asChild size="sm" variant="secondary">
+              <Link href="/admin">
+                <ShieldCheck aria-hidden="true" className="size-4" />
+                พื้นที่ผู้ดูแล
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="secondary">
               <Link href="/settings">
                 <Settings aria-hidden="true" className="size-4" />
                 การตั้งค่า

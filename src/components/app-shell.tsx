@@ -13,6 +13,7 @@ import {
   LogIn,
   ReceiptText,
   Settings,
+  UserRoundCog,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -228,6 +229,21 @@ function SidebarAccountArea() {
           <Settings aria-hidden="true" className="size-5" />
         </Link>
       </div>
+      {user ? (
+        <Link
+          aria-current={pathname.startsWith("/admin") ? "page" : undefined}
+          className={cn(
+            "focus-visible:ring-focus/35 mt-2 flex min-h-10 items-center gap-2 rounded-xl px-3 text-xs font-semibold transition-colors focus-visible:ring-3 focus-visible:outline-none",
+            pathname.startsWith("/admin")
+              ? "bg-sidebar-active text-sidebar-active-foreground"
+              : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground",
+          )}
+          href="/admin"
+        >
+          <UserRoundCog aria-hidden="true" className="size-4" />
+          พื้นที่ผู้ดูแล
+        </Link>
+      ) : null}
     </div>
   );
 }

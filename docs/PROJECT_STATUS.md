@@ -154,7 +154,10 @@ Workflow Foundation และ Phase 5D Server-side Admin Authority & Governance 
 PR #37, PR #38, PR #43 และ PR #44 ตามลำดับ ส่วน PR #39 ปิดงาน UX/UI redesign โดยไม่เปลี่ยน
 business logic
 
-Phase 5E ที่เสนอถัดไปคือ Admin Tax Rule Editor และ immutable artifact workflow แต่ยังไม่เริ่ม
+Phase 5E — Admin Tax Rule Editor และ immutable artifact workflow อยู่ระหว่างดำเนินการบน branch
+`feat/phase-5e-tax-rule-editor` โดยกำหนดขอบเขตและเกณฑ์ตรวจรับไว้ใน
+[`Phase5ETaxRuleEditor.md`](./Phase5ETaxRuleEditor.md) การเผยแพร่ artifact ในเฟสนี้ยังไม่เปลี่ยน
+ชุดกฎที่ Calculator ใช้งานจริงจนกว่าจะผ่าน release/activation แยกต่างหาก
 จนกว่า scope และ acceptance criteria จะได้รับอนุมัติ งาน account deletion/retention,
 audit/consent governance, payment/LINE และ OCR ยังไม่เริ่มและต้องแยก scope/PR ตาม ownership ความเสี่ยง
 และนโยบายข้อมูล ส่วน email verification/password reset ไม่ใช้กับ OAuth-only Production และ

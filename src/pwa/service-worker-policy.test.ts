@@ -53,7 +53,7 @@ describe("Phase 1F public-shell service-worker policy", () => {
     expect(navigationBlock).toContain('"/calculator/summary"');
     expect(navigationBlock).toContain('"/offline"');
     expect(navigationBlock).not.toMatch(
-      /login|signup|profile|settings|auth|api/,
+      /login|signup|profile|settings|admin|auth|api/,
     );
     expect(serviceWorkerSource).toContain("SAFE_NAVIGATION_PATHS.has");
   });
@@ -61,7 +61,7 @@ describe("Phase 1F public-shell service-worker policy", () => {
   it("fails closed for account, sync, API, and generated document paths", () => {
     expect(serviceWorkerSource).toContain("NEVER_CACHE_PATH");
     expect(serviceWorkerSource).toMatch(
-      /api\|auth\|login\|signup\|profile\|settings/,
+      /api\|admin\|auth\|login\|signup\|profile\|settings/,
     );
     expect(serviceWorkerSource).toMatch(/sync\|export\|download/);
     expect(serviceWorkerSource).toMatch(/pdf\|csv\|xlsx/);

@@ -21,6 +21,7 @@ type GateState =
   | { readonly kind: "checking" }
   | { readonly kind: "anonymous" }
   | { readonly kind: "unconfigured" }
+  | { readonly kind: "unavailable" }
   | {
       readonly kind: "mfa";
       readonly verifiedFactorId: string | null;
@@ -87,18 +88,37 @@ export function AdminAccessGate({
       });
       return;
     }
+    setGate({ kind: "checking" });
+    setError(null);
+    try {
+      const { eligible } = await api.getEligibility();
+      if (!eligible) {
+        setGate({ kind: "denied" });
+        return;
+      }
+    } catch (accessError) {
+      if (
+        accessError instanceof AdminApiError &&
+        accessError.code === "authentication_required"
+      ) {
+        setGate({ kind: "anonymous" });
+        return;
+      }
+      setGate({ kind: "unavailable" });
+      return;
+    }
+
     if (isSupabaseTestMode) {
       const me = await api.getMe();
       setGate({ kind: "ready", roles: me.roles });
       return;
     }
+
     const client = getSupabaseClient();
     if (!client) {
       setGate({ kind: "unconfigured" });
       return;
     }
-    setGate({ kind: "checking" });
-    setError(null);
     const [
       { data: assurance, error: assuranceError },
       { data: factors, error: factorError },
@@ -231,15 +251,28 @@ export function AdminAccessGate({
           />
         ) : null}
 
+        {gate.kind === "unavailable" ? (
+          <GateMessage
+            action={
+              <Button onClick={() => void checkAccess()} variant="secondary">
+                ลองอีกครั้ง
+              </Button>
+            }
+            icon={LockKeyhole}
+            text="ยังตรวจสิทธิ์ผู้ดูแลไม่ได้ จึงยังไม่เปิดขั้นตอนยืนยันตัวตน กรุณาลองอีกครั้ง"
+            title="ตรวจสิทธิ์ไม่สำเร็จ"
+          />
+        ) : null}
+
         {gate.kind === "denied" ? (
           <GateMessage
             action={
               <Button asChild variant="secondary">
-                <Link href="/">กลับหน้าหลัก</Link>
+                <Link href="/profile">กลับไปที่บัญชี</Link>
               </Button>
             }
             icon={ShieldCheck}
-            text="บัญชีนี้ยืนยันตัวตนแล้ว แต่ไม่ได้รับบทบาทดูแลกฎภาษี"
+            text="บัญชีนี้ไม่ได้รับสิทธิ์ผู้ดูแล คุณยังใช้งานส่วนบันทึกและสรุปข้อมูลได้ตามปกติ"
             title="ไม่มีสิทธิ์เข้าถึง"
           />
         ) : null}

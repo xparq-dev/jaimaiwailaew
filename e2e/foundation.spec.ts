@@ -525,6 +525,39 @@ test("provides a clear account entry and admin dashboard", async ({ page }) => {
     .toBe(true);
 });
 
+test("does not advertise admin access or offer MFA to an ineligible account", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "jaimaiwailaew:e2e:auth-user",
+      JSON.stringify({
+        id: "member-e2e-user",
+        email: "member@example.com",
+        provider: "google",
+        avatarUrl: null,
+      }),
+    );
+    localStorage.setItem("jaimaiwailaew:e2e:admin-eligible", "0");
+  });
+
+  await page.goto("/profile");
+  await expect(page.getByRole("link", { name: "พื้นที่ผู้ดูแล" })).toHaveCount(
+    0,
+  );
+
+  await page.goto("/admin");
+  await expect(
+    page.getByRole("heading", { name: "ไม่มีสิทธิ์เข้าถึง" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "ตั้งค่าแอป Authenticator" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "กลับไปที่บัญชี" }),
+  ).toBeVisible();
+});
+
 test("renders the authorized tax-rule workbench and saves a candidate", async ({
   page,
 }) => {

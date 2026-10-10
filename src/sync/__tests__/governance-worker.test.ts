@@ -259,7 +259,7 @@ async function assign(
 }
 
 describe("server-side governance authority", () => {
-  it("requires an AAL2 session before any admin storage access", async () => {
+  it("requires an AAL2 session before privileged admin operations", async () => {
     const { handler, store } = testSystem("aal1");
     const response = await handler.fetch(
       request("owner-user", "/api/admin/me"),
@@ -269,6 +269,40 @@ describe("server-side governance authority", () => {
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: "mfa_required" });
     expect(store.authorities.size).toBe(0);
+  });
+
+  it("answers the self eligibility check at AAL1 without exposing roles", async () => {
+    const { handler, store } = testSystem("aal1");
+    store.authorities.set("delegated-user", {
+      userId: "delegated-user",
+      roles: ["reviewer"],
+      active: true,
+      version: 1,
+      createdAt: "2026-10-07T09:00:00.000Z",
+      createdBy: "owner-user",
+      updatedAt: "2026-10-07T09:00:00.000Z",
+      updatedBy: "owner-user",
+    });
+
+    const owner = await handler.fetch(
+      request("owner-user", "/api/admin/eligibility"),
+      environment(),
+    );
+    const delegated = await handler.fetch(
+      request("delegated-user", "/api/admin/eligibility"),
+      environment(),
+    );
+    const stranger = await handler.fetch(
+      request("stranger", "/api/admin/eligibility"),
+      environment(),
+    );
+
+    expect(owner.status).toBe(200);
+    expect(await owner.json()).toEqual({ eligible: true });
+    expect(delegated.status).toBe(200);
+    expect(await delegated.json()).toEqual({ eligible: true });
+    expect(stranger.status).toBe(200);
+    expect(await stranger.json()).toEqual({ eligible: false });
   });
 
   it("resolves the bootstrap owner only from the server secret", async () => {

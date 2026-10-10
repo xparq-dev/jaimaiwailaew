@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useAuth } from "@/auth/auth-provider";
+import { useAdminEligibility } from "@/admin/use-admin-eligibility";
 import { getPersonaLabel } from "@/calculator/categories";
 import { useCalculatorStore } from "@/calculator/store";
 import type { CalculatorWorkspace } from "@/calculator/types";
@@ -77,6 +78,7 @@ export function AccountDashboard() {
   const router = useRouter();
   const hydrated = useCalculatorHydrated();
   const { status: authStatus, user, logout } = useAuth();
+  const adminEligibility = useAdminEligibility();
   const { enabled, error, lastSyncedAt, status: syncStatus } = useCloudSync();
   const workspace = useCalculatorStore((state) => state.workspace);
   const otherWorkspaces = useCalculatorStore((state) => state.otherWorkspaces);
@@ -156,12 +158,14 @@ export function AccountDashboard() {
           </div>
 
           <div className="flex flex-wrap gap-2 sm:justify-end">
-            <Button asChild size="sm" variant="secondary">
-              <Link href="/admin">
-                <ShieldCheck aria-hidden="true" className="size-4" />
-                พื้นที่ผู้ดูแล
-              </Link>
-            </Button>
+            {adminEligibility === "eligible" ? (
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/admin">
+                  <ShieldCheck aria-hidden="true" className="size-4" />
+                  พื้นที่ผู้ดูแล
+                </Link>
+              </Button>
+            ) : null}
             <Button asChild size="sm" variant="secondary">
               <Link href="/settings">
                 <Settings aria-hidden="true" className="size-4" />

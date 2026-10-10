@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { useAuth } from "@/auth/auth-provider";
+import { useAdminEligibility } from "@/admin/use-admin-eligibility";
 import { AccountControls } from "@/components/account-controls";
 import { OfflineBanner } from "@/components/network-status";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -153,6 +154,7 @@ const syncLabels = {
 function SidebarAccountArea() {
   const pathname = usePathname();
   const { status: authStatus, user } = useAuth();
+  const adminEligibility = useAdminEligibility();
   const { status: syncStatus } = useCloudSync();
   const SyncIcon =
     syncStatus === "syncing"
@@ -229,7 +231,7 @@ function SidebarAccountArea() {
           <Settings aria-hidden="true" className="size-5" />
         </Link>
       </div>
-      {user ? (
+      {user && adminEligibility === "eligible" ? (
         <Link
           aria-current={pathname.startsWith("/admin") ? "page" : undefined}
           className={cn(

@@ -4,13 +4,11 @@ import {
   ArrowRight,
   BookCheck,
   CheckCircle2,
-  CircleGauge,
   History,
   LoaderCircle,
   RefreshCw,
   ShieldCheck,
   UserRoundCog,
-  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -22,6 +20,7 @@ import type {
   AdminRole,
 } from "@/admin/governance-client";
 import { AdminAccessGate } from "@/components/admin/admin-tax-rule-access";
+import { UserAnalyticsPanel } from "@/components/admin/user-analytics-panel";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 
@@ -49,7 +48,6 @@ const ACTION_LABELS: Readonly<Record<string, string>> = {
 };
 
 interface DashboardSnapshot {
-  readonly activeAuthorities: number | null;
   readonly events: readonly AdminAuditRecord[] | null;
 }
 
@@ -79,25 +77,18 @@ function AdminDashboard({
     canReadAudit,
   ].filter(Boolean).length;
   const [snapshot, setSnapshot] = useState<DashboardSnapshot>({
-    activeAuthorities: null,
     events: null,
   });
-  const [loading, setLoading] = useState(canManageTeam || canReadAudit);
+  const [loading, setLoading] = useState(canReadAudit);
   const [error, setError] = useState<string | null>(null);
 
   const loadSnapshot = useCallback(async () => {
-    if (!canManageTeam && !canReadAudit) return;
+    if (!canReadAudit) return;
     setLoading(true);
     setError(null);
     try {
-      const [authorityResult, auditResult] = await Promise.all([
-        canManageTeam ? api.listAuthorities() : Promise.resolve(null),
-        canReadAudit ? api.getAuditEvents(6) : Promise.resolve(null),
-      ]);
+      const auditResult = await api.getAuditEvents(6);
       setSnapshot({
-        activeAuthorities:
-          authorityResult?.authorities.filter((authority) => authority.active)
-            .length ?? null,
         events: auditResult?.events ?? null,
       });
     } catch (loadError) {
@@ -105,7 +96,7 @@ function AdminDashboard({
     } finally {
       setLoading(false);
     }
-  }, [api, canManageTeam, canReadAudit]);
+  }, [api, canReadAudit]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void loadSnapshot(), 0);
@@ -120,16 +111,13 @@ function AdminDashboard({
             <Link href="/profile">กลับบัญชีของฉัน</Link>
           </Button>
         }
-        description="ดูสถานะ เลือกงานที่รับผิดชอบ และติดตามการเปลี่ยนแปลงจากจุดเดียว"
+        description="ดูแนวโน้มผู้ใช้งาน ติดตามการเปลี่ยนแปลง และเข้าสู่งานดูแลระบบ"
         eyebrow="พื้นที่ผู้ดูแล"
         title="ศูนย์จัดการระบบ"
       />
 
-      <section
-        aria-labelledby="admin-readiness-title"
-        className="surface-card overflow-hidden"
-      >
-        <div className="bg-success-soft/55 border-border grid gap-5 border-b p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <section aria-labelledby="admin-readiness-title" className="surface-card">
+        <div className="bg-success-soft/55 grid gap-5 rounded-[inherit] p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div className="flex items-start gap-3.5">
             <span className="bg-success-strong text-background grid size-11 shrink-0 place-items-center rounded-xl shadow-sm">
               <ShieldCheck aria-hidden="true" className="size-5" />
@@ -161,36 +149,9 @@ function AdminDashboard({
             ))}
           </div>
         </div>
-
-        <div className="grid divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
-          <DashboardMetric
-            icon={ShieldCheck}
-            label="บทบาทของคุณ"
-            value={String(roles.length)}
-          />
-          <DashboardMetric
-            icon={CircleGauge}
-            label="พื้นที่ทำงาน"
-            value={String(availableTaskCount)}
-          />
-          {canManageTeam ? (
-            <DashboardMetric
-              icon={UsersRound}
-              label="สมาชิกที่ได้รับสิทธิ์"
-              loading={loading}
-              value={String(snapshot.activeAuthorities ?? 0)}
-            />
-          ) : null}
-          {canReadAudit ? (
-            <DashboardMetric
-              icon={History}
-              label="กิจกรรมที่แสดง"
-              loading={loading}
-              value={String(snapshot.events?.length ?? 0)}
-            />
-          ) : null}
-        </div>
       </section>
+
+      {canManageTeam ? <UserAnalyticsPanel api={api} /> : null}
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.65fr)]">
         <section aria-labelledby="admin-tasks-title">
@@ -269,39 +230,6 @@ function AdminDashboard({
           แต่ไม่เปลี่ยนกฎที่เครื่องคำนวณใช้อยู่โดยอัตโนมัติ
         </p>
       </aside>
-    </div>
-  );
-}
-
-function DashboardMetric({
-  icon: Icon,
-  label,
-  loading = false,
-  value,
-}: {
-  readonly icon: typeof ShieldCheck;
-  readonly label: string;
-  readonly loading?: boolean;
-  readonly value: string;
-}) {
-  return (
-    <div className="flex min-h-24 items-center gap-3 px-5 py-4 sm:px-6">
-      <span className="bg-muted text-muted-foreground grid size-10 shrink-0 place-items-center rounded-xl">
-        <Icon aria-hidden="true" className="size-5" />
-      </span>
-      <div>
-        {loading ? (
-          <LoaderCircle
-            aria-label={`กำลังโหลด${label}`}
-            className="size-5 animate-spin"
-          />
-        ) : (
-          <p className="text-2xl font-bold tabular-nums">{value}</p>
-        )}
-        <p className="text-muted-foreground mt-0.5 text-xs font-medium">
-          {label}
-        </p>
-      </div>
     </div>
   );
 }

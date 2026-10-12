@@ -29,7 +29,11 @@
         "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app,http://localhost:3000,https://jaimaiwailaew-*-dev-xparq-s-projects.vercel.app,https://jaimaiwailaew-51ez1e6ev-dev-xparq-s-projects.vercel.app",
       },
       "secrets": {
-        "required": ["SUPABASE_URL", "GOVERNANCE_BOOTSTRAP_OWNER_SUB"],
+        "required": [
+          "SUPABASE_URL",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "GOVERNANCE_BOOTSTRAP_OWNER_SUB",
+        ],
       },
     },
     "production": {
@@ -51,7 +55,11 @@
         "ALLOWED_ORIGIN": "https://jaimaiwailaew.vercel.app",
       },
       "secrets": {
-        "required": ["SUPABASE_URL", "GOVERNANCE_BOOTSTRAP_OWNER_SUB"],
+        "required": [
+          "SUPABASE_URL",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "GOVERNANCE_BOOTSTRAP_OWNER_SUB",
+        ],
       },
     },
   },

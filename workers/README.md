@@ -12,7 +12,10 @@ another user's storage prefix.
 2. Create separate buckets with `npx wrangler r2 bucket create
 jaimaiwailaew-data-preview` and `npx wrangler r2 bucket create
 jaimaiwailaew-data`.
-3. Set `SUPABASE_URL` as a Worker secret for each named environment.
+3. Set `SUPABASE_URL` as a Worker secret for each named environment. Set
+   `SUPABASE_SERVICE_ROLE_KEY` only in the Worker secret store to enable the
+   owner-only aggregate user dashboard. Never expose this key to Vercel or any
+   `NEXT_PUBLIC_*` variable.
 4. Keep `ALLOWED_ORIGIN` as a comma-separated allow-list. Entries are exact web
    origins unless they contain `*`, which matches one or more letters, digits,
    or hyphens within a single hostname label. Preview allows only this

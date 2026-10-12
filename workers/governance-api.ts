@@ -30,11 +30,14 @@ import {
   storeImmutableTaxRuleArtifact,
   type ArtifactBucket,
 } from "./tax-rule-artifacts";
+import { loadUserAnalytics, type UserAnalytics } from "./user-analytics";
 
 export interface GovernanceEnvironment {
   readonly GOVERNANCE_BOOTSTRAP_OWNER_SUB?: string;
   readonly GOVERNANCE_DB?: D1Database;
   readonly DATA_BUCKET?: ArtifactBucket;
+  readonly SUPABASE_SERVICE_ROLE_KEY?: string;
+  readonly SUPABASE_URL?: string;
 }
 
 interface GovernanceIdentity {
@@ -48,6 +51,10 @@ interface GovernanceApiDependencies {
   ) => GovernanceStore;
   readonly now?: () => string;
   readonly randomId?: () => string;
+  readonly loadUserAnalytics?: (
+    environment: GovernanceEnvironment,
+    nowValue: string,
+  ) => Promise<UserAnalytics>;
 }
 
 interface GovernanceApiContext {
@@ -85,6 +92,7 @@ export function createGovernanceApi(
 ) {
   const now = dependencies.now ?? (() => new Date().toISOString());
   const randomId = dependencies.randomId ?? (() => crypto.randomUUID());
+  const getUserAnalytics = dependencies.loadUserAnalytics ?? loadUserAnalytics;
 
   return async function handleGovernanceApi(
     context: GovernanceApiContext,
@@ -137,6 +145,26 @@ export function createGovernanceApi(
       context.request.method === "GET"
     ) {
       return context.respond({ roles }, 200);
+    }
+
+    if (
+      context.pathname === "/api/admin/user-analytics" &&
+      context.request.method === "GET"
+    ) {
+      if (!hasRole(roles, "owner")) {
+        return context.respond({ error: "owner_authority_required" }, 403);
+      }
+      if (!context.environment.SUPABASE_SERVICE_ROLE_KEY) {
+        return context.respond({ error: "user_analytics_unavailable" }, 503);
+      }
+      try {
+        return context.respond(
+          { analytics: await getUserAnalytics(context.environment, now()) },
+          200,
+        );
+      } catch {
+        return context.respond({ error: "user_analytics_unavailable" }, 502);
+      }
     }
 
     if (context.pathname === "/api/admin/authorities") {

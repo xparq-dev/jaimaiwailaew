@@ -209,6 +209,7 @@ function environment(
     DATA_BUCKET: bucket,
     GOVERNANCE_BOOTSTRAP_OWNER_SUB: "owner-user",
     SUPABASE_URL: "https://example.supabase.co",
+    SUPABASE_SERVICE_ROLE_KEY: "server-secret",
     ALLOWED_ORIGIN: "https://jaimaiwailaew.vercel.app",
   };
 }
@@ -225,13 +226,19 @@ function request(userId: string, path: string, init?: RequestInit) {
   });
 }
 
-function testSystem(aal = "aal2") {
+function testSystem(
+  aal = "aal2",
+  loadUserAnalytics?: NonNullable<
+    Parameters<typeof createGovernanceApi>[0]
+  >["loadUserAnalytics"],
+) {
   const store = new MemoryGovernanceStore();
   let tick = 0;
   const handleGovernanceApi = createGovernanceApi({
     createStore: () => store,
     now: () => `2026-10-07T10:0${tick++}:00.000Z`,
     randomId: () => `event-${tick}`,
+    ...(loadUserAnalytics ? { loadUserAnalytics } : {}),
   });
   const handler = createWorkerHandler({
     handleGovernanceApi,
@@ -323,6 +330,36 @@ describe("server-side governance authority", () => {
     expect(stranger.status).toBe(403);
     expect(await stranger.json()).toEqual({
       error: "admin_authority_required",
+    });
+  });
+
+  it("returns aggregate user analytics only to the MFA-verified owner", async () => {
+    const analytics = {
+      generatedAt: "2026-10-12T04:00:00.000Z",
+      windowDays: 30,
+      totalUsers: 12,
+      newUsers: 3,
+      recentUsers: 8,
+      providers: [{ provider: "google", users: 12 }],
+      trend: [{ date: "2026-10-12", registrations: 3, recentSignIns: 8 }],
+    };
+    const { handler } = testSystem("aal2", async () => analytics);
+    await assign(handler, "auditor-user", ["auditor"]);
+
+    const owner = await handler.fetch(
+      request("owner-user", "/api/admin/user-analytics"),
+      environment(),
+    );
+    const auditor = await handler.fetch(
+      request("auditor-user", "/api/admin/user-analytics"),
+      environment(),
+    );
+
+    expect(owner.status).toBe(200);
+    expect(await owner.json()).toEqual({ analytics });
+    expect(auditor.status).toBe(403);
+    expect(await auditor.json()).toEqual({
+      error: "owner_authority_required",
     });
   });
 

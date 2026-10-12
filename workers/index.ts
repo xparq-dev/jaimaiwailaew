@@ -42,6 +42,7 @@ export interface R2BucketLike {
 export interface WorkerEnvironment extends GovernanceEnvironment {
   readonly DATA_BUCKET: R2BucketLike;
   readonly SUPABASE_URL: string;
+  readonly SUPABASE_SERVICE_ROLE_KEY?: string;
   readonly ALLOWED_ORIGIN?: string;
 }
 

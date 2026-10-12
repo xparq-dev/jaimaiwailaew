@@ -3,6 +3,8 @@ import { AdminApiError } from "./governance-client";
 const ERROR_MESSAGES: Record<string, string> = {
   admin_api_unconfigured: "ยังไม่ได้ตั้งค่า API สำหรับพื้นที่ผู้ดูแล",
   admin_authority_required: "บัญชีนี้ไม่มีสิทธิ์ดูแลกฎภาษี",
+  user_analytics_unavailable:
+    "โหลดภาพรวมผู้ใช้งานไม่ได้ กรุณาตรวจการตั้งค่าฝั่งเซิร์ฟเวอร์แล้วลองอีกครั้ง",
   artifact_edit_not_allowed: "แก้ไขไม่ได้ระหว่างรอตรวจ อนุมัติ หรือหลังเผยแพร่",
   artifact_identity_mismatch:
     "รหัสชุดกฎหรือเวอร์ชันในเนื้อหาไม่ตรงกับรายการที่เปิดอยู่",

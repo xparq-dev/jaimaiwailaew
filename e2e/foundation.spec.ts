@@ -504,6 +504,11 @@ test("provides a clear account entry and admin dashboard", async ({ page }) => {
     page.getByRole("heading", { name: "งานที่คุณเข้าถึงได้" }),
   ).toBeVisible();
   await expect(
+    page.getByRole("heading", { name: "แนวโน้มการใช้งาน" }),
+  ).toBeVisible();
+  await expect(page.getByText("ผู้ใช้ทั้งหมด")).toBeVisible();
+  await expect(page.getByText("ช่องทางเข้าสู่ระบบ")).toBeVisible();
+  await expect(
     page.getByRole("heading", { name: "กิจกรรมล่าสุด" }),
   ).toBeVisible();
   await expect(page.getByText("ยังไม่มีกิจกรรมล่าสุด")).toBeVisible();

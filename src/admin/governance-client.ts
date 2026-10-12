@@ -60,10 +60,32 @@ const auditRecordSchema = z.strictObject({
   occurredAt: z.string(),
 });
 
+const userAnalyticsSchema = z.strictObject({
+  generatedAt: z.string(),
+  windowDays: z.number().int().positive(),
+  totalUsers: z.number().int().nonnegative(),
+  newUsers: z.number().int().nonnegative(),
+  recentUsers: z.number().int().nonnegative(),
+  providers: z.array(
+    z.strictObject({
+      provider: z.string(),
+      users: z.number().int().nonnegative(),
+    }),
+  ),
+  trend: z.array(
+    z.strictObject({
+      date: z.string(),
+      registrations: z.number().int().nonnegative(),
+      recentSignIns: z.number().int().nonnegative(),
+    }),
+  ),
+});
+
 export type AdminRole = z.infer<typeof adminRoleSchema>;
 export type TaxRuleVersionRecord = z.infer<typeof versionRecordSchema>;
 export type TaxRuleArtifactResponse = z.infer<typeof artifactResponseSchema>;
 export type AdminAuditRecord = z.infer<typeof auditRecordSchema>;
+export type UserAnalytics = z.infer<typeof userAnalyticsSchema>;
 
 interface ErrorBody {
   readonly error?: string;
@@ -165,6 +187,36 @@ export class AdminGovernanceClient {
     );
     return z
       .strictObject({ events: z.array(auditRecordSchema) })
+      .parse(await response.json());
+  }
+
+  async getUserAnalytics() {
+    if (testMode) {
+      return {
+        analytics: {
+          generatedAt: "2026-10-12T04:00:00.000Z",
+          windowDays: 30,
+          totalUsers: 128,
+          newUsers: 24,
+          recentUsers: 71,
+          providers: [
+            { provider: "google", users: 92 },
+            { provider: "github", users: 31 },
+            { provider: "other", users: 5 },
+          ],
+          trend: Array.from({ length: 30 }, (_, index) => ({
+            date: new Date(Date.UTC(2026, 8, 13 + index))
+              .toISOString()
+              .slice(0, 10),
+            registrations: (index * 3) % 7,
+            recentSignIns: 2 + ((index * 5) % 11),
+          })),
+        } satisfies UserAnalytics,
+      };
+    }
+    const response = await this.request("/api/admin/user-analytics");
+    return z
+      .strictObject({ analytics: userAnalyticsSchema })
       .parse(await response.json());
   }
 

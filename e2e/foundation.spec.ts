@@ -497,6 +497,16 @@ test("provides a clear account entry and admin dashboard", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "ศูนย์จัดการระบบ" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "ยืนยันตัวตน 2 ขั้นแล้ว" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "งานที่คุณเข้าถึงได้" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "กิจกรรมล่าสุด" }),
+  ).toBeVisible();
+  await expect(page.getByText("ยังไม่มีกิจกรรมล่าสุด")).toBeVisible();
   await expect(page.getByRole("link", { name: /^ชุดกฎภาษี/u })).toBeVisible();
   await expect(
     page.getByRole("link", { name: /^ทีมและสิทธิ์/u }),
